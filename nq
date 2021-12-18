@@ -1,0 +1,304 @@
+#!/bin/sh
+
+local_dir="$HOME/.local"
+bin_dir="$HOME/.local/bin"
+tmp_dir="$HOME/.cache/nq"
+[ ! -d $bin_dir ] && mkdir -p $bin_dir
+[ ! -d $tmp_dir ] && mkdir -p $tmp_dir
+
+log() { printf "\033[0;32m$1\033[0m\n"; }
+link() { printf "\033[0;32m" && ln -sfv $1 $2 && printf "\033[0m"; }
+link_dir_bin() {
+    directory=$1
+    for file in `ls $directory`; do
+        link $directory/$file $bin_dir
+    done
+}
+
+install_go() {
+    ver="1.17.4"
+    case `go version` in *$ver*) log "go$ver already installed, return" && return;; esac
+    case `uname -a` in
+    *Linux*x86_64*) filename="go$ver.linux-amd64.tar.gz";;
+    *Darwin*ARM64*) filename="go$ver.darwin-arm64.tar.gz";;
+    *Darwin*x86_64*) filename="go$ver.darwin-amd64.tar.gz";;
+    esac
+    curl --progress-bar -L -o "$tmp_dir/$filename" "https://dl.google.com/go/$filename"
+    GODIR="$local_dir/go"
+    [ ! -d $GODIR ] && mkdir -p $GODIR || rm -rf "$GODIR/*"
+    tar -xzf "$tmp_dir/$filename" --strip-components 1 -C $GODIR
+    link "$GODIR/bin/go" "$bin_dir"
+    link "$GODIR/bin/gofmt" "$bin_dir"
+}
+
+install_gh() {
+    # binary_name=repo_name;linux_x86_64_arch;darwin_arm64_arch;darwin_x86_64_arch
+    arr="rg=BurntSushi/ripgrep;x86_64-unknown-linux-musl;x86_64-apple-darwin;x86_64-apple-darwin \
+        fzf=junegunn/fzf;linux_amd64.tar.gz;darwin_arm64.zip;darwin_amd64.zip \
+        zoxide=ajeetdsouza/zoxide;x86_64-unknown-linux-musl;aarch64-apple-darwin;x86_64-apple-darwin \
+        nv=neovim/neovim;linux64;macos;macos \
+        jq=stedolan/jq;linux64;osx-amd64;osx-amd64 \
+        cheat=cheat/cheat;linux-amd64;darwin-amd64;darwin-amd64"
+    for item in $arr; do
+        if [ `echo $item|cut -d "=" -f1` != "$1" ]; then continue; fi
+        repo=`echo $item|cut -d "=" -f2|cut -d ";" -f1`
+        app=$1; arch="unknown"
+        case `uname -a` in
+        *Linux*x86_64*) arch=`echo $item|cut -d "=" -f2|cut -d ";" -f2`;;
+        *Darwin*ARM64*) arch=`echo $item|cut -d "=" -f2|cut -d ";" -f3`;;
+        *Darwin*x86_64*) arch=`echo $item|cut -d "=" -f2|cut -d ";" -f3`;;
+        esac
+    done
+    [ -z $app ] && log "$1 is not supported yet, return" && return
+    [ $arch = "unknown" ] && \
+        log "Archetect is unknow, can't install, return" && return
+
+    case $app in
+    "rg")     curr_ver=`command -v rg >/dev/null && echo $(rg -V|cut -d " " -f2) || echo "0.0.0"`;;
+    "fzf")    curr_ver=`command -v fzf >/dev/null && echo $(fzf --version|cut -d " " -f1) || echo "0.0.0"`;;
+    "zoxide") curr_ver=`command -v zoxide >/dev/null && echo $(zoxide -V|cut -d " " -f2) || echo "0.0.0"`;;
+    "nv")     curr_ver=`command -v nv >/dev/null && echo $(nv -v|head -n 1|cut -d " " -f2) || echo "0.0.0"`;;
+    "jq")     curr_ver=`command -v jq >/dev/null && echo $(jq --version|head -n 1|cut -d "-" -f2) || echo "0.0.0"`;;
+    "cheat")  curr_ver=`command -v cheat >/dev/null && echo $(cheat -v) || echo "0.0.0"`;;
+    esac
+
+    url="https://api.github.com/repos/$repo/releases/latest"
+    lastest_ver=`curl -s ${url} --connect-timeout 10| grep 'tag_name' | cut -d\" -f4`
+    [ "$curr_ver" = "$lastest_ver" ] && log "$app: $curr_ver, is the newest" && return
+
+    log "Will install: $app:$lastest_ver $arch; curr_ver: $curr_ver"
+    base_url="https://github.com/$repo/releases/download/$lastest_ver"
+    case $app in
+    "rg")     url="$base_url/ripgrep-$lastest_ver-$arch.tar.gz";;
+    "fzf")    url="$base_url/fzf-$lastest_ver-$arch";;
+    "zoxide") url="$base_url/zoxide-$lastest_ver-$arch.tar.gz";;
+    "nv")     url="$base_url/nvim-$arch.tar.gz";;
+    "jq")     url="$base_url/jq-$arch";;
+    "cheat")  url="$base_url/cheat-$arch.gz";;
+    esac
+
+    tar_file="$tmp_dir/$app.tar.gz"
+    curl --progress-bar -L -H "Cache-Control: no-cache" -o $tar_file $url
+    tmp_app_dir="$tmp_dir/$app"
+    [ ! -d $tmp_app_dir ] && mkdir -p $tmp_app_dir
+    if [ $app = "fzf" ] && [ `uname -s` = "Darwin" ]; then
+        unzip -d $tmp_app_dir "$tar_file"
+    elif [ $app = "nv" ] || [ $app = "rg" ]; then
+        tar -zxf $tar_file --strip-components 1 -C "$tmp_app_dir"
+    elif [ $app = "jq" ]; then
+        mv $tar_file $bin_dir/jq
+    elif [ $app = "cheat" ]; then
+        gzip -f -d $tar_file && mv $tmp_dir/cheat.tar $bin_dir/cheat
+    else
+        tar -zxf $tar_file -C "$tmp_app_dir"
+    fi
+
+    case $app in
+    rg|fzf|zoxide) cp "$tmp_app_dir/$app" $bin_dir;;
+    nv) rm -rf "$local_dir/nvim" && cp -r "$tmp_app_dir" "$local_dir/nvim" && \
+        link "../nvim/bin/nvim" "$bin_dir/nv" &&\
+        PYTHONUSERBASE=$HOME/.local /usr/bin/python3 -m pip install --user pynvim;;
+    jq) chmod +x "$bin_dir/$app";;
+    cheat) chmod +x "$bin_dir/$app"
+        cheat_dir=$HOME/.config/cheat
+        [ ! -d $cheat_dir ] && mkdir -p $cheat_dir && cheat --init > $cheat_dir/conf.yml
+        cheat_dir=$cheat_dir/cheatsheets; [ ! -d $cheat_dir ] && mkdir -p $cheat_dir
+        community_dir=$cheat_dir/community
+        [ -d $community ] && cd $cheat_dir &&\
+            git pull --depth 1 --rebase --allow-unrelated-histories && cd - ||
+            git clone --depth=1 "https://github.com/cheat/cheatsheets" community
+        link "$HOME/.config/nq/cheatsheets" "$cheat_dir/personal";;
+    esac
+}
+
+nn() {
+    default_ver="16.13.1"
+    [ -n "$2" ] && ver="$2" || ver=$default_ver
+    node_root="$local_dir/node"; node_path="$node_root/$ver"
+    case $1 in
+        list) log "Current: $(node -v)"; for ver in `ls $node_root`; do echo "  - $ver"; done;;
+        install) [ -d "$node_path" ] && log "v$ver alreay installed, return" && return
+            case `uname -a` in
+            *Linux*x86_64*) filename="node-v$ver-linux-x64.tar.xz";;
+            *Darwin*ARM64*) filename="node-v$ver-darwin-arm64.tar.gz";;
+            *Darwin*x86_64*) filename="node-v$ver-linux-x64.tar.xz";;
+            esac
+            url="https://nodejs.org/dist/v$ver/$filename"
+            curl --progress-bar -L -o "$tmp_dir/$filename" $url && mkdir -p $node_path
+            case `uname -a` in
+            *Linux*) tar -xf "$tmp_dir/$filename" --strip-components 1 -C $node_path;;
+            *Darwin*) tar -xzf "$tmp_dir/$filename" --strip-components 1 -C $node_path;;
+            esac
+            nn use $ver;;
+        rm) rm -rf $node_path;;
+        use) link_dir_bin "$local_dir/node/$ver/bin";;
+        *) echo "  nn list"
+           echo "  nn use [ver default:$default_ver]"
+           echo "  nn install [ver default:$default_ver]"
+           echo "  nn rm [ver default:$default_ver]"
+           echo "" && nn list;;
+    esac
+}
+
+install_miniconda() {
+    command -v conda >/dev/null && log "conda exist, return" && return
+    case `uname -a` in
+    *Linux*x86_64*) url="https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh";;
+    *Darwin*ARM64*) url="https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh";;
+    *Darwin*x86_64*) url="https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh";;
+    esac
+    curl --progress-bar -o "$tmp_dir/miniconda.sh" $url
+    sh "$tmp_dir/miniconda.sh" -b -f -s -p "$local_dir/miniconda"
+}
+
+install_config() {
+    conf_dir="$HOME/.config/nq/config"
+    link "$conf_dir/gitconfig" "$HOME/.gitconfig"
+    link "$conf_dir/zshrc" "$HOME/.zshrc"
+    link "$conf_dir/tmux.conf" "$HOME/.tmux.conf"
+
+    case `uname -a` in *Darwin*) link "$conf_dir/alacritty.yml" "$HOME/.alacritty.yml"
+        [ ! -d "$HOME/.hammerspoon" ] && mkdir -p "$HOME/.hammerspoon"
+        link "$conf_dir/hammerspoon.lua" "$HOME/.hammerspoon/init.lua" ;;
+    esac
+}
+
+
+install_zplug() {
+    plugins="https://github.com/zsh-users/zsh-syntax-highlighting\
+        https://github.com/zsh-users/zsh-autosuggestions\
+        https://github.com/zsh-users/zsh-completions"
+    for item in $plugins; do
+        name=`echo $item|cut -d "/" -f5`
+        [ -d "$local_dir/$name" ] && cd "$local_dir/$name" &&\
+            git pull --depth 1 --rebase --allow-unrelated-histories && cd - ||
+            git clone --depth=1 $item "$local_dir/$name"
+    done
+    log "remember run in zsh later: rm -rf ~/.zcompdump && compinit"
+}
+
+install_vimrc() {
+    install_gh rg
+    install_gh fzf
+    install_gh nv
+    plug_file="$HOME/.config/nvim/autoload/plug.vim"
+    [ ! -f $plug_file ] && curl --progress-bar -fLo $plug_file --create-dirs \
+        "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
+    conf_dir="$HOME/.config/nq/config"
+    nvim_config_dir="$HOME/.config/nvim" 
+    link "$conf_dir/coc-settings.json" "$nvim_config_dir"
+
+    init_vim="$nvim_config_dir/init.vim" && rm -rf "$init_vim"
+    feature_mode=`[ "$1" = "basic" ] && echo "basic" || echo "full"`
+    echo "let g:feature_mode=\"$feature_mode\"" > "$init_vim"
+    echo "source $conf_dir/init.vim" >> "$init_vim"
+    nv +PlugInstall +qall
+}
+
+install_ctags() {
+    if [ `uname -s` = "Darwin" ]; then
+        brew tap universal-ctags/universal-ctags
+        brew install --HEAD universal-ctags/universal-ctags/universal-ctags
+    else
+        tmp_ctags="$tmp_dir/ctags"
+        git clone https://github.com/universal-ctags/ctags.git $tmp_ctags --depth=1
+        cd $tmp_ctags
+        log "configure ctags ..."
+        ./autogen.sh >/dev/null
+        ./configure --prefix="$tmp_ctags" >/dev/null
+        log "make ctags ..."
+        make >/dev/null
+        make install >/dev/null
+        cp $tmp_ctags/bin/* "$bin_dir/"
+        cd -
+    fi
+}
+
+install_brew_gnu() {
+    brew install tmux wget mosh rar alacritty 
+    brew install git curl coreutils findutils gnu-tar gnu-sed gawk grep
+
+    link_dir_bin /opt/homebrew/opt/coreutils/libexec/gnubin
+    link_dir_bin /opt/homebrew/opt/grep/libexec/gnubin
+    link_dir_bin /opt/homebrew/opt/curl/bin
+    link_dir_bin /opt/homebrew/opt/gnu-tar/libexec/gnubin
+    link_dir_bin /opt/homebrew/opt/findutils/libexec/gnubin
+    link_dir_bin /opt/homebrew/opt/gnu-sed/libexec/gnubin
+    link_dir_bin /opt/homebrew/Cellar/gawk/5.1.1/bin
+}
+
+install_brew() {
+    log "install Xcode command line tools..."
+    xcode-select --install
+    log "install brew..."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    
+    log "install brew apps..."
+    install_brew_gnu
+
+    brew install smartmontools sqlite telnet
+    brew install hammerspoon docker google-chrome notion clashx visual-studio-code
+
+    brew install monitorcontrol mos
+    brew install qqmusic wechat eudic sogouinput
+    brew install telegram discord slack zoom
+    brew install snipaste keka
+
+    brew tap homebrew/cask-fonts
+    brew install font-fira-code
+}
+
+install_pytools() {
+    export PYTHONUSERBASE=$HOME/.local
+    /usr/bin/python3 -m pip install --user ranger-fm icdiff
+    /usr/bin/python3 -m pip install --user litecli mycli pgcli
+}
+
+case $1 in
+    vimrc) install_vimrc;;
+    rg|fzf|zoxide|nv|jq|cheat) install_gh $1;;
+    go) install_go;;
+    node) nn install;;
+    miniconda) install_miniconda;;
+    zplug) install_zplug;;
+    ctags) install_ctags;;
+    config) install_config;;
+
+    all) install_vimrc; install_gh zoxide; install_go;
+        install_gh jq; install_gh cheat;
+        nn install; install_miniconda; install_zplug;
+        install_ctags; install_config; install_pytools;;
+
+    basic) install_vimrc basic; install_zplug; install_config; install_gh jq;
+        install_gh cheat;;
+
+    brew) install_brew;;
+    brew_gnu) install_brew_gnu;;
+
+    pytools) install_pytools;;
+
+    update) curl https://raw.githubusercontent.com/timqi/nq/main/README.sh |sh;;
+    commit) read -p "Ensure updated before you commit. [yes/no] " yn
+        case $yn in
+        yes) cd $HOME/.config/nq
+            command -v gtar >/dev/null && alias tar='gtar'
+            tar -czvf nq.tgz config nq cheatsheets
+            mv nq.tgz $HOME/.cache/nq.tgz
+            curl -i -X PUT -H "Authorization: token $NQTOKEN" \
+                -d "{\"message\": \"\", \"content\": \"$(openssl base64 -A -in $HOME/.cache/nq.tgz)\", \
+                \"branch\": \"main\",\"sha\": $(curl -X GET https://api.github.com/repos/timqi/nq/contents/nq.tgz | jq .sha)}" \
+                https://api.github.com/repos/timqi/nq/contents/nq.tgz;;
+        *) log "Will not commit, exit" && exit
+        esac;;
+
+    *) log "np commit: backup current config; need NQTOKEN env"
+       log "np update: update to newest version of nq"
+       log ""
+       log "supported app: rg,fzf,zoxide,nv,vimrc,zplug,go,node,miniconda,ctags,jq,cheat,pytools,config"
+       log "supported groups:"
+       log "  all: install all components"
+       log "  basic: basic feature set; vimrc basic,zplug,jq,cheat,config"
+       log "  pytools: ranger-fm,tldr,cheat,icdiff,pgcli,mycli,litecli"
+       log "  brew/brew_gnu: install brew utils";;
+esac
+

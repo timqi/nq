@@ -1,0 +1,128 @@
+[ -z "$PS1" ] && return
+# basic config
+setopt SHARE_HISTORY
+setopt INC_APPEND_HISTORY
+setopt HIST_IGNORE_DUPS
+setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_IGNORE_SPACE
+setopt HIST_SAVE_NO_DUPS
+setopt HIST_VERIFY
+setopt PROMPT_SUBST
+WORDCHARS=${WORDCHARS//[\/]}
+HISTFILE="${ZDOTDIR:-${HOME}}/.zhistory"
+SAVEHIST=5000; HISTSIZE=2000
+autoload -Uz compinit && compinit -C && zmodload zsh/complist
+zstyle ':completion:*' menu yes select
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+bindkey -e && bindkey -M menuselect '/' history-incremental-search-forward
+
+
+local_dir="$HOME/.local"
+
+# Handle PATH
+case $PATH in 
+    *$local_dir/bin*) ;;
+    *) PATH="$HOME/go/bin:$local_dir/bin:/usr/local/bin:$PATH"
+       export PATH;;
+esac
+
+. "$local_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
+. "$local_dir/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+fpath=($local_dir/zsh-autosuggestions/src $fpath)
+CONDA_INIT_SCRIPT="$local_dir/miniconda/etc/profile.d/conda.sh" 
+[ -f $CONDA_INIT_SCRIPT ] && . $CONDA_INIT_SCRIPT
+
+
+export EDITOR=nv
+export LANG=en_US.UTF-8
+export LC_ALL=$LANG
+export TERM="xterm-256color"
+export PYTHONUSERBASE=$HOME/.local
+
+
+(( ${+commands[dircolors]} )) &&\
+  alias ls='ls --group-directories-first --color=auto' ||\
+  alias ls='ls -G'
+alias grep='grep --color=auto'
+alias abrew='arch -arm64 brew'
+alias g='git'
+alias pipx='PYTHONUSERBASE=$HOME/.local /usr/bin/python3 -m pip'
+
+# init homebrew
+brew_path="/opt/homebrew/bin/brew"
+[ -f $brew_path ] && [ -z $HOMEBREW_PREFIX ] &&\
+    eval "$($brew_path shellenv)"
+
+#
+# functions
+#
+fss() { 
+    host=`cat ~/.ssh/config | grep "Host " | awk '{print $2}' |grep -v "*" |fzf --layout=reverse`
+    tmux rename-window "^$host" && ssh $host
+}
+
+printcolors() {
+    for i in {0..255} ; do
+        printf "\x1b[48;5;%sm%3d\e[0m " "$i" "$i"
+        if (( i == 15 )) || (( i > 15 )) && (( (i-15) % 6 == 0 )); then
+            printf "\n";
+        fi
+    done
+}
+
+toggle_trans_alacritty() {
+    file="$HOME/.config/nq/config/alacritty.yml"
+    origin=`grep "background_opacity" $file`
+    [[ $origin != "background_opacity: 1" ]] && \
+        new="background_opacity: 1" || \
+        new="background_opacity: 0.8"
+    sed -i "s/$origin/$new/" $file
+}
+
+dump_completions() {
+    fpath=($HOME/.local/zsh-completions/src $fpath)
+    rm -f ~/.zcompdump
+    compinit
+}
+
+
+
+# fzf
+export FZF_DEFAULT_COMMAND='rg --files'
+export FZF_DEFAULT_OPTS='--ansi -m --color dark --bind=ctrl-l:toggle-all --bind=ctrl-j:preview-half-page-down --bind=ctrl-k:preview-half-page-up --bind=ctrl-/:toggle-preview --inline-info --preview-window noborder,wrap'
+fzf-history-widget() {
+  selected=`history -n 0 |awk '!x[$0]++' |FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS -e +s +m --tac --query ${(qqq)LBUFFER}" fzf`
+  BUFFER=$selected; CURSOR=$#BUFFER; zle redisplay
+}
+zle -N fzf-history-widget && bindkey '^R' fzf-history-widget
+
+
+# zoxide
+eval "$(zoxide init zsh --cmd z --hook none)"
+_zoxide_zsh_tab_completion() {
+    (( $+compstate )) && compstate[insert]=menu
+    local keyword="${words:2}"
+    [[ -z $keyword ]] && _files -/ && return
+    local completions=(${(@f)"$(zoxide query -l "$keyword")"})
+    [[ ${#completions[@]} ]] && _files -/ ||\
+        compadd -U -V z "${(@)completions}"
+}
+[ "${+functions[compdef]}" -ne 0 ] &&\
+    compdef _zoxide_zsh_tab_completion z 2> /dev/null
+## zoxide auto add
+alias zdd='zoxide add `pwd`'; alias zl='zoxide query -l -s'
+chpwd() { [ -e ".git" ] && zdd }
+
+
+# PROMPT
+precmd() {
+    [ -e ".git" ] && __git_branch=`git rev-parse --abbrev-ref HEAD 2>/dev/null` &&\
+        [ -n $__git_branch ] && __git_branch=" $__git_branch" || __git_branch=""
+}
+LOCAL_MACHINE_NAME=`hostname`
+PROMPT=$'%(?:%F{112}:%F{9})${LOCAL_MACHINE_NAME:->} %B%F{4}%c%b%F{244}${__git_branch}%f%{$reset_color%} %# '
+
+
+# Auto source ~/.platformrc
+[ -f "$HOME/.platformrc" ] && . "$HOME/.platformrc"
+

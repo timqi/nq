@@ -1,0 +1,16 @@
+# 删除系统ABC输入法
+* 先在系统中设置选中ABC输入法
+plutil -convert xml1 ~/Library/Preferences/com.apple.HIToolbox.plist
+sudo vim ~/Library/Preferences/com.apple.HIToolbox.plist
+
+删除文件中AppleEnabledInputSources项中的KeyboardLayout Name为ABC的item，重启或注销
+
+# 连续输入时间间隔配置
+defaults write -g KeyRepeat -int 2
+defaults write -g InitialKeyRepeat -int 10
+
+KeyRepeat: 字符连续输入间隔
+InitialKeyRepeat: 响应连续输入的等待时间
+1代表15ms，10代表150ms；重启或退出登录后生效
+
+

@@ -1,0 +1,50 @@
+# https://github.com/alacritty/alacritty/blob/master/alacritty.yml
+#
+selection:
+  semantic_escape_chars: ",│`|:\"' ()[]{}<>\t"
+
+background_opacity: 0.8
+env:
+  TERM: xterm-256color
+
+colors:
+  cursor:
+    text: "0x161716"
+    cursor: "0x5fff00"
+
+window:
+  #startup_mode: Maximized
+  startup_mode: Windowed
+  decorations: none
+  dimensions:
+    columns: 120
+    lines: 35
+
+scrolling:
+  history: 0
+
+font:
+  size: 18
+  use_thin_strokes: false
+  normal:
+    family: Fira Code
+    style: Light
+  bold:
+    family: Fira Code
+    style: Bold
+  italic:
+    family: Fira Code
+    style: Italic
+
+shell:
+    program: /bin/zsh
+    args:
+      - -i
+      - -c
+      - "cd ~/Downloads && tmux attach || tmux"
+
+key_bindings:
+  - { key: S, mods: Command, chars: "\x1bs" }
+  - { key: W, mods: Command, chars: "\x1bw" }
+  - { key: T, mods: Command, chars: "\x1bt" }
+  - { key: Return, mods: Command, action: ToggleFullscreen }

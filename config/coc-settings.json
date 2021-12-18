@@ -1,0 +1,13 @@
+{
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportOptionalSubscript": "none",
+    "reportGeneralTypeIssues": "warning",
+    "reportOptionalOperand": "warning"
+  },
+  "list.normalMappings": {
+    "<C-c>": "do:exit"
+  },
+  "list.insertMappings": {
+    "<C-c>": "do:exit"
+  }
+}

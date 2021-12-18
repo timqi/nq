@@ -1,0 +1,24 @@
+[log]
+    date = format-local:%Y%m%d %H:%M
+[format]
+    pretty = format:%C(yellow)%h %C(cyan)%cd %Cblue%aN %Creset%s%C(auto)%d
+
+[alias]
+    a = add
+    b = branch
+    c = commit -m
+    d = diff
+    dv = difftool -t vimdiff -y
+    p = pull
+
+    ck = checkout
+	st = status -sb
+    cl = config --global -l
+    l = log --color=always -200
+
+[user]
+	email = qiqi@f2pool.com
+[init]
+	defaultBranch = main
+[pull]
+	rebase = false
