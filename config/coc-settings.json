@@ -1,4 +1,5 @@
 {
+  "snippets.ultisnips.enable": false,
   "python.analysis.diagnosticSeverityOverrides": {
     "reportOptionalSubscript": "none",
     "reportGeneralTypeIssues": "warning",

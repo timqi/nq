@@ -23,7 +23,6 @@ for [k, v] in items({"<c-b>": "<left>", "<c-f>": "<right>",
     exe "inoremap ".k." ".v | exe "cnoremap ".k." ".v
 endfor
 
-let g:python3_host_prog="/usr/bin/python3"
 au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
     \| exe "normal! g'\"" | endif
 
@@ -50,17 +49,18 @@ nnoremap <leader>w  y:<C-U><C-R>=printf("Rg %s", expand("<cword>"))<CR>
 nnoremap <leader>s  :<C-U><C-R>=printf("Rg ")<CR>
 vnoremap <leader>s  y:<C-U><C-R>=printf("Rg %s", getreg('"'))<CR>
 nnoremap <leader>t  :<C-U>BTags<CR>
+let g:fzf_layout = { 'window': 'enew' }
 let g:fzf_commits_log_options =  "-200 --color=always"
 let g:fzf_preview_window = ['up:80%', 'ctrl-/']
-let g:fzf_layout = { 'window': 'enew' }
 
 if get(g:, "feature_mode", "basic") != "basic"
 "## Advanced features ##
 Plug 'tomasiser/vim-code-dark'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'antoinemadec/coc-fzf', {'branch': 'release'}
+Plug 'honza/vim-snippets'
 let g:coc_fzf_preview = 'up:80%'
-let g:coc_global_extensions = [ "coc-go", "coc-pyright"]
+let g:coc_global_extensions = ["coc-go", "coc-pyright", "coc-snippets"]
 nnoremap gd          :<C-u>call CocActionAsync('jumpDefinition')<CR>
 nnoremap gt          :<C-u>call CocActionAsync('jumpTypeDefinition')<CR>
 nnoremap gi          :<C-u>call CocActionAsync('jumpImplementation')<CR>
@@ -79,18 +79,12 @@ nnoremap <expr><c-k> coc#float#scroll(0)
 inoremap <expr><c-y> coc#_select_confirm()
 inoremap <expr><c-n> pumvisible() ? "\<c-n>" : coc#refresh()
 
-command! Commits     call WithResumeCall('fzf#vim#commits(fzf#vim#with_preview({ "placeholder": "" }), 0)')
-command! BCommits    call WithResumeCall('fzf#vim#buffer_commits(fzf#vim#with_preview({ "placeholder": "" }), 0)')
-command! -nargs=* Rg call WithResumeCall('fzf#vim#grep("rg --column --line-number --no-heading --color=always --smart-case -- ".shellescape(<q-args>), 1, fzf#vim#with_preview(), 0)')
-function! WithResumeCall(...)
-  call coc_fzf#common#log_function_call(expand('<sfile>'), a:000)
-  execute 'call '.a:000[0]
-endfunction
 "## Advanced features end ##
 endif
 
 call plug#end()
 
+set termguicolors
 if get(g:, "feature_mode", "basic") != "basic" |colorscheme codedark |endif
 hi Normal ctermbg=NONE guibg=NONE
 hi LineNr ctermbg=NONE guibg=NONE ctermfg=241

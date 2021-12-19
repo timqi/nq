@@ -96,8 +96,7 @@ install_gh() {
     case $app in
     rg|fzf|zoxide) cp "$tmp_app_dir/$app" $bin_dir;;
     nv) rm -rf "$local_dir/nvim" && cp -r "$tmp_app_dir" "$local_dir/nvim" && \
-        link "../nvim/bin/nvim" "$bin_dir/nv" &&\
-        PYTHONUSERBASE=$HOME/.local /usr/bin/python3 -m pip install --user pynvim;;
+        link "../nvim/bin/nvim" "$bin_dir/nv";;
     jq) chmod +x "$bin_dir/$app";;
     cheat) chmod +x "$bin_dir/$app"
         cheat_dir=$HOME/.config/cheat
@@ -157,7 +156,9 @@ install_config() {
     link "$conf_dir/zshrc" "$HOME/.zshrc"
     link "$conf_dir/tmux.conf" "$HOME/.tmux.conf"
 
-    case `uname -a` in *Darwin*) link "$conf_dir/alacritty.yml" "$HOME/.alacritty.yml"
+    case `uname -a` in *Darwin*)
+        [ ! -d $HOME/.config/kitty ] && mkdir -p $HOME/.config/kitty
+        link "$conf_dir/kitty.conf" "$HOME/.config/kitty"
         [ ! -d "$HOME/.hammerspoon" ] && mkdir -p "$HOME/.hammerspoon"
         link "$conf_dir/hammerspoon.lua" "$HOME/.hammerspoon/init.lua" ;;
     esac

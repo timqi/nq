@@ -58,7 +58,8 @@ brew_path="/opt/homebrew/bin/brew"
 #
 fss() { 
     host=`cat ~/.ssh/config | grep "Host " | awk '{print $2}' |grep -v "*" |fzf --layout=reverse`
-    tmux rename-window "^$host" && ssh $host
+    #tmux rename-window "^$host" && ssh $host
+    kitty @ set-tab-title $host && ssh $host
 }
 
 printcolors() {
