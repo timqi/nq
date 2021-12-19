@@ -87,8 +87,8 @@ call plug#end()
 set termguicolors
 if get(g:, "feature_mode", "basic") != "basic" |colorscheme codedark |endif
 hi Normal ctermbg=NONE guibg=NONE
-hi LineNr ctermbg=NONE guibg=NONE ctermfg=241
+hi LineNr ctermbg=NONE guibg=NONE ctermfg=241 guifg=#5A5A5A
 hi EndOfBuffer ctermbg=NONE guibg=NONE
-hi Visual ctermbg=DarkGray
-hi Search ctermbg=DarkGray
-hi Directory ctermbg=None
+hi Visual ctermbg=DarkGray guibg=#3D3D40
+hi Search ctermbg=DarkGray guibg=#3D3D40
+hi Directory ctermbg=None guibg=None
