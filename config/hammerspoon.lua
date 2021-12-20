@@ -6,7 +6,7 @@ hs.alert.show("Config Loaded")
 alert_msg = "Launcher"
 app_shortcuts = {}
 for key, app in pairs({
-    i = "Alacritty",
+    k = "kitty",
     v = "Visual Studio Code",
     c = "Google Chrome",
     s = "Slack",
@@ -16,7 +16,6 @@ for key, app in pairs({
     t = "Telegram",
     m = "QQMusic",
     n = "Notion",
-    k = "Kitty",
 }) do app_shortcuts[#app_shortcuts+1] = hs.hotkey.new({}, key, function()
     if not hs.application.launchOrFocus(app) then hs.notify.show("App Lauch Failed", item.app) end
     close_launcher()

@@ -53,8 +53,8 @@ let g:fzf_layout = { 'window': 'enew' }
 let g:fzf_commits_log_options =  "-200 --color=always"
 let g:fzf_preview_window = ['up:80%', 'ctrl-/']
 
-if get(g:, "feature_mode", "basic") != "basic"
 "## Advanced features ##
+if get(g:, "feature_mode", "basic") != "basic"
 Plug 'tomasiser/vim-code-dark'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'antoinemadec/coc-fzf', {'branch': 'release'}
@@ -78,16 +78,12 @@ nnoremap <expr><c-j> coc#float#scroll(1)
 nnoremap <expr><c-k> coc#float#scroll(0)
 inoremap <expr><c-y> coc#_select_confirm()
 inoremap <expr><c-n> pumvisible() ? "\<c-n>" : coc#refresh()
-
-"## Advanced features end ##
 endif
+"## Advanced features end ##
 
 call plug#end()
 
 if get(g:, "feature_mode", "basic") != "basic" |colorscheme codedark |endif
-hi Normal ctermbg=NONE guibg=NONE
-hi LineNr ctermbg=NONE guibg=NONE ctermfg=241 guifg=#5A5A5A
-hi EndOfBuffer ctermbg=NONE guibg=NONE
-hi Visual ctermbg=DarkGray guibg=#3D3D40
-hi Search ctermbg=DarkGray guibg=#3D3D40
-hi Directory ctermbg=None guibg=None
+for g in ['Normal', 'EndOfBuffer', 'LineNr', "Directory"]
+    exe "hi ".g." ctermbg=NONE guibg=NONE" | endfor
+

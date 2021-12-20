@@ -216,7 +216,7 @@ install_ctags() {
 }
 
 install_brew_gnu() {
-    brew install tmux wget mosh rar alacritty 
+    brew install tmux wget mosh rar kitty 
     brew install git curl coreutils findutils gnu-tar gnu-sed gawk grep
 
     link_dir_bin /opt/homebrew/opt/coreutils/libexec/gnubin
