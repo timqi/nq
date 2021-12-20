@@ -2,7 +2,7 @@ if get(s:, 'loaded', 0) != 0 | finish | else | let s:loaded = 1 | endif
 set encoding=utf-8 fileencodings=utf-8,ucs-bom,gbk,gb18030,big5,euc-jp,latin1
 let mapleader = "\<space>"
 
-set nocompatible hidden wrap
+set termguicolors nocompatible hidden wrap
 set hlsearch incsearch ignorecase smartcase
 set backspace=indent,eol,start
 set completeopt=menuone,preview,noinsert,noselect
@@ -84,7 +84,6 @@ endif
 
 call plug#end()
 
-set termguicolors
 if get(g:, "feature_mode", "basic") != "basic" |colorscheme codedark |endif
 hi Normal ctermbg=NONE guibg=NONE
 hi LineNr ctermbg=NONE guibg=NONE ctermfg=241 guifg=#5A5A5A
