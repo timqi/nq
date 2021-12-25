@@ -241,9 +241,8 @@ install_brew() {
     brew install hammerspoon docker google-chrome notion clashx visual-studio-code
 
     brew install monitorcontrol mos
-    brew install qqmusic wechat eudic sogouinput
+    brew install qqmusic wechat eudic keka
     brew install telegram discord slack zoom
-    brew install snipaste keka
 
     brew tap homebrew/cask-fonts
     brew install font-fira-code
@@ -271,7 +270,7 @@ case $1 in
         install_ctags; install_config; install_pytools;;
 
     basic) install_vimrc basic; install_zplug; install_config; install_gh jq;
-        install_gh cheat;;
+        install_gh cheat; install_gh zoxide;;
 
     brew) install_brew;;
     brew_gnu) install_brew_gnu;;

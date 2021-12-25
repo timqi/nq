@@ -8,7 +8,7 @@ app_shortcuts = {}
 for key, app in pairs({
     k = "kitty",
     v = "Visual Studio Code",
-    c = "Google Chrome",
+    c = "Safari",
     s = "Slack",
     w = "WeChat",
     p = "Preview",
