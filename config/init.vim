@@ -8,7 +8,7 @@ set backspace=indent,eol,start
 set completeopt=menuone,preview,noinsert,noselect
 set noswapfile nobackup nowritebackup
 set cindent autoindent smartindent expandtab smarttab 
-set nu signcolumn=number laststatus=1
+set nu signcolumn=number laststatus=1 mouse=a
 set wildignore+=.bak,*.swp,*.class,*.pyc,*DS_Store*,*.swp,*/.Trash/*
 set updatetime=1000
 set ts=4 sw=4 sts=4
@@ -19,7 +19,7 @@ filetype plugin indent on
 nnoremap <c-c> :q<cr>
 nnoremap - :Explore<cr>
 for [k, v] in items({"<c-b>": "<left>", "<c-f>": "<right>",
-\"<c-a>": "<home>","<c-e>": "<end>", "<c-d>": "<del>" })
+\"<c-a>": "<home>","<c-e>": "<end>", "<c-d>": "<del>"})
     exe "inoremap ".k." ".v | exe "cnoremap ".k." ".v
 endfor
 
@@ -28,6 +28,8 @@ au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
 
 
 call plug#begin('~/.config/nvim/plugged')
+Plug 'psliwka/vim-smoothie'
+Plug 'christoomey/vim-tmux-navigator'
 Plug 'vim-test/vim-test'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-fugitive'
@@ -39,6 +41,7 @@ Plug 'sbdchd/neoformat'
 nnoremap = :Neoformat<cr>
 let g:auto_save = 1
 let g:netrw_dirhistmax = 0
+let g:tmux_navigator_save_on_switch = 2
 
 Plug 'junegunn/fzf'
 Plug 'junegunn/fzf.vim'

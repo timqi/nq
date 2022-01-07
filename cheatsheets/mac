@@ -13,4 +13,16 @@ KeyRepeat: 字符连续输入间隔
 InitialKeyRepeat: 响应连续输入的等待时间
 1代表15ms，10代表150ms；重启或退出登录后生效
 
+# 鼠标速度问题（一般不用调）
+可以用终端命令来调整：步骤： 1，打开终端 2，输入命令查看：defaults read -g com.apple.mouse.scaling      就可以看到当前的鼠标速度 3，输入命令修改：defaults write -g com.apple.mouse.scaling 7.5      就可以修改鼠标速度为 7.5    （数值你可以调 7---9，自己感觉速度，10 以上太快了，不建议） 4，重启电脑   OK   享受MM完美速度
 
+作者：xiao klaus
+链接：https://www.zhihu.com/question/19579075/answer/109979557
+来源：知乎
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+
+# 响应连续输入的问题
+defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         # For VS Code
+defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false # For VS Code Insider
+defaults write com.visualstudio.code.oss ApplePressAndHoldEnabled -bool false    # For VS Codium
+defaults delete -g ApplePressAndHoldEnabled

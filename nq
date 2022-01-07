@@ -277,20 +277,6 @@ case $1 in
 
     pytools) install_pytools;;
 
-    update) curl https://raw.githubusercontent.com/timqi/nq/main/README.sh |sh;;
-    commit) read -p "Ensure updated before you commit. [yes/no] " yn
-        case $yn in
-        yes) cd $HOME/.config/nq
-            command -v gtar >/dev/null && alias tar='gtar'
-            tar -czvf nq.tgz config nq cheatsheets
-            mv nq.tgz $HOME/.cache/nq.tgz
-            curl -i -X PUT -H "Authorization: token $NQTOKEN" \
-                -d "{\"message\": \"\", \"content\": \"$(openssl base64 -A -in $HOME/.cache/nq.tgz)\", \
-                \"branch\": \"main\",\"sha\": $(curl -X GET https://api.github.com/repos/timqi/nq/contents/nq.tgz | jq .sha)}" \
-                https://api.github.com/repos/timqi/nq/contents/nq.tgz;;
-        *) log "Will not commit, exit" && exit
-        esac;;
-
     *) log "np commit: backup current config; need NQTOKEN env"
        log "np update: update to newest version of nq"
        log ""
