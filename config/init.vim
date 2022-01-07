@@ -28,7 +28,6 @@ au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
 
 
 call plug#begin('~/.config/nvim/plugged')
-Plug 'psliwka/vim-smoothie'
 Plug 'christoomey/vim-tmux-navigator'
 Plug 'vim-test/vim-test'
 Plug 'tpope/vim-surround'
