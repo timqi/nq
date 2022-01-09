@@ -41,18 +41,18 @@ function show_launcher()
     for i, shortcut in ipairs(app_shortcuts) do shortcut:enable() end
 end
 hs.hotkey.bind({"ctrl"}, "tab", show_launcher)
-app_watcher = hs.application.watcher.new(function(name, t, app)
-    if t == hs.application.watcher.activated and name ~= "kitty" 
-    then previous_app = app end end)
-app_watcher:start()
-hs.hotkey.bind({"ctrl"}, "`", function ()
-    local app = hs.window.focusedWindow()
-    if not app then hs.application.launchOrFocus("Kitty") end
-    local app = app:application():name()
-    if app ~= "kitty" then hs.application.launchOrFocus("Kitty")
-    elseif app == "kitty" and previous_app
-    then previous_app:activate() end
-end)
+-- app_watcher = hs.application.watcher.new(function(name, t, app)
+--     if t == hs.application.watcher.activated and name ~= "kitty" 
+--     then previous_app = app end end)
+-- app_watcher:start()
+-- hs.hotkey.bind({"ctrl"}, "`", function ()
+--     local app = hs.window.focusedWindow()
+--     if not app then hs.application.launchOrFocus("Kitty") end
+--     local app = app:application():name()
+--     if app ~= "kitty" then hs.application.launchOrFocus("Kitty")
+--     elseif app == "kitty" and previous_app
+--     then previous_app:activate() end
+-- end)
 
 
 -- WinMgr https://github.com/miromannino/miro-windows-manager

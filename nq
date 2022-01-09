@@ -33,12 +33,11 @@ install_go() {
 
 install_gh() {
     # binary_name=repo_name;linux_x86_64_arch;darwin_arm64_arch;darwin_x86_64_arch
-    arr="rg=BurntSushi/ripgrep;x86_64-unknown-linux-musl;x86_64-apple-darwin;x86_64-apple-darwin \
-        fzf=junegunn/fzf;linux_amd64.tar.gz;darwin_arm64.zip;darwin_amd64.zip \
-        zoxide=ajeetdsouza/zoxide;x86_64-unknown-linux-musl;aarch64-apple-darwin;x86_64-apple-darwin \
-        nv=neovim/neovim;linux64;macos;macos \
-        jq=stedolan/jq;linux64;osx-amd64;osx-amd64 \
-        cheat=cheat/cheat;linux-amd64;darwin-amd64;darwin-amd64"
+    arr="rg=BurntSushi/ripgrep;x86_64-unknown-linux-musl;x86_64-apple-darwin \
+        fzf=junegunn/fzf;linux_amd64.tar.gz;darwin_arm64.zip \
+        zoxide=ajeetdsouza/zoxide;x86_64-unknown-linux-musl;aarch64-apple-darwin \
+        jq=stedolan/jq;linux64;osx-amd64 \
+        cheat=cheat/cheat;linux-amd64;darwin-amd64"
     for item in $arr; do
         if [ `echo $item|cut -d "=" -f1` != "$1" ]; then continue; fi
         repo=`echo $item|cut -d "=" -f2|cut -d ";" -f1`
@@ -46,7 +45,6 @@ install_gh() {
         case `uname -a` in
         *Linux*x86_64*) arch=`echo $item|cut -d "=" -f2|cut -d ";" -f2`;;
         *Darwin*ARM64*) arch=`echo $item|cut -d "=" -f2|cut -d ";" -f3`;;
-        *Darwin*x86_64*) arch=`echo $item|cut -d "=" -f2|cut -d ";" -f3`;;
         esac
     done
     [ -z $app ] && log "$1 is not supported yet, return" && return
@@ -57,7 +55,6 @@ install_gh() {
     "rg")     curr_ver=`command -v rg >/dev/null && echo $(rg -V|cut -d " " -f2) || echo "0.0.0"`;;
     "fzf")    curr_ver=`command -v fzf >/dev/null && echo $(fzf --version|cut -d " " -f1) || echo "0.0.0"`;;
     "zoxide") curr_ver=`command -v zoxide >/dev/null && echo $(zoxide -V|cut -d " " -f2) || echo "0.0.0"`;;
-    "nv")     curr_ver=`command -v nv >/dev/null && echo $(nv -v|head -n 1|cut -d " " -f2) || echo "0.0.0"`;;
     "jq")     curr_ver=`command -v jq >/dev/null && echo $(jq --version|head -n 1|cut -d "-" -f2) || echo "0.0.0"`;;
     "cheat")  curr_ver=`command -v cheat >/dev/null && echo $(cheat -v) || echo "0.0.0"`;;
     esac
@@ -72,7 +69,6 @@ install_gh() {
     "rg")     url="$base_url/ripgrep-$lastest_ver-$arch.tar.gz";;
     "fzf")    url="$base_url/fzf-$lastest_ver-$arch";;
     "zoxide") url="$base_url/zoxide-$lastest_ver-$arch.tar.gz";;
-    "nv")     url="$base_url/nvim-$arch.tar.gz";;
     "jq")     url="$base_url/jq-$arch";;
     "cheat")  url="$base_url/cheat-$arch.gz";;
     esac
@@ -83,8 +79,6 @@ install_gh() {
     [ ! -d $tmp_app_dir ] && mkdir -p $tmp_app_dir
     if [ $app = "fzf" ] && [ `uname -s` = "Darwin" ]; then
         unzip -d $tmp_app_dir "$tar_file"
-    elif [ $app = "nv" ] || [ $app = "rg" ]; then
-        tar -zxf $tar_file --strip-components 1 -C "$tmp_app_dir"
     elif [ $app = "jq" ]; then
         mv $tar_file $bin_dir/jq
     elif [ $app = "cheat" ]; then
@@ -95,8 +89,6 @@ install_gh() {
 
     case $app in
     rg|fzf|zoxide) cp "$tmp_app_dir/$app" $bin_dir;;
-    nv) rm -rf "$local_dir/nvim" && cp -r "$tmp_app_dir" "$local_dir/nvim" && \
-        link "../nvim/bin/nvim" "$bin_dir/nv";;
     jq) chmod +x "$bin_dir/$app";;
     cheat) chmod +x "$bin_dir/$app"
         cheat_dir=$HOME/.config/cheat
@@ -139,15 +131,14 @@ nn() {
     esac
 }
 
-install_miniconda() {
+install_conda() {
     command -v conda >/dev/null && log "conda exist, return" && return
     case `uname -a` in
-    *Linux*x86_64*) url="https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh";;
-    *Darwin*ARM64*) url="https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh";;
-    *Darwin*x86_64*) url="https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh";;
+    *Linux*x86_64*) url="https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh";;
+    *Darwin*ARM64*) url="https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-arm64.sh";;
     esac
-    curl --progress-bar -o "$tmp_dir/miniconda.sh" $url
-    sh "$tmp_dir/miniconda.sh" -b -f -s -p "$local_dir/miniconda"
+    curl --progress-bar -o "$tmp_dir/conda.sh" $url -L
+    sh "$tmp_dir/conda.sh" -b -f -s -p "$local_dir/conda"
 }
 
 install_config() {
@@ -181,19 +172,17 @@ install_zplug() {
 install_vimrc() {
     install_gh rg
     install_gh fzf
-    install_gh nv
-    plug_file="$HOME/.config/nvim/autoload/plug.vim"
+    plug_file="$HOME/.vim/autoload/plug.vim"
     [ ! -f $plug_file ] && curl --progress-bar -fLo $plug_file --create-dirs \
         "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
     conf_dir="$HOME/.config/nq/config"
-    nvim_config_dir="$HOME/.config/nvim" 
-    link "$conf_dir/coc-settings.json" "$nvim_config_dir"
+    vim_config_dir="$HOME/.vim" 
+    link "$conf_dir/coc-settings.json" "$vim_config_dir"
 
-    init_vim="$nvim_config_dir/init.vim" && rm -rf "$init_vim"
     feature_mode=`[ "$1" = "basic" ] && echo "basic" || echo "full"`
-    echo "let g:feature_mode=\"$feature_mode\"" > "$init_vim"
-    echo "source $conf_dir/init.vim" >> "$init_vim"
-    nv +PlugInstall +qall
+    echo "let g:feature_mode=\"$feature_mode\"" > $HOME/.vimrc
+    echo "source $conf_dir/vimrc" >> $HOME/.vimrc
+    vim +PlugInstall +qall
 }
 
 install_ctags() {
@@ -256,17 +245,17 @@ install_pytools() {
 
 case $1 in
     vimrc) install_vimrc;;
-    rg|fzf|zoxide|nv|jq|cheat) install_gh $1;;
+    rg|fzf|zoxide|jq|cheat) install_gh $1;;
     go) install_go;;
     node) nn install;;
-    miniconda) install_miniconda;;
+    conda) install_conda;;
     zplug) install_zplug;;
     ctags) install_ctags;;
     config) install_config;;
 
     all) install_vimrc; install_gh zoxide; install_go;
         install_gh jq; install_gh cheat;
-        nn install; install_miniconda; install_zplug;
+        nn install; install_conda; install_zplug;
         install_ctags; install_config; install_pytools;;
 
     basic) install_vimrc basic; install_zplug; install_config; install_gh jq;
@@ -280,7 +269,7 @@ case $1 in
     *) log "np commit: backup current config; need NQTOKEN env"
        log "np update: update to newest version of nq"
        log ""
-       log "supported app: rg,fzf,zoxide,nv,vimrc,zplug,go,node,miniconda,ctags,jq,cheat,pytools,config"
+       log "supported app: rg,fzf,zoxide,vimrc,zplug,go,node,conda,ctags,jq,cheat,pytools,config"
        log "supported groups:"
        log "  all: install all components"
        log "  basic: basic feature set; vimrc basic,zplug,jq,cheat,config"

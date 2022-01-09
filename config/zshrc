@@ -29,7 +29,7 @@ esac
 . "$local_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
 . "$local_dir/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 fpath=($local_dir/zsh-autosuggestions/src $fpath)
-CONDA_INIT_SCRIPT="$local_dir/miniconda/etc/profile.d/conda.sh" 
+CONDA_INIT_SCRIPT="$local_dir/conda/etc/profile.d/conda.sh" 
 [ -f $CONDA_INIT_SCRIPT ] && . $CONDA_INIT_SCRIPT
 
 
