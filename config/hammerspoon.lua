@@ -41,6 +41,30 @@ function show_launcher()
     for i, shortcut in ipairs(app_shortcuts) do shortcut:enable() end
 end
 hs.hotkey.bind({"ctrl"}, "tab", show_launcher)
+
+-- double click to show lancher
+eventtap = hs.eventtap
+events = eventtap.event.types
+first_ts, first_down, second_down = 0, false, false
+reset_double = function() first_ts, first_down, second_down = 0, false, false end
+et = eventtap.new({events.flagsChanged, events.keyDown}, function(ev)
+    if hs.timer.secondsSinceEpoch() - first_ts > 0.6 then reset_double() end
+    no_flags, only_flag = true, ev:getFlags().shift
+    for k, v in pairs(ev:getFlags()) do
+        if v then no_flags = false end
+        if k ~= "shift" and v then only_flag = false end
+    end
+    if ev:getType() == events.flagsChanged then
+        if no_flags and first_down and second_down then
+            show_launcher(); reset_double()
+        elseif only_flag and not first_down then
+            first_down = true first_ts = hs.timer.secondsSinceEpoch()
+        elseif only_flag and first_down then second_down = true
+        elseif not no_flags then reset_double() end
+    else reset_double() end
+end)
+et:start()
+
 -- app_watcher = hs.application.watcher.new(function(name, t, app)
 --     if t == hs.application.watcher.activated and name ~= "kitty" 
 --     then previous_app = app end end)
