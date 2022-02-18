@@ -1,4 +1,7 @@
 {
+  "suggest.maxCompleteItemCount": 10,
+  "suggest.keepCompleteopt": false,
+  "suggest.removeDuplicateItems": true,
   "snippets.ultisnips.enable": false,
   "python.analysis.diagnosticSeverityOverrides": {
     "reportOptionalSubscript": "none",

@@ -1,12 +1,11 @@
---- Reload configuration
-hs.hotkey.bind({'shift', 'cmd', 'ctrl'}, 'r', function() hs.reload() end)
-hs.alert.show("Config Loaded")
+function inspect(obj) print(hs.inspect.inspect(obj)) end
 
 -- Launcher
 alert_msg = "Launcher"
 app_shortcuts = {}
 for key, app in pairs({
     k = "kitty",
+    j = "Terminal",
     v = "Visual Studio Code",
     c = "Safari",
     s = "Slack",
@@ -14,8 +13,10 @@ for key, app in pairs({
     p = "Preview",
     o = "zoom.us",
     t = "Telegram",
-    m = "QQMusic",
+    m = "Music",
     n = "Notion",
+    a = "Activity Monitor",
+    f = "Finder",
 }) do app_shortcuts[#app_shortcuts+1] = hs.hotkey.new({}, key, function()
     if not hs.application.launchOrFocus(app) then hs.notify.show("App Lauch Failed", item.app) end
     close_launcher()
@@ -80,7 +81,7 @@ et:start()
 
 
 -- WinMgr https://github.com/miromannino/miro-windows-manager
---hs.window.animationDuration = 0
+-- hs.window.animationDuration = 0
 hs.grid.setGrid("6x6"); hs.grid.setMargins("0x0")
 pressed={up=false, down=false, left=false, right=false}
 local function winAction(direction)
@@ -111,9 +112,10 @@ local function winAction(direction)
             cell.w=(cell.w+1); if cell.w==5 then cell.w=2 end end
         if cell.w+cell.x ~= 6 then cell.x=6-cell.w end
     end, fullScreen=function()
-        if cell.x+cell.y==0 and cell.w+cell.h==12 then
-            cell.x,cell.y,cell.w,cell.h = 1,1,4,4
-        else cell.x,cell.y,cell.w,cell.h = 0,0,6,6 end
+        -- if cell.x+cell.y==0 and cell.w+cell.h==12 then
+        --     cell.x,cell.y,cell.w,cell.h = 1,1,4,4
+        -- else cell.x,cell.y,cell.w,cell.h = 0,0,6,6 end
+        cell.x,cell.y,cell.w,cell.h = 0,0,6,6
     end}
     funs[direction]()
     hs.grid.set(win, cell, screen)
@@ -149,3 +151,6 @@ end, true)
 timer:start()
 
 
+--- Reload configuration
+hs.hotkey.bind({'shift', 'cmd', 'ctrl'}, 'r', function() hs.reload() end)
+hs.alert.show("Config Loaded")

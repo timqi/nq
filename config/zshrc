@@ -58,7 +58,11 @@ brew_path="/opt/homebrew/bin/brew"
 #
 fss() { 
     host=`cat ~/.ssh/config | grep "Host " | awk '{print $2}' |grep -v "*" |fzf --layout=reverse`
-    kitty @ set-tab-title $host && ssh $host
+    if [ $host = "local" ]; then
+        kitty @ set-tab-title $host && zsh -i
+    else
+        kitty @ set-tab-title $host && ssh $host
+    fi
 }
 
 printcolors() {
