@@ -1,17 +1,15 @@
 function inspect(obj) print(hs.inspect.inspect(obj)) end
 
 -- Launcher
-alert_msg = "Launcher"
+launcher_msg = "-- Launcher --"
 app_shortcuts = {}
 for key, app in pairs({
-    k = "kitty",
     j = "Terminal",
     v = "Visual Studio Code",
     c = "Safari",
     s = "Slack",
     w = "WeChat",
-    p = "Preview",
-    o = "zoom.us",
+    z = "zoom.us",
     t = "Telegram",
     m = "Music",
     n = "Notion",
@@ -19,38 +17,31 @@ for key, app in pairs({
     f = "Finder",
 }) do app_shortcuts[#app_shortcuts+1] = hs.hotkey.new({}, key, function()
     if not hs.application.launchOrFocus(app) then hs.notify.show("App Lauch Failed", item.app) end
-    close_launcher()
-end); alert_msg = alert_msg .. "\n" .. key .. ": " .. app
-end
-function close_launcher()
+    closeAlert()
+end); launcher_msg = launcher_msg .. "\n" .. key .. ": " .. app end
+function closeAlert()
     for _, shortcut in ipairs(app_shortcuts) do shortcut:disable() end
-    hs.alert.closeSpecific(alert_id)
+    for _, shortcut in ipairs(pasteShortcuts) do shortcut:disable() end
+    hs.alert.closeAll(); collectgarbage("collect")
 end
-table.insert(app_shortcuts, hs.hotkey.new({"ctrl"}, "c", close_launcher))
-table.insert(app_shortcuts, hs.hotkey.new({"ctrl"}, "[", close_launcher))
-table.insert(app_shortcuts, hs.hotkey.new({}, "ESCAPE", close_launcher))
-table.insert(app_shortcuts, hs.hotkey.new({}, "z", close_launcher))
+app_shortcuts[#app_shortcuts+1] = hs.hotkey.new({"ctrl"}, "c", closeAlert)
+app_shortcuts[#app_shortcuts+1] = hs.hotkey.new({}, "ESCAPE", closeAlert)
 function show_launcher()
-    hs.alert.closeAll()
-    alert_id = hs.alert.show(alert_msg, {
+    hs.alert.closeAll(); hs.alert.show(launcher_msg, {
         -- http://www.hammerspoon.org/docs/hs.alert.html#defaultStyle
-        fillColor = {white = 0, alpha = 0.9},
-        strokeColor = {white = 1, alpha = 0.3},
-        textColor = {white = 1, alpha = 0.9},
-        textFont = "Menlo", textSize = 18, radius = 5,
+        textFont="Menlo", textSize=22, radius=5
     }, hs.screen.mainScreen(), true)
-    for i, shortcut in ipairs(app_shortcuts) do shortcut:enable() end
+    for _, shortcut in ipairs(app_shortcuts) do shortcut:enable() end
 end
 hs.hotkey.bind({"ctrl"}, "tab", show_launcher)
 
--- double click to show lancher
-eventtap = hs.eventtap
-events = eventtap.event.types
+-- Double click to show lancher
+events = hs.eventtap.event.types
 first_ts, first_down, second_down = 0, false, false
 reset_double = function() first_ts, first_down, second_down = 0, false, false end
-et = eventtap.new({events.flagsChanged, events.keyDown}, function(ev)
+et = hs.eventtap.new({events.flagsChanged, events.keyDown}, function(ev)
     if hs.timer.secondsSinceEpoch() - first_ts > 0.6 then reset_double() end
-    no_flags, only_flag = true, ev:getFlags().shift
+    local no_flags, only_flag = true, ev:getFlags().shift
     for k, v in pairs(ev:getFlags()) do
         if v then no_flags = false end
         if k ~= "shift" and v then only_flag = false end
@@ -66,6 +57,7 @@ et = eventtap.new({events.flagsChanged, events.keyDown}, function(ev)
 end)
 et:start()
 
+-- global hotkey switch to or from application
 -- app_watcher = hs.application.watcher.new(function(name, t, app)
 --     if t == hs.application.watcher.activated and name ~= "kitty" 
 --     then previous_app = app end end)
@@ -126,7 +118,6 @@ hs.hotkey.bind(hyper, "k", function() winAction("up") end, function() pressed.up
 hs.hotkey.bind(hyper, "h", function() winAction("left") end, function() pressed.left=false end)
 hs.hotkey.bind(hyper, "l", function() winAction("right") end, function() pressed.right=false end)
 hs.hotkey.bind(hyper, "g", function() winAction("fullScreen") end)
--- move to next screen
 hs.hotkey.bind(hyper, "n", function()
     local win = hs.window.focusedWindow()
     local screen = win:screen()
@@ -135,11 +126,9 @@ end)
 
 
 -- Bitcoin menubar
-menu = hs.menubar.new():setMenu({
-    {title="Binance", fn=function() hs.urlevent.openURL("https://www.binance.com/zh-CN/trade/BTC_USDT?layout=pro") end},
-    {title="ExoCharts", fn=function() hs.urlevent.openURL("https://exocharts.com/") end},
-    {title="Markets", fn=function() hs.urlevent.openURL("https://www.binance.com/zh-CN/markets") end},
-})
+menu = hs.menubar.new():setClickCallback(function()
+    hs.urlevent.openURL("https://www.binance.com/zh-CN/trade/BTC_USDT?layout=pro")
+end)
 timer = hs.timer.new(5, function()
     hs.http.asyncGet("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT", nil,
         function(status, body)
@@ -151,6 +140,55 @@ end, true)
 timer:start()
 
 
+-- Pasteboard manger
+hs.pasteboard.watcher.interval(2)
+function readPasteboardTable()
+    local file = io.open(os.getenv("HOME").."/.pasteboard", "r")
+    if file == nil then return {} end
+    local content = file:read("*a"); file:close()
+    if content == "" then return {} end
+    return hs.json.decode(content)
+end
+pasteShortcuts, pb_watcher = {}, hs.pasteboard.watcher.new(function()
+    local text = ""
+    for idx, uti in ipairs(hs.pasteboard.contentTypes()) do
+        if uti == "public.utf8-plain-text" then text = hs.pasteboard.readString() end
+    end
+    if text == "" then return end
+    local arr = readPasteboardTable()
+    for idx, el in ipairs(arr) do if el == text then table.remove(arr, idx) end end
+    table.insert(arr, 1, text)
+    while #arr >= 8 do table.remove(arr, #arr) end
+    local file = io.open(os.getenv("HOME").."/.pasteboard", "w")
+    file:write(hs.json.encode(arr))
+    file:close()
+end)
+pb_watcher:start()
+function pasteSelect(idx)
+    hs.pasteboard.setContents(readPasteboardTable()[idx])
+    hs.eventtap.keyStroke({"cmd"}, "v")
+    closeAlert()
+end
+for idx=1,7 do key = string.char(96+idx)
+    pasteShortcuts[#pasteShortcuts+1] = hs.hotkey.new({}, key, 
+        function() pasteSelect(idx) end)
+end
+pasteShortcuts[#pasteShortcuts+1] = hs.hotkey.new({}, "ESCAPE", closeAlert)
+pasteShortcuts[#pasteShortcuts+1] = hs.hotkey.new({"ctrl"}, "c", closeAlert)
+hs.hotkey.bind({"shift", "cmd"}, "v", function()
+    hs.alert.closeAll()
+    local msg = "-- Pasteboard --"
+    for idx, el in ipairs(readPasteboardTable()) do
+        msg = msg.."\n"..string.char(96+idx)..": "..el:gsub("[\r\n]+", ""):sub(1, 50)
+    end
+    hs.alert.show(msg, {radius=5}, hs.screen.mainScreen(), true)
+    for _, shortcut in ipairs(pasteShortcuts) do shortcut:enable() end
+end)
+
+
 --- Reload configuration
-hs.hotkey.bind({'shift', 'cmd', 'ctrl'}, 'r', function() hs.reload() end)
+hs.hotkey.bind({'shift', 'cmd', 'ctrl'}, 'r', function()
+    timer:stop(); pb_watcher:stop(); hs.reload()
+end)
 hs.alert.show("Config Loaded")
+hs.logger.setGlobalLogLevel(1)
