@@ -33,11 +33,12 @@ CONDA_INIT_SCRIPT="$local_dir/conda/etc/profile.d/conda.sh"
 [ -f $CONDA_INIT_SCRIPT ] && . $CONDA_INIT_SCRIPT
 
 
-export EDITOR=nv
+export EDITOR=vim
 export LANG=en_US.UTF-8
 export LC_ALL=$LANG
 export TERM="xterm-256color"
 export PYTHONUSERBASE=$HOME/.local
+export PYTHONPATH=.
 
 
 (( ${+commands[dircolors]} )) &&\
@@ -58,6 +59,8 @@ brew_path="/opt/homebrew/bin/brew"
 #
 fss() { 
     host=`cat ~/.ssh/config | grep "Host " | awk '{print $2}' |grep -v "*" |fzf --layout=reverse`
+    [ -n "$TMUX" ] && tmux rename-window "$host"
+    [ -n "$KITTY_PID" ] && kitty @ set-tab-title "$host"
     if [ $host != "local" ]; then
         ssh $host
     fi

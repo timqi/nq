@@ -1,0 +1,45 @@
+# https://github.com/alacritty/alacritty/blob/master/alacritty.yml
+window:
+  opacity: 0.80
+  decorations: none
+  startup_mode: Windowed
+
+scrolling:
+  history: 200
+
+font:
+  size: 17
+  normal:
+    family: Fira Code
+    style: Light
+
+bell:
+  animation: EaseOutCubic
+  duration: 100
+  color: '#444444'
+
+selection:
+  semantic_escape_chars: ",│`|:\"' ()[]{}<>\t"
+
+shell:
+  program: /opt/homebrew/bin/tmux
+  args:
+    - new-session
+    - -A
+    - -s
+    - base
+
+colors:
+  primary:
+    background: '0x1E1E1E'
+    foreground: '0xD4D4D4'
+  normal:
+    black:   '0x1E1E1E'
+    red:     '0xF44747'
+    green:   '0x608B4E'
+    yellow:  '0xD7BA7D'
+    blue:    '0x569CD6'
+    magenta: '0xC586C0'
+    cyan:    '0x9CDCFE'
+    white:   '0xD4D4D4'
+

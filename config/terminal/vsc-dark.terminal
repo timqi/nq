@@ -1501,6 +1501,8 @@
 	<false/>
 	<key>CommandString</key>
 	<string>fss</string>
+	<key>CursorBlink</key>
+	<true/>
 	<key>CursorColor</key>
 	<data>
 	YnBsaXN0MDDUAQIDBAUGBwpYJHZlcnNpb25ZJGFyY2hpdmVyVCR0b3BYJG9iamVjdHMS
@@ -1703,7 +1705,7 @@
 	<key>ShouldLimitScrollback</key>
 	<integer>1</integer>
 	<key>ShouldRestoreContent</key>
-	<true/>
+	<false/>
 	<key>ShowDimensionsInTitle</key>
 	<false/>
 	<key>ShowShellCommandInTitle</key>
@@ -1902,5 +1904,7 @@
 	<integer>48</integer>
 	<key>type</key>
 	<string>Window Settings</string>
+	<key>warnOnShellCloseAction</key>
+	<integer>0</integer>
 </dict>
 </plist>

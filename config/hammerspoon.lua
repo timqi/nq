@@ -1,24 +1,52 @@
 function inspect(obj) print(hs.inspect.inspect(obj)) end
 
 -- Launcher
+pos = {full = {x=0,y=0,w=6,h=6},
+    left = {x=0,y=0,w=3,h=6},
+    right = {x=3,y=0,w=3,h=6},}
 launcher_msg = "-- Launcher --"
 app_shortcuts = {}
-for key, app in pairs({
-    j = "Terminal",
-    v = "Visual Studio Code",
-    c = "Safari",
-    s = "Slack",
-    w = "WeChat",
-    z = "zoom.us",
-    t = "Telegram",
-    m = "Music",
-    n = "Notion",
-    a = "Activity Monitor",
-    f = "Finder",
-}) do app_shortcuts[#app_shortcuts+1] = hs.hotkey.new({}, key, function()
-    if not hs.application.launchOrFocus(app) then hs.notify.show("App Lauch Failed", item.app) end
+app_table = {
+    j = {a="Alacritty", g=pos.right, gb=pos.full},
+    v = {a="Visual Studio Code", g=pos.right, gb=pos.full},
+    c = {a="Safari", g=pos.left, gb=pos.full},
+    x = {a="Google Chrome", g=pos.left, gb=pos.full},
+    s = {a="Slack", g=pos.left, gb=pos.full},
+    w = {a="WeChat",},
+    a = {a="Music",},
+    m = {a="Activity Monitor",},
+    f = {a="Finder",},
+    e = {a="Eudb_en",},
+    z = {a="zoom.us"}
+}
+function handle_app_launch(app, pos)
+    hs.application.launchOrFocus(app["a"])
+    local win = hs.window.frontmostWindow() local screen = win:screen()
+    if not win or not screen then return end
+    if pos ~= nil then hs.grid.set(win, pos, screen); return; end
+    if screen:name() == "Built-in Retina Display" then
+        if app["gb"] then hs.grid.set(win, app["gb"], screen) end
+    elseif app["g"] then
+        if hs.grid.get(win, screen).h == 6 then return end
+        hs.grid.set(win, app["g"], screen)
+    end
+end
+for key in pairs(app_table) do
+    launcher_msg = launcher_msg .. "\n" .. key .. ": " .. app_table[key]["a"]
+    app_shortcuts[#app_shortcuts+1] = hs.hotkey.new({}, key, function()
+        closeAlert()
+        handle_app_launch(app_table[key])
+    end);
+end
+
+-- handle toolsets
+launcher_msg = launcher_msg .. "\n-- Sets\nd: browser,vsc"
+app_shortcuts[#app_shortcuts+1] = hs.hotkey.new({}, "d", function()
     closeAlert()
-end); launcher_msg = launcher_msg .. "\n" .. key .. ": " .. app end
+    handle_app_launch(app_table["c"], pos.left)
+    handle_app_launch(app_table["v"], pos.right)
+end)
+
 function closeAlert()
     for _, shortcut in ipairs(app_shortcuts) do shortcut:disable() end
     for _, shortcut in ipairs(pasteShortcuts) do shortcut:disable() end
@@ -33,43 +61,7 @@ function show_launcher()
     }, hs.screen.mainScreen(), true)
     for _, shortcut in ipairs(app_shortcuts) do shortcut:enable() end
 end
-hs.hotkey.bind({"ctrl"}, "tab", show_launcher)
-
--- Double click to show lancher
-events = hs.eventtap.event.types
-first_ts, first_down, second_down = 0, false, false
-reset_double = function() first_ts, first_down, second_down = 0, false, false end
-et = hs.eventtap.new({events.flagsChanged, events.keyDown}, function(ev)
-    if hs.timer.secondsSinceEpoch() - first_ts > 0.6 then reset_double() end
-    local no_flags, only_flag = true, ev:getFlags().shift
-    for k, v in pairs(ev:getFlags()) do
-        if v then no_flags = false end
-        if k ~= "shift" and v then only_flag = false end
-    end
-    if ev:getType() == events.flagsChanged then
-        if no_flags and first_down and second_down then
-            show_launcher(); reset_double()
-        elseif only_flag and not first_down then
-            first_down = true first_ts = hs.timer.secondsSinceEpoch()
-        elseif only_flag and first_down then second_down = true
-        elseif not no_flags then reset_double() end
-    else reset_double() end
-end)
-et:start()
-
--- global hotkey switch to or from application
--- app_watcher = hs.application.watcher.new(function(name, t, app)
---     if t == hs.application.watcher.activated and name ~= "kitty" 
---     then previous_app = app end end)
--- app_watcher:start()
--- hs.hotkey.bind({"ctrl"}, "`", function ()
---     local app = hs.window.focusedWindow()
---     if not app then hs.application.launchOrFocus("Kitty") end
---     local app = app:application():name()
---     if app ~= "kitty" then hs.application.launchOrFocus("Kitty")
---     elseif app == "kitty" and previous_app
---     then previous_app:activate() end
--- end)
+hs.hotkey.bind({"command"}, "d", show_launcher)
 
 
 -- WinMgr https://github.com/miromannino/miro-windows-manager
@@ -140,7 +132,7 @@ end, true)
 timer:start()
 
 
--- Pasteboard manger
+-- Pasteboard manager
 hs.pasteboard.watcher.interval(2)
 function readPasteboardTable()
     local file = io.open(os.getenv("HOME").."/.pasteboard", "r")

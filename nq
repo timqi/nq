@@ -148,8 +148,9 @@ install_config() {
     link "$conf_dir/tmux.conf" "$HOME/.tmux.conf"
 
     case `uname -a` in *Darwin*)
-        [ ! -d $HOME/.config/kitty ] && mkdir -p $HOME/.config/kitty
-        link "$conf_dir/kitty.conf" "$HOME/.config/kitty"
+        #[ ! -d $HOME/.config/kitty ] && mkdir -p $HOME/.config/kitty
+        #link "$conf_dir/terminal/kitty.conf" "$HOME/.config/kitty"
+        link "$conf_dir/terminal/alacritty.yml" "$HOME/.alacritty.yml"
         [ ! -d "$HOME/.hammerspoon" ] && mkdir -p "$HOME/.hammerspoon"
         link "$conf_dir/hammerspoon.lua" "$HOME/.hammerspoon/init.lua" ;;
     esac

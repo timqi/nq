@@ -8,6 +8,9 @@ sh autogen.sh
 sudo make install
 
 
+# To attach or create a session by name
+tmux new-session -A -s {name}
+
 # To restore tmux session:
 tmux attach
 
