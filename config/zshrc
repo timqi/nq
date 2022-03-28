@@ -62,7 +62,7 @@ fss() {
     [ -n "$TMUX" ] && tmux rename-window "$host"
     [ -n "$KITTY_PID" ] && kitty @ set-tab-title "$host"
     if [ $host != "local" ]; then
-        ssh $host
+        exec ssh $host
     fi
 }
 

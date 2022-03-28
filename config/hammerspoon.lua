@@ -1,4 +1,5 @@
 function inspect(obj) print(hs.inspect.inspect(obj)) end
+spaces = require("hs.spaces")
 
 -- Launcher
 pos = {full = {x=0,y=0,w=6,h=6},
@@ -9,17 +10,27 @@ app_shortcuts = {}
 app_table = {
     j = {a="Alacritty", g=pos.right, gb=pos.full},
     v = {a="Visual Studio Code", g=pos.right, gb=pos.full},
-    c = {a="Safari", g=pos.left, gb=pos.full},
-    x = {a="Google Chrome", g=pos.left, gb=pos.full},
+    x = {a="Safari", g=pos.left, gb=pos.full},
+    c = {a="Google Chrome", g=pos.left, gb=pos.full},
     s = {a="Slack", g=pos.left, gb=pos.full},
     w = {a="WeChat",},
     a = {a="Music",},
     m = {a="Activity Monitor",},
     f = {a="Finder",},
     e = {a="Eudb_en",},
-    z = {a="zoom.us"}
+    z = {a="zoom.us"},
+    p = {a="Preview"},
 }
 function handle_app_launch(app, pos)
+    -- Move terminal app to the current space
+    if app["a"] == "Alacritty" then
+        local screenUUID = hs.screen.mainScreen():getUUID()
+        local activeSpace = spaces.activeSpaces()[screenUUID]
+        local term = hs.application.get(app["a"])
+        if term and term:mainWindow() then
+            spaces.moveWindowToSpace(term:mainWindow(), activeSpace)
+        end
+    end
     hs.application.launchOrFocus(app["a"])
     local win = hs.window.frontmostWindow() local screen = win:screen()
     if not win or not screen then return end
@@ -62,10 +73,16 @@ function show_launcher()
     for _, shortcut in ipairs(app_shortcuts) do shortcut:enable() end
 end
 hs.hotkey.bind({"command"}, "d", show_launcher)
+hs.hotkey.bind({"ctrl"}, "`", function()
+    local app = hs.window.focusedWindow():application()
+    if app:name() == "Alacritty" then app:hide()
+    elseif app:name() == "Code" then hs.eventtap.keyStroke({"ctrl"}, "`", 200000, app)
+    else handle_app_launch(app_table["j"]) end
+end)
 
 
 -- WinMgr https://github.com/miromannino/miro-windows-manager
--- hs.window.animationDuration = 0
+hs.window.animationDuration = 0
 hs.grid.setGrid("6x6"); hs.grid.setMargins("0x0")
 pressed={up=false, down=false, left=false, right=false}
 local function winAction(direction)
