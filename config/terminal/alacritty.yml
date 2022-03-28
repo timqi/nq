@@ -1,6 +1,6 @@
 # https://github.com/alacritty/alacritty/blob/master/alacritty.yml
 window:
-  opacity: 0.90
+  opacity: 0.86
   decorations: none
   startup_mode: Windowed
 
