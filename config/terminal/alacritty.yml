@@ -43,24 +43,24 @@ shell:
 #    cyan:    '0x9CDCFE'
 #    white:   '0xD4D4D4'
 
-# <C-L> \x0c
+# <C-L> \x0c; <C-X> \x18
 key_bindings:
   # for tmux
-  - { key: T, mods: Command, chars: "\x0c\x63" } # create new window
-  - { key: Comma, mods: Command, chars: "\x0c\x2c" } # rename window
-  - { key: K, mods: Command, chars: "\x0c\x73" } # select session
-  - { key: LBracket, mods: Command|Shift, chars: "\x0c\x70" } # previous window
-  - { key: RBracket, mods: Command|Shift, chars: "\x0c\x6e" } # next window
-  - { key: N, mods: Command, chars: "\x0c\x25" } # split, left&right
-  - { key: N, mods: Command|Shift, chars: "\x0c\x22" } # split, top&bottom
-  - { key: W, mods: Command, chars: "\x0c\x26" } # kill window
-  - { key: Key0, mods: Command, chars: "\x0c\x30" } # select window 0
-  - { key: Key1, mods: Command, chars: "\x0c\x31" } # select window 1
-  - { key: Key2, mods: Command, chars: "\x0c\x32" } # select window 2
-  - { key: Key3, mods: Command, chars: "\x0c\x33" } # select window 3
-  - { key: Key4, mods: Command, chars: "\x0c\x34" } # select window 4
-  - { key: Key5, mods: Command, chars: "\x0c\x35" } # select window 5
-  - { key: Key6, mods: Command, chars: "\x0c\x36" } # select window 6
-  - { key: Key7, mods: Command, chars: "\x0c\x37" } # select window 7
-  - { key: Key8, mods: Command, chars: "\x0c\x38" } # select window 8
-  - { key: Key9, mods: Command, chars: "\x0c\x39" } # select window 9
+  - { key: T, mods: Command, chars: "\x18\x63" } # create new window
+  - { key: Comma, mods: Command, chars: "\x18\x2c" } # rename window
+  - { key: K, mods: Command, chars: "\x18\x73" } # select session
+  - { key: LBracket, mods: Command|Shift, chars: "\x18\x70" } # previous window
+  - { key: RBracket, mods: Command|Shift, chars: "\x18\x6e" } # next window
+  - { key: N, mods: Command, chars: "\x18\x25" } # split, left&right
+  - { key: N, mods: Command|Shift, chars: "\x18\x22" } # split, top&bottom
+  - { key: W, mods: Command, chars: "\x18\x26" } # kill window
+  - { key: Key0, mods: Command, chars: "\x18\x30" } # select window 0
+  - { key: Key1, mods: Command, chars: "\x18\x31" } # select window 1
+  - { key: Key2, mods: Command, chars: "\x18\x32" } # select window 2
+  - { key: Key3, mods: Command, chars: "\x18\x33" } # select window 3
+  - { key: Key4, mods: Command, chars: "\x18\x34" } # select window 4
+  - { key: Key5, mods: Command, chars: "\x18\x35" } # select window 5
+  - { key: Key6, mods: Command, chars: "\x18\x36" } # select window 6
+  - { key: Key7, mods: Command, chars: "\x18\x37" } # select window 7
+  - { key: Key8, mods: Command, chars: "\x18\x38" } # select window 8
+  - { key: Key9, mods: Command, chars: "\x18\x39" } # select window 9
