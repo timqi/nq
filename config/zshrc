@@ -48,6 +48,7 @@ alias grep='grep --color=auto'
 alias abrew='arch -arm64 brew'
 alias g='git'
 alias pipx='PYTHONUSERBASE=$HOME/.local /usr/bin/python3 -m pip'
+alias bat='bat --theme="Visual Studio Dark+"'
 
 # init homebrew
 brew_path="/opt/homebrew/bin/brew"
@@ -121,4 +122,3 @@ PROMPT=$'%(?:%F{2}:%F{1})${LOCAL_MACHINE_NAME:->} %B%F{4}%c%b%F{8}${__git_branch
 
 # Auto source ~/.platformrc
 [ -f "$HOME/.platformrc" ] && . "$HOME/.platformrc"
-

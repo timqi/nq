@@ -37,7 +37,9 @@ install_gh() {
         fzf=junegunn/fzf;linux_amd64.tar.gz;darwin_arm64.zip \
         zoxide=ajeetdsouza/zoxide;x86_64-unknown-linux-musl;aarch64-apple-darwin \
         jq=stedolan/jq;linux64;osx-amd64 \
-        cheat=cheat/cheat;linux-amd64;darwin-amd64"
+        cheat=cheat/cheat;linux-amd64;darwin-amd64 \
+        delta=dandavison/delta;x86_64-unknown-linux-musl;x86_64-apple-darwin \
+        bat=sharkdp/bat;x86_64-unknown-linux-musl;x86_64-apple-darwin "
     for item in $arr; do
         if [ `echo $item|cut -d "=" -f1` != "$1" ]; then continue; fi
         repo=`echo $item|cut -d "=" -f2|cut -d ";" -f1`
@@ -57,13 +59,15 @@ install_gh() {
     "zoxide") curr_ver=`command -v zoxide >/dev/null && echo $(zoxide -V|cut -d " " -f2) || echo "0.0.0"`;;
     "jq")     curr_ver=`command -v jq >/dev/null && echo $(jq --version|head -n 1|cut -d "-" -f2) || echo "0.0.0"`;;
     "cheat")  curr_ver=`command -v cheat >/dev/null && echo $(cheat -v) || echo "0.0.0"`;;
+    "delta")  curr_ver=`command -v delta >/dev/null && echo $(delta -V|head -n 1|cut -d " " -f2) || echo "0.0.0"`;;
+    "bat")  curr_ver=`command -v delta >/dev/null && echo "v$(bat -V|head -n 1|cut -d ' ' -f2)" || echo "0.0.0"`;;
     esac
 
     url="https://api.github.com/repos/$repo/releases/latest"
     lastest_ver=`curl -s ${url} --connect-timeout 10| grep 'tag_name' | cut -d\" -f4`
     [ "$curr_ver" = "$lastest_ver" ] && log "$app: $curr_ver, is the newest" && return
 
-    log "Will install: $app:$lastest_ver $arch; curr_ver: $curr_ver"
+    log "Will install: $app. lastest_ver:'$lastest_ver' arch:'$arch'; curr_ver:'$curr_ver'"
     base_url="https://github.com/$repo/releases/download/$lastest_ver"
     case $app in
     "rg")     url="$base_url/ripgrep-$lastest_ver-$arch.tar.gz";;
@@ -71,6 +75,8 @@ install_gh() {
     "zoxide") url="$base_url/zoxide-$lastest_ver-$arch.tar.gz";;
     "jq")     url="$base_url/jq-$arch";;
     "cheat")  url="$base_url/cheat-$arch.gz";;
+    "delta")  url="$base_url/delta-$lastest_ver-$arch.tar.gz";;
+    "bat")    url="$base_url/bat-$lastest_ver-$arch.tar.gz";;
     esac
 
     tar_file="$tmp_dir/$app.tar.gz"
@@ -89,6 +95,7 @@ install_gh() {
 
     case $app in
     rg|fzf|zoxide) cp "$tmp_app_dir/$app" $bin_dir;;
+    delta|bat) cp "$tmp_app_dir/$app-$lastest_ver-$arch/$app" $bin_dir;;
     jq) chmod +x "$bin_dir/$app";;
     cheat) chmod +x "$bin_dir/$app"
         cheat_dir=$HOME/.config/cheat
@@ -246,7 +253,7 @@ install_pytools() {
 
 case $1 in
     vimrc) install_vimrc;;
-    rg|fzf|zoxide|jq|cheat) install_gh $1;;
+    rg|fzf|zoxide|jq|cheat|delta|bat) install_gh $1;;
     go) install_go;;
     node) nn install;;
     conda) install_conda;;
@@ -257,7 +264,8 @@ case $1 in
     all) install_vimrc; install_gh zoxide; install_go;
         install_gh jq; install_gh cheat;
         nn install; install_conda; install_zplug;
-        install_ctags; install_config; install_pytools;;
+        install_ctags; install_config; install_pytools;
+        install_gh delta; install_gh bat;;
 
     basic) install_vimrc basic; install_zplug; install_config; install_gh jq;
         install_gh cheat; install_gh zoxide;;
@@ -270,7 +278,7 @@ case $1 in
     *) log "np commit: backup current config; need NQTOKEN env"
        log "np update: update to newest version of nq"
        log ""
-       log "supported app: rg,fzf,zoxide,vimrc,zplug,go,node,conda,ctags,jq,cheat,pytools,config"
+       log "supported app: rg,fzf,zoxide,delta,bat,vimrc,zplug,go,node,conda,ctags,jq,cheat,pytools,config"
        log "supported groups:"
        log "  all: install all components"
        log "  basic: basic feature set; vimrc basic,zplug,jq,cheat,config"

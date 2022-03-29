@@ -1,5 +1,15 @@
+[core]
+    pager = delta
+
+[interactive]
+    diffFilter = delta --color-only --feature=interactive
+
+[merge]
+    conflictstyle = diff3
+
 [log]
     date = format-local:%Y%m%d %H:%M
+
 [format]
     pretty = format:%C(yellow)%h %C(cyan)%cd %Cblue%aN %Creset%s%C(auto)%d
 
@@ -17,8 +27,32 @@
     l = log --color=always -200
 
 [user]
-	email = qiqi@f2pool.com
+	email = i@timqi.com
+
 [init]
 	defaultBranch = main
+
 [pull]
 	rebase = false
+
+[delta "interactive"]
+    keep-plus-minus-markers = false
+
+[delta]
+    features = custome-feature
+    side-by-side = false
+
+
+[delta "custome-feature"]
+    # author: https://github.com/clnoll
+    hunk-header-decoration-style = "#5e5e5e"
+    hunk-header-file-style = "#999999"
+    hunk-header-line-number-style = bold "#999999"
+    hunk-header-style = file line-number syntax
+    line-numbers = true
+    line-numbers-left-format = {nm:^4}
+    line-numbers-right-format = {np:^4}│
+    line-numbers-zero-style = "#999999"
+    plus-style = syntax normal
+    syntax-theme = "Visual Studio Dark+"
+
