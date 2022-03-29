@@ -45,7 +45,8 @@ let g:tmux_navigator_save_on_switch = 2
 
 Plug 'junegunn/fzf'
 Plug 'junegunn/fzf.vim'
-noremap  <c-p>      :<C-U>call fzf#vim#files('')<CR>
+noremap  <c-w>      :<C-U>call fzf#vim#files('')<CR>
+noremap  <c-e>      :<C-U>call fzf#vim#history()<CR>
 nnoremap <leader>p  :<C-U>call fzf#vim#files('')<CR>
 nnoremap <leader>e  :<C-U>call fzf#vim#history()<CR>
 nnoremap <leader>m  :<C-U>call fzf#vim#marks()<CR>
