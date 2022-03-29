@@ -1,3 +1,4 @@
+#!/usr/bin/env zsh
 [ -z "$PS1" ] && return
 # basic config
 setopt SHARE_HISTORY
@@ -48,7 +49,8 @@ alias grep='grep --color=auto'
 alias abrew='arch -arm64 brew'
 alias g='git'
 alias pipx='PYTHONUSERBASE=$HOME/.local /usr/bin/python3 -m pip'
-alias bat='bat --theme="Visual Studio Dark+"'
+alias bat='bat --theme="Visual Studio Dark+" --style=numbers'
+export BAT_THEME="Visual Studio Dark+"
 
 # init homebrew
 brew_path="/opt/homebrew/bin/brew"
