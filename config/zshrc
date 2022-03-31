@@ -64,8 +64,12 @@ fss() {
     host=`cat ~/.ssh/config | grep "Host " | awk '{print $2}' |grep -v "*" |fzf --layout=reverse`
     [ -n "$TMUX" ] && tmux rename-window "$host"
     [ -n "$KITTY_PID" ] && kitty @ set-tab-title "$host"
-    if [ $host != "local" ]; then
-        exec ssh $host
+    if [ $host = "ali-cnhkb-dev-host-00" ]; then
+        while true; do
+            ssh -t $host "tmux new-session -A -s mono"
+        done
+    elif [ $host != "local" ]; then
+        ssh $host
     fi
 }
 

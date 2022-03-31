@@ -1,6 +1,6 @@
 # https://github.com/alacritty/alacritty/blob/master/alacritty.yml
 window:
-  opacity: 0.86
+  opacity: 0.8
   decorations: none
   startup_mode: Windowed
   padding:
@@ -8,7 +8,7 @@ window:
     y: 2
 
 scrolling:
-  history: 200
+  history: 0
 
 font:
   size: 18

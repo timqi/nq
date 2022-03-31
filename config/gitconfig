@@ -51,6 +51,7 @@
     hunk-header-file-style = bold "#999999"
     hunk-header-line-number-style = bold "#999999"
     hunk-header-style = file line-number syntax
+    hunk-label = "██diff➠"
     file-style = omit
     line-numbers = true
     line-numbers-left-format = {nm}│
