@@ -129,7 +129,8 @@ nn() {
             esac
             nn use $ver;;
         rm) rm -rf $node_path;;
-        use) link_dir_bin "$local_dir/node/$ver/bin";;
+        #use) link_dir_bin "$local_dir/node/$ver/bin";;
+        use) rm -f "$local_dir/bin/node" && link "$local_dir/node/$ver/bin" "$local_dir/bin/node";;
         *) echo "  nn list"
            echo "  nn use [ver default:$default_ver]"
            echo "  nn install [ver default:$default_ver]"
@@ -142,7 +143,8 @@ install_conda() {
     command -v conda >/dev/null && log "conda exist, return" && return
     case `uname -a` in
     *Linux*x86_64*) url="https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh";;
-    *Darwin*ARM64*) url="https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-arm64.sh";;
+    *Darwin*ARM64*) url="https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh";;
+    #*Darwin*ARM64*) url="https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-arm64.sh";;
     esac
     curl --progress-bar -o "$tmp_dir/conda.sh" $url -L
     sh "$tmp_dir/conda.sh" -b -f -s -p "$local_dir/conda"

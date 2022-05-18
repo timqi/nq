@@ -14,12 +14,14 @@ app_table = {
     c = {a="Google Chrome", g=pos.left, gb=pos.full},
     s = {a="Slack", g=pos.left, gb=pos.full},
     w = {a="WeChat",},
-    a = {a="Music",},
+    a = {a="QQMusic",},
     m = {a="Activity Monitor",},
     f = {a="Finder",},
     e = {a="Eudb_en",},
     z = {a="zoom.us"},
+    n = {a="Notion"},
     p = {a="Preview"},
+    t = {a="Telegram"},
 }
 function handle_app_launch(app, pos)
     -- Move terminal app to the current space
