@@ -23,7 +23,7 @@ local_dir="$HOME/.local"
 # Handle PATH
 case $PATH in 
     *$local_dir/bin*) ;;
-    *) PATH="$HOME/go/bin:$local_dir/bin:$local_dir/bin/node:/usr/local/bin:$PATH"
+    *) PATH="$HOME/go/bin:$local_dir/bin:$local_dir/bin/node:$local_dir/python/bin:/usr/local/bin:$PATH"
        export PATH;;
 esac
 
@@ -39,16 +39,15 @@ export LANG=en_US.UTF-8
 export LC_ALL=$LANG
 export TERM="xterm-256color"
 export PYTHONUSERBASE=$HOME/.local
-export PYTHONPATH=.
+export PYTHONPATH=".:$local_dir/python/lib/python/site-packages"
 
 
 (( ${+commands[dircolors]} )) &&\
-  alias ls='ls --group-directories-first --color=auto' ||\
-  alias ls='ls -G'
+[ `uname -s` = "Darwin" ] && alias ls='ls -G' || alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 alias abrew='arch -arm64 brew'
 alias g='git'
-alias pipx='PYTHONUSERBASE=$HOME/.local /usr/bin/python3 -m pip'
+alias pipx='PYTHONUSERBASE=$HOME/.local/python /usr/bin/python3 -m pip'
 alias bat='bat --theme="Visual Studio Dark+" --style=numbers'
 export BAT_THEME="Visual Studio Dark+"
 
@@ -64,13 +63,15 @@ fss() {
     host=`cat ~/.ssh/config | grep "Host " | awk '{print $2}' |grep -v "*" |fzf --layout=reverse`
     [ -n "$TMUX" ] && tmux rename-window "$host"
     [ -n "$KITTY_PID" ] && kitty @ set-tab-title "$host"
-    if [ $host = "ali-cnhkb-dev-host-00" ]; then
-        while true; do
-            ssh -t $host "tmux new-session -A -s mono"
-        done
-    elif [ $host != "local" ]; then
-        ssh $host
-    fi
+    echo -en "\033]0;$host\a"
+    ssh $host
+    # if [ $host = "ali-cnhkb-dev-host-00" ]; then
+    #     while true; do
+    #         ssh -t $host "tmux new-session -A -s mono"
+    #     done
+    # elif [ $host != "local" ]; then
+    #     ssh $host
+    # fi
 }
 
 printcolors() {
@@ -87,7 +88,6 @@ dump_completions() {
     rm -f ~/.zcompdump
     compinit
 }
-
 
 
 # fzf

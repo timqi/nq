@@ -8,10 +8,10 @@ pos = {full = {x=0,y=0,w=6,h=6},
 launcher_msg = "-- Launcher --"
 app_shortcuts = {}
 app_table = {
-    j = {a="Alacritty", g=pos.right, gb=pos.full},
+    j = {a="WezTerm", g=pos.full, gb=pos.full},
     v = {a="Visual Studio Code", g=pos.right, gb=pos.full},
-    x = {a="Safari", g=pos.left, gb=pos.full},
     c = {a="Google Chrome", g=pos.left, gb=pos.full},
+    -- x = {a="Safari", g=pos.left, gb=pos.full},
     s = {a="Slack", g=pos.left, gb=pos.full},
     w = {a="WeChat",},
     a = {a="QQMusic",},
@@ -25,7 +25,7 @@ app_table = {
 }
 function handle_app_launch(app, pos)
     -- Move terminal app to the current space
-    if app["a"] == "Alacritty" then
+    if app["a"] == app_table["j"]["a"] then
         local screenUUID = hs.screen.mainScreen():getUUID()
         local activeSpace = spaces.activeSpaces()[screenUUID]
         local term = hs.application.get(app["a"])
@@ -75,12 +75,12 @@ function show_launcher()
     for _, shortcut in ipairs(app_shortcuts) do shortcut:enable() end
 end
 hs.hotkey.bind({"command"}, "d", show_launcher)
-hs.hotkey.bind({"ctrl"}, "`", function()
-    local app = hs.window.focusedWindow():application()
-    if app:name() == "Alacritty" then app:hide()
-    elseif app:name() == "Code" then hs.eventtap.keyStroke({"ctrl"}, "`", 200000, app)
-    else handle_app_launch(app_table["j"]) end
-end)
+-- hs.hotkey.bind({"ctrl"}, "`", function()
+--     local app = hs.window.focusedWindow():application()
+--     if app:name() == "iTerm2" then app:hide()
+--     elseif app:name() == "Code" then hs.eventtap.keyStroke({"ctrl"}, "`", 200000, app)
+--     else handle_app_launch(app_table["j"]) end
+-- end)
 
 
 -- WinMgr https://github.com/miromannino/miro-windows-manager

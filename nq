@@ -143,8 +143,8 @@ install_conda() {
     command -v conda >/dev/null && log "conda exist, return" && return
     case `uname -a` in
     *Linux*x86_64*) url="https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh";;
-    *Darwin*ARM64*) url="https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh";;
-    #*Darwin*ARM64*) url="https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-arm64.sh";;
+    #*Darwin*ARM64*) url="https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-x86_64.sh";;
+    *Darwin*ARM64*) url="https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-arm64.sh";;
     esac
     curl --progress-bar -o "$tmp_dir/conda.sh" $url -L
     sh "$tmp_dir/conda.sh" -b -f -s -p "$local_dir/conda"
@@ -157,9 +157,7 @@ install_config() {
     link "$conf_dir/tmux.conf" "$HOME/.tmux.conf"
 
     case `uname -a` in *Darwin*)
-        #[ ! -d $HOME/.config/kitty ] && mkdir -p $HOME/.config/kitty
-        #link "$conf_dir/terminal/kitty.conf" "$HOME/.config/kitty"
-        link "$conf_dir/terminal/alacritty.yml" "$HOME/.alacritty.yml"
+        link "$conf_dir/wezterm.lua" "$HOME/.wezterm.lua"
         [ ! -d "$HOME/.hammerspoon" ] && mkdir -p "$HOME/.hammerspoon"
         link "$conf_dir/hammerspoon.lua" "$HOME/.hammerspoon/init.lua" ;;
     esac
@@ -214,43 +212,15 @@ install_ctags() {
     fi
 }
 
-install_brew_gnu() {
-    brew install tmux wget mosh rar kitty 
-    brew install git curl coreutils findutils gnu-tar gnu-sed gawk grep
-
-    link_dir_bin /opt/homebrew/opt/coreutils/libexec/gnubin
-    link_dir_bin /opt/homebrew/opt/grep/libexec/gnubin
-    link_dir_bin /opt/homebrew/opt/curl/bin
-    link_dir_bin /opt/homebrew/opt/gnu-tar/libexec/gnubin
-    link_dir_bin /opt/homebrew/opt/findutils/libexec/gnubin
-    link_dir_bin /opt/homebrew/opt/gnu-sed/libexec/gnubin
-    link_dir_bin /opt/homebrew/Cellar/gawk/5.1.1/bin
-}
-
 install_brew() {
     log "install Xcode command line tools..."
     xcode-select --install
     log "install brew..."
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     
-    log "install brew apps..."
-    install_brew_gnu
-
-    brew install smartmontools sqlite telnet
     brew install hammerspoon docker google-chrome notion clashx visual-studio-code
-
-    brew install monitorcontrol mos
-    brew install qqmusic wechat eudic keka
+    #brew install wechat eudic keka
     brew install telegram discord slack zoom
-
-    brew tap homebrew/cask-fonts
-    brew install font-fira-code
-}
-
-install_pytools() {
-    export PYTHONUSERBASE=$HOME/.local
-    /usr/bin/python3 -m pip install --user ranger-fm icdiff
-    /usr/bin/python3 -m pip install --user litecli mycli pgcli
 }
 
 case $1 in
@@ -266,25 +236,17 @@ case $1 in
     all) install_vimrc; install_gh zoxide; install_go;
         install_gh jq; install_gh cheat;
         nn install; install_conda; install_zplug;
-        install_ctags; install_config; install_pytools;
+        install_ctags; install_config;
         install_gh delta; install_gh bat;;
 
     basic) install_vimrc basic; install_zplug; install_config; install_gh jq;
         install_gh cheat; install_gh zoxide;;
 
     brew) install_brew;;
-    brew_gnu) install_brew_gnu;;
 
-    pytools) install_pytools;;
-
-    *) log "np commit: backup current config; need NQTOKEN env"
-       log "np update: update to newest version of nq"
-       log ""
-       log "supported app: rg,fzf,zoxide,delta,bat,vimrc,zplug,go,node,conda,ctags,jq,cheat,pytools,config"
+    *) log "supported app: rg,fzf,zoxide,delta,bat,vimrc,zplug,go,node,conda,ctags,jq,cheat,pytools,config"
        log "supported groups:"
        log "  all: install all components"
        log "  basic: basic feature set; vimrc basic,zplug,jq,cheat,config"
-       log "  pytools: ranger-fm,tldr,cheat,icdiff,pgcli,mycli,litecli"
-       log "  brew/brew_gnu: install brew utils";;
 esac
 
