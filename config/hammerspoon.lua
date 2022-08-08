@@ -11,28 +11,27 @@ app_table = {
     j = {a="WezTerm", g=pos.full, gb=pos.full},
     v = {a="Visual Studio Code", g=pos.right, gb=pos.full},
     c = {a="Google Chrome", g=pos.left, gb=pos.full},
-    -- x = {a="Safari", g=pos.left, gb=pos.full},
+    x = {a="Safari", g=pos.left, gb=pos.full},
     s = {a="Slack", g=pos.left, gb=pos.full},
     w = {a="WeChat",},
-    a = {a="QQMusic",},
     m = {a="Activity Monitor",},
     f = {a="Finder",},
     e = {a="Eudb_en",},
     z = {a="zoom.us"},
-    n = {a="Notion"},
+    -- n = {a="Notion"},
     p = {a="Preview"},
     t = {a="Telegram"},
 }
 function handle_app_launch(app, pos)
     -- Move terminal app to the current space
-    if app["a"] == app_table["j"]["a"] then
-        local screenUUID = hs.screen.mainScreen():getUUID()
-        local activeSpace = spaces.activeSpaces()[screenUUID]
-        local term = hs.application.get(app["a"])
-        if term and term:mainWindow() then
-            spaces.moveWindowToSpace(term:mainWindow(), activeSpace)
-        end
-    end
+    -- if app["a"] == app_table["j"]["a"] then
+    --     local screenUUID = hs.screen.mainScreen():getUUID()
+    --     local activeSpace = spaces.activeSpaces()[screenUUID]
+    --     local term = hs.application.get(app["a"])
+    --     if term and term:mainWindow() then
+    --         spaces.moveWindowToSpace(term:mainWindow(), activeSpace)
+    --     end
+    -- end
     hs.application.launchOrFocus(app["a"])
     local win = hs.window.frontmostWindow() local screen = win:screen()
     if not win or not screen then return end
@@ -51,14 +50,6 @@ for key in pairs(app_table) do
         handle_app_launch(app_table[key])
     end);
 end
-
--- handle toolsets
-launcher_msg = launcher_msg .. "\n-- Sets\nd: browser,vsc"
-app_shortcuts[#app_shortcuts+1] = hs.hotkey.new({}, "d", function()
-    closeAlert()
-    handle_app_launch(app_table["c"], pos.left)
-    handle_app_launch(app_table["v"], pos.right)
-end)
 
 function closeAlert()
     for _, shortcut in ipairs(app_shortcuts) do shortcut:disable() end
@@ -169,7 +160,7 @@ pasteShortcuts, pb_watcher = {}, hs.pasteboard.watcher.new(function()
     local arr = readPasteboardTable()
     for idx, el in ipairs(arr) do if el == text then table.remove(arr, idx) end end
     table.insert(arr, 1, text)
-    while #arr >= 8 do table.remove(arr, #arr) end
+    while #arr >= 12 do table.remove(arr, #arr) end
     local file = io.open(os.getenv("HOME").."/.pasteboard", "w")
     file:write(hs.json.encode(arr))
     file:close()
@@ -180,7 +171,7 @@ function pasteSelect(idx)
     hs.eventtap.keyStroke({"cmd"}, "v")
     closeAlert()
 end
-for idx=1,7 do key = string.char(96+idx)
+for idx=1,11 do key = string.char(96+idx)
     pasteShortcuts[#pasteShortcuts+1] = hs.hotkey.new({}, key, 
         function() pasteSelect(idx) end)
 end

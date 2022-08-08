@@ -29,7 +29,6 @@ au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
 
 call plug#begin('~/.vim/plugged')
 Plug 'christoomey/vim-tmux-navigator'
-Plug 'vim-test/vim-test'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-fugitive'
 Plug 'easymotion/vim-easymotion'
@@ -81,7 +80,8 @@ inoremap <expr><c-k> coc#float#scroll(0)
 nnoremap <expr><c-j> coc#float#scroll(1)
 nnoremap <expr><c-k> coc#float#scroll(0)
 inoremap <expr><c-y> coc#_select_confirm()
-inoremap <expr><c-n> pumvisible() ? "\<c-n>" : coc#refresh()
+inoremap <expr><c-n> coc#pum#visible() ? coc#pum#next(1): coc#refresh()
+inoremap <expr><c-p> coc#pum#visible() ? coc#pum#prev(1): "\<c-p>"
 
 endif
 "## Advanced features end ##

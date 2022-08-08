@@ -195,8 +195,7 @@ install_vimrc() {
 
 install_ctags() {
     if [ `uname -s` = "Darwin" ]; then
-        brew tap universal-ctags/universal-ctags
-        brew install --HEAD universal-ctags/universal-ctags/universal-ctags
+        brew install universal-ctags
     else
         tmp_ctags="$tmp_dir/ctags"
         git clone https://github.com/universal-ctags/ctags.git $tmp_ctags --depth=1
