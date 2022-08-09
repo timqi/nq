@@ -36,6 +36,7 @@ install_gh() {
     arr="rg=BurntSushi/ripgrep;x86_64-unknown-linux-musl;x86_64-apple-darwin \
         fzf=junegunn/fzf;linux_amd64.tar.gz;darwin_arm64.zip \
         zoxide=ajeetdsouza/zoxide;x86_64-unknown-linux-musl;aarch64-apple-darwin \
+        nv=neovim/neovim;linux64;macos;macos \
         jq=stedolan/jq;linux64;osx-amd64 \
         cheat=cheat/cheat;linux-amd64;darwin-amd64 \
         delta=dandavison/delta;x86_64-unknown-linux-musl;x86_64-apple-darwin \
@@ -57,6 +58,7 @@ install_gh() {
     "rg")     curr_ver=`command -v rg >/dev/null && echo $(rg -V|cut -d " " -f2) || echo "0.0.0"`;;
     "fzf")    curr_ver=`command -v fzf >/dev/null && echo $(fzf --version|cut -d " " -f1) || echo "0.0.0"`;;
     "zoxide") curr_ver=`command -v zoxide >/dev/null && echo $(zoxide -V|cut -d " " -f2) || echo "0.0.0"`;;
+    "nv")     curr_ver=`command -v nv >/dev/null && echo $(nv -v|head -n 1|cut -d " " -f2) || echo "0.0.0"`;;
     "jq")     curr_ver=`command -v jq >/dev/null && echo $(jq --version|head -n 1|cut -d "-" -f2) || echo "0.0.0"`;;
     "cheat")  curr_ver=`command -v cheat >/dev/null && echo $(cheat -v) || echo "0.0.0"`;;
     "delta")  curr_ver=`command -v delta >/dev/null && echo $(delta -V|head -n 1|cut -d " " -f2) || echo "0.0.0"`;;
@@ -73,6 +75,7 @@ install_gh() {
     "rg")     url="$base_url/ripgrep-$lastest_ver-$arch.tar.gz";;
     "fzf")    url="$base_url/fzf-$lastest_ver-$arch";;
     "zoxide") url="$base_url/zoxide-$lastest_ver-$arch.tar.gz";;
+    "nv")     url="$base_url/nvim-$arch.tar.gz";;
     "jq")     url="$base_url/jq-$arch";;
     "cheat")  url="$base_url/cheat-$arch.gz";;
     "delta")  url="$base_url/delta-$lastest_ver-$arch.tar.gz";;
@@ -85,6 +88,8 @@ install_gh() {
     [ ! -d $tmp_app_dir ] && mkdir -p $tmp_app_dir
     if [ $app = "fzf" ] && [ `uname -s` = "Darwin" ]; then
         unzip -d $tmp_app_dir "$tar_file"
+    elif [ $app = "nv" ]; then
+        tar -zxf $tar_file --strip-components 1 -C "$tmp_app_dir"
     elif [ $app = "jq" ]; then
         mv $tar_file $bin_dir/jq
     elif [ $app = "cheat" ]; then
@@ -95,6 +100,8 @@ install_gh() {
 
     case $app in
     rg|fzf|zoxide) cp "$tmp_app_dir/$app" $bin_dir;;
+    nv) rm -rf "$local_dir/nvim" && cp -r "$tmp_app_dir" "$local_dir/nvim" && \
+        link "../nvim/bin/nvim" "$bin_dir/nv";;
     delta|bat) cp "$tmp_app_dir/$app-$lastest_ver-$arch/$app" $bin_dir;;
     jq) chmod +x "$bin_dir/$app";;
     cheat) chmod +x "$bin_dir/$app"
@@ -224,7 +231,7 @@ install_brew() {
 
 case $1 in
     vimrc) install_vimrc;;
-    rg|fzf|zoxide|jq|cheat|delta|bat) install_gh $1;;
+    rg|fzf|zoxide|nv|jq|cheat|delta|bat) install_gh $1;;
     go) install_go;;
     node) nn install;;
     conda) install_conda;;

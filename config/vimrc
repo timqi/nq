@@ -63,7 +63,7 @@ Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'antoinemadec/coc-fzf', {'branch': 'release'}
 Plug 'honza/vim-snippets'
 let g:coc_fzf_preview = 'up:80%'
-let g:coc_global_extensions = ["coc-go", "coc-pyright", "coc-snippets"]
+let g:coc_global_extensions = ["coc-go", "coc-pyright"]
 nnoremap K           :<C-u>call CocActionAsync('doHover')<CR>
 nnoremap gt          :<C-u>call CocActionAsync('jumpTypeDefinition')<CR>
 nnoremap gi          :<C-u>call CocActionAsync('jumpImplementation')<CR>
