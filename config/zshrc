@@ -42,8 +42,7 @@ export PYTHONUSERBASE=$HOME/.local
 export PYTHONPATH=".:$local_dir/python/lib/python/site-packages"
 
 
-(( ${+commands[dircolors]} )) &&\
-[ `uname -s` = "Darwin" ] && alias ls='ls -G' || alias ls='ls --color=auto'
+alias ls='ls --color'
 alias grep='grep --color=auto'
 alias abrew='arch -arm64 brew'
 alias g='git'

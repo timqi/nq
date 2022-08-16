@@ -5,7 +5,7 @@ let mapleader = "\<space>"
 set nocompatible hidden wrap
 set hlsearch incsearch ignorecase smartcase
 set backspace=indent,eol,start
-set completeopt=menuone,preview,noinsert,noselect,longest
+set completeopt=menu,preview
 set noswapfile nobackup nowritebackup
 set cindent autoindent smartindent expandtab smarttab 
 set nu signcolumn=number laststatus=1 mouse-=a
