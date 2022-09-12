@@ -1,3 +1,6 @@
+# 清理系统DNS缓存
+sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder
+
 # 删除系统ABC输入法
 * 先在系统中设置选中ABC输入法
 plutil -convert xml1 ~/Library/Preferences/com.apple.HIToolbox.plist
@@ -25,4 +28,5 @@ InitialKeyRepeat: 响应连续输入的等待时间
 defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false         # For VS Code
 defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false # For VS Code Insider
 defaults write com.visualstudio.code.oss ApplePressAndHoldEnabled -bool false    # For VS Codium
-defaults delete -g ApplePressAndHoldEnabled
+defaults write -g ApplePressAndHoldEnabled -bool false # for global
+defaults delete -g ApplePressAndHoldEnabled # to disable

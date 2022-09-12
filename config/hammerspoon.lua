@@ -1,6 +1,14 @@
 function inspect(obj) print(hs.inspect.inspect(obj)) end
 spaces = require("hs.spaces")
 
+keymap_cmd = [[
+hidutil property --set '{
+    "UserKeyMapping":[
+        {"HIDKeyboardModifierMappingSrc":0x7000000E5,"HIDKeyboardModifierMappingDst":0x700000039},
+    ]}'
+]]
+os.execute(keymap_cmd)
+
 -- Launcher
 pos = {full = {x=0,y=0,w=6,h=6},
     left = {x=0,y=0,w=3,h=6},
@@ -18,7 +26,7 @@ app_table = {
     f = {a="Finder",},
     e = {a="Eudb_en",},
     z = {a="zoom.us"},
-    -- n = {a="Notion"},
+    n = {a="Notion"},
     p = {a="Preview"},
     t = {a="Telegram"},
 }
