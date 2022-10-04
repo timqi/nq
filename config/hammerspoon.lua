@@ -32,14 +32,14 @@ app_table = {
 }
 function handle_app_launch(app, pos)
     -- Move terminal app to the current space
-    -- if app["a"] == app_table["j"]["a"] then
-    --     local screenUUID = hs.screen.mainScreen():getUUID()
-    --     local activeSpace = spaces.activeSpaces()[screenUUID]
-    --     local term = hs.application.get(app["a"])
-    --     if term and term:mainWindow() then
-    --         spaces.moveWindowToSpace(term:mainWindow(), activeSpace)
-    --     end
-    -- end
+    if app["a"] == app_table["j"]["a"] then
+        local screenUUID = hs.screen.mainScreen():getUUID()
+        local activeSpace = spaces.activeSpaces()[screenUUID]
+        local term = hs.application.get(app["a"])
+        if term and term:mainWindow() then
+            spaces.moveWindowToSpace(term:mainWindow(), activeSpace)
+        end
+    end
     hs.application.launchOrFocus(app["a"])
     local win = hs.window.frontmostWindow() local screen = win:screen()
     if not win or not screen then return end
@@ -61,7 +61,6 @@ end
 
 function closeAlert()
     for _, shortcut in ipairs(app_shortcuts) do shortcut:disable() end
-    for _, shortcut in ipairs(pasteShortcuts) do shortcut:disable() end
     hs.alert.closeAll(); collectgarbage("collect")
 end
 app_shortcuts[#app_shortcuts+1] = hs.hotkey.new({"ctrl"}, "c", closeAlert)
@@ -74,12 +73,6 @@ function show_launcher()
     for _, shortcut in ipairs(app_shortcuts) do shortcut:enable() end
 end
 hs.hotkey.bind({"command"}, "d", show_launcher)
--- hs.hotkey.bind({"ctrl"}, "`", function()
---     local app = hs.window.focusedWindow():application()
---     if app:name() == "iTerm2" then app:hide()
---     elseif app:name() == "Code" then hs.eventtap.keyStroke({"ctrl"}, "`", 200000, app)
---     else handle_app_launch(app_table["j"]) end
--- end)
 
 
 -- WinMgr https://github.com/miromannino/miro-windows-manager
@@ -150,55 +143,87 @@ end, true)
 timer:start()
 
 
--- Pasteboard manager
-hs.pasteboard.watcher.interval(2)
-function readPasteboardTable()
-    local file = io.open(os.getenv("HOME").."/.pasteboard", "r")
-    if file == nil then return {} end
-    local content = file:read("*a"); file:close()
-    if content == "" then return {} end
-    return hs.json.decode(content)
-end
-pasteShortcuts, pb_watcher = {}, hs.pasteboard.watcher.new(function()
-    local text = ""
-    for idx, uti in ipairs(hs.pasteboard.contentTypes()) do
-        if uti == "public.utf8-plain-text" then text = hs.pasteboard.readString() end
-    end
-    if text == "" then return end
-    local arr = readPasteboardTable()
-    for idx, el in ipairs(arr) do if el == text then table.remove(arr, idx) end end
-    table.insert(arr, 1, text)
-    while #arr >= 12 do table.remove(arr, #arr) end
-    local file = io.open(os.getenv("HOME").."/.pasteboard", "w")
-    file:write(hs.json.encode(arr))
-    file:close()
-end)
-pb_watcher:start()
-function pasteSelect(idx)
-    hs.pasteboard.setContents(readPasteboardTable()[idx])
-    hs.eventtap.keyStroke({"cmd"}, "v")
-    closeAlert()
-end
-for idx=1,11 do key = string.char(96+idx)
-    pasteShortcuts[#pasteShortcuts+1] = hs.hotkey.new({}, key, 
-        function() pasteSelect(idx) end)
-end
-pasteShortcuts[#pasteShortcuts+1] = hs.hotkey.new({}, "ESCAPE", closeAlert)
-pasteShortcuts[#pasteShortcuts+1] = hs.hotkey.new({"ctrl"}, "c", closeAlert)
-hs.hotkey.bind({"shift", "cmd"}, "v", function()
-    hs.alert.closeAll()
-    local msg = "-- Pasteboard --"
-    for idx, el in ipairs(readPasteboardTable()) do
-        msg = msg.."\n"..string.char(96+idx)..": "..el:gsub("[\r\n]+", ""):sub(1, 50)
-    end
-    hs.alert.show(msg, {radius=5}, hs.screen.mainScreen(), true)
-    for _, shortcut in ipairs(pasteShortcuts) do shortcut:enable() end
-end)
-
-
 --- Reload configuration
 hs.hotkey.bind({'shift', 'cmd', 'ctrl'}, 'r', function()
-    timer:stop(); pb_watcher:stop(); hs.reload()
+    timer:stop(); hs.reload()
 end)
 hs.alert.show("Config Loaded")
 hs.logger.setGlobalLogLevel(1)
+
+
+--- Gesture detect
+function alert(msg)
+    hs.alert.show(msg, {
+        -- http://www.hammerspoon.org/docs/hs.alert.html#defaultStyle
+        textFont="Menlo", textSize=22, radius=5
+    }, hs.mouse.getCurrentScreen(), 1)
+end
+gestures = require("gestures")
+patterns = {
+    ["↱"] = {"Right Space", {"ctrl"}, "Right"},
+    ["↰"] = {"Left Space", {"ctrl"}, "Left"},
+
+    ["↓"] = {"Close Window", {"cmd"}, "w"},
+    ["←"] = {"Previous Tab", {"cmd", "shift"}, "["},
+    ["→"] = {"Next Tab", {"cmd", "shift"}, "]"},
+
+    ["∧"] = {"Resume Tab", {"cmd", "shift"}, "T"},
+    ["∨"] = {"Launchpad", {"ctrl"}, "Down"},
+}
+for k, _ in pairs(patterns) do
+    gestures.add(k, gestures.createPoints(k))
+end
+t = hs.eventtap.event.types
+canvas, realRightClick, points = nil, false, {}
+function doCanvas(type)
+    if type == "init" then
+        local frame = hs.mouse.getCurrentScreen():fullFrame()
+        canvas = hs.canvas.new{x=frame.x, y=frame.y, h=frame.h, w=frame.w}
+        canvas:clickActivating(false)
+        canvas:show()
+    elseif type == "dismiss" then
+        canvas:hide(); canvas:delete();
+        ----- handle tracking
+
+        for k, v in pairs(points) do
+            v[1], v[2] = v.x, v.y
+        end
+        name, score, cloestIndex = gestures.recognize(points)
+        inspect("Found gesture: "..name .. " "..score)
+
+        if score > 0.8 then
+            alert(patterns[name][1])
+            hs.eventtap.keyStroke(patterns[name][2], patterns[name][3])
+        end
+
+        canvas, points = nil, {}
+    elseif type == "update" then
+        local loc = hs.mouse.getRelativePosition()
+        table.insert(points, {x=loc.x, y=loc.y})
+        canvas:replaceElements({
+            type="segments",
+            closed=false,
+            action="stroke",
+            coordinates=points,
+            strokeWidth=5.0,
+            strokeColor={blue=1.0},
+        })
+    end
+end
+mouseListener = hs.eventtap.new(
+{t["rightMouseDown"], t["rightMouseUp"], t["rightMouseDragged"]}, function(evt)
+    local evtType = evt:getType();
+    if evtType == t["rightMouseDown"] then
+        if not realRightClick then return true, nil end
+    elseif evtType == t["rightMouseUp"] then
+        if #points <= 1 and not realRightClick then
+            realRightClick = true
+            hs.eventtap.rightClick(hs.mouse.absolutePosition())
+        elseif realRightClick then realRightClick = false
+        else doCanvas("dismiss") end
+    elseif evtType == t["rightMouseDragged"] then
+        if canvas == nil then doCanvas("init") end
+        doCanvas("update")
+    end
+end)
+mouseListener:start()
