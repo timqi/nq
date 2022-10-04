@@ -155,7 +155,7 @@ hs.logger.setGlobalLogLevel(1)
 function alert(msg)
     hs.alert.show(msg, {
         -- http://www.hammerspoon.org/docs/hs.alert.html#defaultStyle
-        textFont="Menlo", textSize=22, radius=5
+        textFont="Monaco", textSize=32, radius=12, strokeColor={alpha=0.7}
     }, hs.mouse.getCurrentScreen(), 1)
 end
 gestures = require("gestures")
@@ -204,9 +204,10 @@ function doCanvas(type)
             type="segments",
             closed=false,
             action="stroke",
+            strokeCapStyle="round",
             coordinates=points,
-            strokeWidth=5.0,
-            strokeColor={blue=1.0},
+            strokeWidth=7.0,
+            strokeColor={blue=1.0, green=0.7},
         })
     end
 end
