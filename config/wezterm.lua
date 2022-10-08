@@ -17,7 +17,7 @@ return {
   color_schemes = { ['VSCode'] = scheme, },
   initial_rows = 240,
   initial_cols = 360,
-  window_background_opacity = 0.90,
+  window_background_opacity = 0.80,
   font = wezterm.font('Monaco'),
   font_size = 18.0,
   default_cwd = default_cwd,

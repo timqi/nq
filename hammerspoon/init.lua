@@ -1,5 +1,5 @@
+hs.logger.defaultLogLevel = "debug"
 function inspect(obj) print(hs.inspect.inspect(obj)) end
-spaces = require("hs.spaces")
 
 keymap_cmd = [[
 hidutil property --set '{
@@ -32,14 +32,14 @@ app_table = {
 }
 function handle_app_launch(app, pos)
     -- Move terminal app to the current space
-    if app["a"] == app_table["j"]["a"] then
-        local screenUUID = hs.screen.mainScreen():getUUID()
-        local activeSpace = spaces.activeSpaces()[screenUUID]
-        local term = hs.application.get(app["a"])
-        if term and term:mainWindow() then
-            spaces.moveWindowToSpace(term:mainWindow(), activeSpace)
-        end
-    end
+    -- if app["a"] == app_table["j"]["a"] then
+    --     local screenUUID = hs.screen.mainScreen():getUUID()
+    --     local activeSpace = hs.spaces.activeSpaces()[screenUUID]
+    --     local term = hs.application.get(app["a"])
+    --     if term and term:mainWindow() then
+    --         hs.spaces.moveWindowToSpace(term:mainWindow(), activeSpace)
+    --         end
+    -- end
     hs.application.launchOrFocus(app["a"])
     local win = hs.window.frontmostWindow() local screen = win:screen()
     if not win or not screen then return end
@@ -151,80 +151,4 @@ hs.alert.show("Config Loaded")
 hs.logger.setGlobalLogLevel(1)
 
 
---- Gesture detect
-function alert(msg)
-    hs.alert.show(msg, {
-        -- http://www.hammerspoon.org/docs/hs.alert.html#defaultStyle
-        textFont="Monaco", textSize=32, radius=12, strokeColor={alpha=0.7}
-    }, hs.mouse.getCurrentScreen(), 1)
-end
-gestures = require("gestures")
-patterns = {
-    ["↱"] = {"Right Space", {"ctrl"}, "Right"},
-    ["↰"] = {"Left Space", {"ctrl"}, "Left"},
-
-    ["↓"] = {"Close Window", {"cmd"}, "w"},
-    ["←"] = {"Previous Tab", {"cmd", "shift"}, "["},
-    ["→"] = {"Next Tab", {"cmd", "shift"}, "]"},
-
-    ["∧"] = {"Resume Tab", {"cmd", "shift"}, "T"},
-    ["∨"] = {"Launchpad", {"ctrl"}, "Down"},
-}
-for k, _ in pairs(patterns) do
-    gestures.add(k, gestures.createPoints(k))
-end
-t = hs.eventtap.event.types
-canvas, realRightClick, points = nil, false, {}
-function doCanvas(type)
-    if type == "init" then
-        local frame = hs.mouse.getCurrentScreen():fullFrame()
-        canvas = hs.canvas.new{x=frame.x, y=frame.y, h=frame.h, w=frame.w}
-        canvas:clickActivating(false)
-        canvas:show()
-    elseif type == "dismiss" then
-        canvas:hide(); canvas:delete();
-        ----- handle tracking
-
-        for k, v in pairs(points) do
-            v[1], v[2] = v.x, v.y
-        end
-        name, score, cloestIndex = gestures.recognize(points)
-        inspect("Found gesture: "..name .. " "..score)
-
-        if score > 0.8 then
-            alert(patterns[name][1])
-            hs.eventtap.keyStroke(patterns[name][2], patterns[name][3])
-        end
-
-        canvas, points = nil, {}
-    elseif type == "update" then
-        local loc = hs.mouse.getRelativePosition()
-        table.insert(points, {x=loc.x, y=loc.y})
-        canvas:replaceElements({
-            type="segments",
-            closed=false,
-            action="stroke",
-            strokeCapStyle="round",
-            coordinates=points,
-            strokeWidth=7.0,
-            strokeColor={blue=1.0, green=0.7},
-        })
-    end
-end
-mouseListener = hs.eventtap.new(
-{t["rightMouseDown"], t["rightMouseUp"], t["rightMouseDragged"]}, function(evt)
-    local evtType = evt:getType();
-    if evtType == t["rightMouseDown"] then
-        if not realRightClick then return true, nil end
-    elseif evtType == t["rightMouseUp"] then
-        if #points <= 1 and not realRightClick then
-            realRightClick = true
-            hs.eventtap.rightClick(hs.mouse.absolutePosition())
-        elseif realRightClick then realRightClick = false
-        else doCanvas("dismiss") end
-    elseif evtType == t["rightMouseDragged"] then
-        if canvas == nil then doCanvas("init") end
-        doCanvas("update")
-    end
-end)
-mouseListener:start()
+require("mouse")
