@@ -1,10 +1,14 @@
 hs.logger.defaultLogLevel = "debug"
 function inspect(obj) print(hs.inspect.inspect(obj)) end
 
+-- https://rakhesh.com/mac/using-hidutil-to-map-macos-keyboard-keys/
+-- Right Shift => Capslock
+-- Right Cmd => F20
 keymap_cmd = [[
 hidutil property --set '{
     "UserKeyMapping":[
         {"HIDKeyboardModifierMappingSrc":0x7000000E5,"HIDKeyboardModifierMappingDst":0x700000039},
+        {"HIDKeyboardModifierMappingSrc":0x7000000E7,"HIDKeyboardModifierMappingDst":0x70000006F},
     ]}'
 ]]
 os.execute(keymap_cmd)
@@ -73,10 +77,11 @@ function show_launcher()
     for _, shortcut in ipairs(app_shortcuts) do shortcut:enable() end
 end
 hs.hotkey.bind({"command"}, "d", show_launcher)
+hs.hotkey.bind({}, "F20", show_launcher, closeAlert)
 
 
 -- WinMgr https://github.com/miromannino/miro-windows-manager
-hs.window.animationDuration = 0
+-- hs.window.animationDuration = 0
 hs.grid.setGrid("6x6"); hs.grid.setMargins("0x0")
 pressed={up=false, down=false, left=false, right=false}
 local function winAction(direction)

@@ -66,10 +66,11 @@ gestureListener = hs.eventtap.new(
         if not realRightClick then return true, nil end
     elseif evtType == t["rightMouseUp"] then
         if #points <= 4 and not realRightClick then
-            realRightClick = true
+            points = {}; realRightClick = true
             hs.eventtap.rightClick(hs.mouse.absolutePosition())
         elseif realRightClick then realRightClick = false
         else doCanvas("dismiss") end
+        collectgarbage("collect")
     elseif evtType == t["rightMouseDragged"] then
         if canvas == nil then doCanvas("init") end
         doCanvas("update")

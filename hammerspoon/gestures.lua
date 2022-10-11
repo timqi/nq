@@ -394,7 +394,6 @@ gestures.createPoints = function(str)
         for i = 0,25,1 do x=x+0.4; y=y+1 table.insert(result, Point(x, y)) end
         for i = 0,15,1 do x=x+0.4; y=y-1 table.insert(result, Point(x, y)) end
     end
-    inspect("Load gesture template: "..str)
     return result
 end
 
