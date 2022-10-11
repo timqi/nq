@@ -120,18 +120,20 @@ local function winAction(direction)
     funs[direction]()
     hs.grid.set(win, cell, screen)
 end
-local hyper = {"option", "cmd"}
+local hyper = {"ctrl", "cmd"}
 hs.hotkey.bind(hyper, "j", function() winAction("down") end, function() pressed.down=false end)
 hs.hotkey.bind(hyper, "k", function() winAction("up") end, function() pressed.up=false end)
 hs.hotkey.bind(hyper, "h", function() winAction("left") end, function() pressed.left=false end)
 hs.hotkey.bind(hyper, "l", function() winAction("right") end, function() pressed.right=false end)
-hs.hotkey.bind(hyper, "g", function() winAction("fullScreen") end)
-hs.hotkey.bind(hyper, "n", function()
+hs.hotkey.bind(hyper, "r", function() winAction("fullScreen") end)
+hs.hotkey.bind(hyper, "e", function()
     local win = hs.window.focusedWindow()
     local screen = win:screen()
     win:move(win:frame():toUnitRect(screen:frame()), screen:next(), true, 0)
 end)
 
+hs.hotkey.bind(hyper, "n", function() hs.eventtap.keyStroke({}, "pagedown") end)
+hs.hotkey.bind(hyper, "p", function() hs.eventtap.keyStroke({}, "pageup") end)
 
 -- Bitcoin menubar
 menu = hs.menubar.new():setClickCallback(function()
