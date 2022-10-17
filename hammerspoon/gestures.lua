@@ -369,6 +369,7 @@ distance = function(p1, p2)
 end
 
 gestures = GestureRecognizer(true, true, false)
+-- https://github.com/mtjo/MacStroke/blob/master/MacStroke/PreGesture.m
 gestures.createPoints = function(str)
     local result, x, y  = {}, 200, 200
     if str == "←" then
@@ -393,6 +394,27 @@ gestures.createPoints = function(str)
     elseif str == "∨" then
         for i = 0,25,1 do x=x+0.4; y=y+1 table.insert(result, Point(x, y)) end
         for i = 0,15,1 do x=x+0.4; y=y-1 table.insert(result, Point(x, y)) end
+
+    elseif str == "o_clockwise" then -- clockwise
+        table.insert(result, Point(x, y))
+        for i = 0,40,1 do
+            y = y+1; x = 199+math.sqrt(20*20-(20-i)*(20-i));
+            table.insert(result, Point(x, y))
+        end
+        for i = 0,40,1 do
+            x = 200-math.sqrt(20*20-(20-i)*(20-i)); y = y-1;
+            table.insert(result, Point(x, y))
+        end
+    elseif str == "o_counter" then -- counter clockwise
+        table.insert(result, Point(x, y))
+        for i = 0,40,1 do
+            y = y+1; x = 200-math.sqrt(20*20-(20-i)*(20-i));
+            table.insert(result, Point(x, y))
+        end
+        for i = 0,40,1 do
+            x = 199+math.sqrt(20*20-(20-i)*(20-i)); y = y-1;
+            table.insert(result, Point(x, y))
+        end
     end
     return result
 end

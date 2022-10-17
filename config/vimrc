@@ -82,6 +82,7 @@ nnoremap <expr><c-k> coc#float#scroll(0)
 inoremap <expr><c-y> coc#_select_confirm()
 inoremap <expr><c-n> coc#pum#visible() ? coc#pum#next(1): coc#refresh()
 inoremap <expr><c-p> coc#pum#visible() ? coc#pum#prev(1): "\<c-p>"
+inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
 
 endif
 "## Advanced features end ##

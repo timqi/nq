@@ -10,15 +10,17 @@ function gesture_alert(msg)
 end
 
 patterns = {
-    ["↱"] = {"Right Space", {"ctrl"}, "Right"},
-    ["↰"] = {"Left Space", {"ctrl"}, "Left"},
+    -- ["↱"] = {"Right Space", {"ctrl"}, "Right"},
+    -- ["↰"] = {"Left Space", {"ctrl"}, "Left"},
 
-    ["↓"] = {"Close Window", {"cmd"}, "w"},
-    ["←"] = {"CMD + [", {"cmd", "shift"}, "["},
-    ["→"] = {"CMD + ]", {"cmd", "shift"}, "]"},
-
-    ["∧"] = {"Resume Tab", {"cmd", "shift"}, "T"},
-    ["∨"] = {"Launchpad", {"ctrl"}, "Down"},
+    ["↑"] = {"CMD + ]", function() hs.spaces.openMissionControl() end},
+    ["↓"] = {"CMD + Q", function() hs.eventtap.keyStroke({"cmd"}, "w") end},
+    ["←"] = {"CMD + [", function() hs.eventtap.keyStroke({"cmd", "shift"}, "[") end},
+    ["→"] = {"CMD + ]", function() hs.eventtap.keyStroke({"cmd", "shift"}, "]") end},
+    ["o_clockwise"] = {"CMD + R", function() hs.eventtap.keyStroke({"cmd"}, "r") end},
+    ["o_counter"] = {"CMD + SHIFT + T", function()
+        hs.eventtap.keyStroke({"cmd", "shift"}, "T")
+    end},
 }
 
 for k, _ in pairs(patterns) do
@@ -44,7 +46,7 @@ function doCanvas(type)
         else
             logger.d("Found gesture: "..name .. " "..score)
             gesture_alert(patterns[name][1])
-            hs.eventtap.keyStroke(patterns[name][2], patterns[name][3])
+            patterns[name][2]()
         end
         canvas, points = nil, {}
     elseif type == "update" then
@@ -80,17 +82,17 @@ gestureListener:start()
 
 
 -- Handle mouse event
-mouseListener = hs.eventtap.new(
-    {t["otherMouseDown"], t["otherMouseUp"], t["otherMouseDragged"]},
-    function(evt)
-        if evt:getType() ~= t["otherMouseDown"] then return false, nil end
-        local num = evt:getProperty(hs.eventtap.event.properties.mouseEventButtonNumber)
-        logger.d("evtType:", evtType, " btnNum:", num)
-        if num == 4 then hs.eventtap.keyStroke({"cmd"}, "]")
-        elseif num == 3 then hs.eventtap.keyStroke({"cmd"}, "[")
-        elseif num == 2 then hs.spaces.openMissionControl()
-        end
-        return true, nil
-    end
-)
-mouseListener:start()
+-- mouseListener = hs.eventtap.new(
+--     {t["otherMouseDown"], t["otherMouseUp"], t["otherMouseDragged"]},
+--     function(evt)
+--         if evt:getType() ~= t["otherMouseDown"] then return false, nil end
+--         local num = evt:getProperty(hs.eventtap.event.properties.mouseEventButtonNumber)
+--         logger.d("evtType:", evtType, " btnNum:", num)
+--         if num == 4 then hs.eventtap.keyStroke({"cmd"}, "]")
+--         elseif num == 3 then hs.eventtap.keyStroke({"cmd"}, "[")
+--         elseif num == 2 then hs.spaces.openMissionControl()
+--         end
+--         return true, nil
+--     end
+-- )
+-- mouseListener:start()
