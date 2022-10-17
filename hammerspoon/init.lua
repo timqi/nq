@@ -11,7 +11,7 @@ hidutil property --set '{
         {"HIDKeyboardModifierMappingSrc":0x7000000E7,"HIDKeyboardModifierMappingDst":0x70000006F},
     ]}'
 ]]
-os.execute(keymap_cmd)
+--os.execute(keymap_cmd)
 
 -- Launcher
 pos = {full = {x=0,y=0,w=6,h=6},
@@ -33,6 +33,7 @@ app_table = {
     n = {a="Notion"},
     p = {a="Preview"},
     t = {a="Telegram"},
+    k = {a="QQMusic"},
 }
 function handle_app_launch(app, pos)
     -- Move terminal app to the current space
@@ -159,3 +160,4 @@ hs.logger.setGlobalLogLevel(1)
 
 
 require("mouse")
+

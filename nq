@@ -165,7 +165,7 @@ install_config() {
 
     case `uname -a` in *Darwin*)
         link "$conf_dir/wezterm.lua" "$HOME/.wezterm.lua"
-        [ -L "$HOME/.hammerspoon" ] && rm -rf "$HOME/.hammerspoon"
+        rm -rf "$HOME/.hammerspoon"
         link "$HOME/.config/nq/hammerspoon" "$HOME/.hammerspoon"
     esac
 }

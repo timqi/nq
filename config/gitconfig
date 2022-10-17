@@ -1,12 +1,3 @@
-[core]
-    pager = delta
-
-[interactive]
-    diffFilter = delta --color-only --feature=interactive
-
-[merge]
-    conflictstyle = diff3
-
 [log]
     date = format-local:%Y%m%d %H:%M
 
@@ -26,40 +17,6 @@
     cl = config --global -l
     l = log --color=always -200
 
-[user]
-	email = i@timqi.com
-    name = qiqi
-
-[init]
-	defaultBranch = main
-
 [pull]
 	rebase = false
-
-[delta "interactive"]
-    keep-plus-minus-markers = false
-
-[delta]
-    features = custome-feature
-    side-by-side = false
-
-
-[delta "custome-feature"]
-    # author: https://github.com/clnoll
-    syntax-theme = "Visual Studio Dark+"
-    hunk-header-decoration-style = "#5e5e5e" bold
-    hunk-header-file-style = bold "#999999"
-    hunk-header-line-number-style = bold "#999999"
-    hunk-header-style = file line-number syntax
-    hunk-label = "██diff➠"
-    file-style = omit
-    line-numbers = true
-    line-numbers-left-format = {nm}│
-    line-numbers-right-format = {np}|
-    line-numbers-left-style = "#222222" normal
-    line-numbers-zero-style = "#999999"
-    minus-style = "#f14c4c" normal
-    plus-style = "#8ae234" normal
-    line-numbers-minus-style = "#f14c4c" normal
-    line-numbers-plus-style = "#8ae234" normal
 
