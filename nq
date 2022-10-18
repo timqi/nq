@@ -39,7 +39,6 @@ install_gh() {
         nv=neovim/neovim;linux64;macos;macos \
         jq=stedolan/jq;linux64;osx-amd64 \
         cheat=cheat/cheat;linux-amd64;darwin-amd64 \
-        delta=dandavison/delta;x86_64-unknown-linux-musl;x86_64-apple-darwin \
         bat=sharkdp/bat;x86_64-unknown-linux-musl;x86_64-apple-darwin "
     for item in $arr; do
         if [ `echo $item|cut -d "=" -f1` != "$1" ]; then continue; fi
@@ -61,8 +60,7 @@ install_gh() {
     "nv")     curr_ver=`command -v nv >/dev/null && echo $(nv -v|head -n 1|cut -d " " -f2) || echo "0.0.0"`;;
     "jq")     curr_ver=`command -v jq >/dev/null && echo $(jq --version|head -n 1|cut -d "-" -f2) || echo "0.0.0"`;;
     "cheat")  curr_ver=`command -v cheat >/dev/null && echo $(cheat -v) || echo "0.0.0"`;;
-    "delta")  curr_ver=`command -v delta >/dev/null && echo $(delta -V|head -n 1|cut -d " " -f2) || echo "0.0.0"`;;
-    "bat")  curr_ver=`command -v delta >/dev/null && echo "v$(bat -V|head -n 1|cut -d ' ' -f2)" || echo "0.0.0"`;;
+    "bat")  curr_ver=`command -v bat >/dev/null && echo "v$(bat -V|head -n 1|cut -d ' ' -f2)" || echo "0.0.0"`;;
     esac
 
     url="https://api.github.com/repos/$repo/releases/latest"
@@ -74,11 +72,10 @@ install_gh() {
     case $app in
     "rg")     url="$base_url/ripgrep-$lastest_ver-$arch.tar.gz";;
     "fzf")    url="$base_url/fzf-$lastest_ver-$arch";;
-    "zoxide") url="$base_url/zoxide-$lastest_ver-$arch.tar.gz";;
+    "zoxide") url="$base_url/zoxide-${lastest_ver:1:100}-$arch.tar.gz";;
     "nv")     url="$base_url/nvim-$arch.tar.gz";;
     "jq")     url="$base_url/jq-$arch";;
     "cheat")  url="$base_url/cheat-$arch.gz";;
-    "delta")  url="$base_url/delta-$lastest_ver-$arch.tar.gz";;
     "bat")    url="$base_url/bat-$lastest_ver-$arch.tar.gz";;
     esac
 
@@ -99,10 +96,11 @@ install_gh() {
     fi
 
     case $app in
-    rg|fzf|zoxide) cp "$tmp_app_dir/$app" $bin_dir;;
+    fzf|zoxide) mv "$tmp_app_dir/$app" $bin_dir;;
     nv) rm -rf "$local_dir/nvim" && cp -r "$tmp_app_dir" "$local_dir/nvim" && \
         link "../nvim/bin/nvim" "$bin_dir/nv";;
-    delta|bat) cp "$tmp_app_dir/$app-$lastest_ver-$arch/$app" $bin_dir;;
+    rg) mv "$tmp_app_dir/ripgrep-$lastest_ver-$arch/$app" $bin_dir;;
+    bat) mv "$tmp_app_dir/$app-$lastest_ver-$arch/$app" $bin_dir;;
     jq) chmod +x "$bin_dir/$app";;
     cheat) chmod +x "$bin_dir/$app"
         cheat_dir=$HOME/.config/cheat
@@ -111,7 +109,7 @@ install_gh() {
         community_dir=$cheat_dir/community
         [ -d $community ] && cd $cheat_dir &&\
             git pull --depth 1 --rebase --allow-unrelated-histories && cd - ||
-            git clone --depth=1 "https://github.com/cheat/cheatsheets" community
+            git clone --depth=1 "tar -cvf /path/to/foo.tar /path/to/foo/https://github.com/cheat/cheatsheets" community
         link "$HOME/.config/nq/cheatsheets" "$cheat_dir/personal";;
     esac
 }
@@ -229,9 +227,10 @@ install_brew() {
     brew install telegram discord slack zoom
 }
 
+#set -x
 case $1 in
     vimrc) install_vimrc;;
-    rg|fzf|zoxide|nv|jq|cheat|delta|bat) install_gh $1;;
+    rg|fzf|zoxide|nv|jq|cheat|bat) install_gh $1;;
     go) install_go;;
     node) nn install;;
     conda) install_conda;;
@@ -242,15 +241,14 @@ case $1 in
     all) install_vimrc; install_gh zoxide; install_go;
         install_gh jq; install_gh cheat;
         nn install; install_conda; install_zplug;
-        install_ctags; install_config;
-        install_gh delta; install_gh bat;;
+        install_ctags; install_config; install_gh bat;;
 
     basic) install_vimrc basic; install_zplug; install_config; install_gh jq;
         install_gh cheat; install_gh zoxide;;
 
     brew) install_brew;;
 
-    *) log "supported app: rg,fzf,zoxide,delta,bat,vimrc,zplug,go,node,conda,ctags,jq,cheat,pytools,config"
+    *) log "supported app: rg,fzf,zoxide,bat,vimrc,zplug,go,node,conda,ctags,jq,cheat,pytools,config"
        log "supported groups:"
        log "  all: install all components"
        log "  basic: basic feature set; vimrc basic,zplug,jq,cheat,config"

@@ -1,4 +1,3 @@
-hs.logger.defaultLogLevel = "debug"
 function inspect(obj) print(hs.inspect.inspect(obj)) end
 
 -- https://rakhesh.com/mac/using-hidutil-to-map-macos-keyboard-keys/
@@ -8,10 +7,10 @@ keymap_cmd = [[
 hidutil property --set '{
     "UserKeyMapping":[
         {"HIDKeyboardModifierMappingSrc":0x7000000E5,"HIDKeyboardModifierMappingDst":0x700000039},
-        {"HIDKeyboardModifierMappingSrc":0x7000000E7,"HIDKeyboardModifierMappingDst":0x70000006F},
+        {"HIDKeyboardModifierMappingSrc":0x7000000E7,"HIDKeyboardModifierMappingDst":0x70000006F}
     ]}'
 ]]
---os.execute(keymap_cmd)
+os.execute(keymap_cmd)
 
 -- Launcher
 pos = {full = {x=0,y=0,w=6,h=6},

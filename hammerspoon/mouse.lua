@@ -82,17 +82,17 @@ gestureListener:start()
 
 
 -- Handle mouse event
--- mouseListener = hs.eventtap.new(
---     {t["otherMouseDown"], t["otherMouseUp"], t["otherMouseDragged"]},
---     function(evt)
---         if evt:getType() ~= t["otherMouseDown"] then return false, nil end
---         local num = evt:getProperty(hs.eventtap.event.properties.mouseEventButtonNumber)
---         logger.d("evtType:", evtType, " btnNum:", num)
---         if num == 4 then hs.eventtap.keyStroke({"cmd"}, "]")
---         elseif num == 3 then hs.eventtap.keyStroke({"cmd"}, "[")
---         elseif num == 2 then hs.spaces.openMissionControl()
---         end
---         return true, nil
---     end
--- )
--- mouseListener:start()
+mouseListener = hs.eventtap.new(
+    {t["otherMouseDown"], t["otherMouseUp"], t["otherMouseDragged"]},
+    function(evt)
+        if evt:getType() ~= t["otherMouseDown"] then return false, nil end
+        local num = evt:getProperty(hs.eventtap.event.properties.mouseEventButtonNumber)
+        if num == 4 then hs.eventtap.keyStroke({"cmd"}, "]")
+        elseif num == 3 then hs.eventtap.keyStroke({"cmd"}, "[")
+        elseif num == 2 then hs.spaces.openMissionControl()
+        end
+        return true, nil
+    end
+)
+mouseListener:start()
+
