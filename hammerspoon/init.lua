@@ -19,7 +19,7 @@ pos = {full = {x=0,y=0,w=6,h=6},
 launcher_msg = "-- Launcher --"
 app_shortcuts = {}
 app_table = {
-    j = {a="WezTerm", g=pos.full, gb=pos.full},
+    j = {a="Terminal", g=pos.full, gb=pos.full},
     v = {a="Visual Studio Code", g=pos.right, gb=pos.full},
     c = {a="Google Chrome", g=pos.left, gb=pos.full},
     x = {a="Safari", g=pos.left, gb=pos.full},

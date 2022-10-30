@@ -16,7 +16,7 @@
   "pyright.inlayHints.variableTypes": false,
   "python.analysis.diagnosticSeverityOverrides": {
     "reportOptionalSubscript": "none",
-    "reportGeneralTypeIssues": "warning",
+    "reportGeneralTypeIssues": "none",
     "reportOptionalOperand": "warning"
   },
   "list.normalMappings": {

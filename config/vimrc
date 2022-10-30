@@ -31,12 +31,9 @@ call plug#begin('~/.vim/plugged')
 Plug 'christoomey/vim-tmux-navigator'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-fugitive'
-Plug 'easymotion/vim-easymotion'
 Plug 'jiangmiao/auto-pairs'
 Plug '907th/vim-auto-save'
-Plug 'tpope/vim-commentary'
 Plug 'sbdchd/neoformat'
-Plug 'TovarishFin/vim-solidity'
 nnoremap = :Neoformat<cr>
 let g:neoformat_basic_format_align = 1
 let g:neoformat_basic_format_trim = 1
@@ -61,8 +58,6 @@ let g:fzf_preview_window = ['up:80%', 'ctrl-/']
 "## Advanced features ##
 if get(g:, "feature_mode", "basic") != "basic"
 
-Plug 'tomasiser/vim-code-dark'
-let g:codedark_transparent=1
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'honza/vim-snippets'
 let g:coc_global_extensions = ["coc-go", "coc-pyright", "coc-lists", "coc-typos"]
@@ -111,6 +106,10 @@ inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm() : "\<C-g>u\<C
 
 endif
 "## Advanced features end ##
+
+Plug 'TovarishFin/vim-solidity'
+Plug 'tomasiser/vim-code-dark'
+let g:codedark_transparent=1
 
 call plug#end()
 
