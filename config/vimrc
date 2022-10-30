@@ -1,4 +1,4 @@
-if get(s:, 'loaded', 0) != 0 | finish | else | let s:loaded = 1 | endif
+"if get(s:, 'loaded', 0) != 0 | finish | else | let s:loaded = 1 | endif
 set encoding=utf-8 fileencodings=utf-8,ucs-bom,gbk,gb18030,big5,euc-jp,latin1
 let mapleader = "\<space>"
 
@@ -8,10 +8,11 @@ set backspace=indent,eol,start
 set completeopt=menu,preview
 set noswapfile nobackup nowritebackup
 set cindent autoindent smartindent expandtab smarttab 
-set nu signcolumn=number laststatus=1 mouse-=a
+set nu signcolumn=number laststatus=1 mouse=a
 set wildignore+=.bak,*.swp,*.class,*.pyc,*DS_Store*,*.swp,*/.Trash/*
 set updatetime=1000
 set ts=4 sw=4 sts=4
+set autoread t_Co=256
 au FileType javascript,html,vue setlocal sw=2 ts=2 sts=2
 
 syntax on
@@ -26,7 +27,6 @@ endfor
 au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
     \| exe "normal! g'\"" | endif
 
-
 call plug#begin('~/.vim/plugged')
 Plug 'christoomey/vim-tmux-navigator'
 Plug 'tpope/vim-surround'
@@ -36,7 +36,11 @@ Plug 'jiangmiao/auto-pairs'
 Plug '907th/vim-auto-save'
 Plug 'tpope/vim-commentary'
 Plug 'sbdchd/neoformat'
+Plug 'TovarishFin/vim-solidity'
 nnoremap = :Neoformat<cr>
+let g:neoformat_basic_format_align = 1
+let g:neoformat_basic_format_trim = 1
+
 let g:auto_save = 1
 let g:netrw_dirhistmax = 0
 let g:tmux_navigator_save_on_switch = 2
@@ -45,8 +49,6 @@ Plug 'junegunn/fzf'
 Plug 'junegunn/fzf.vim'
 noremap  <c-e>      :<C-U>call fzf#vim#history()<CR>
 noremap  <c-p>      :<C-U>call fzf#vim#files('')<CR>
-nnoremap <leader>p  :<C-U>call fzf#vim#files('')<CR>
-nnoremap <leader>e  :<C-U>call fzf#vim#history()<CR>
 nnoremap <leader>m  :<C-U>call fzf#vim#marks()<CR>
 nnoremap <leader>w  y:<C-U><C-R>=printf("Rg %s", expand("<cword>"))<CR>
 nnoremap <leader>s  :<C-U><C-R>=printf("Rg ")<CR>
@@ -58,27 +60,50 @@ let g:fzf_preview_window = ['up:80%', 'ctrl-/']
 
 "## Advanced features ##
 if get(g:, "feature_mode", "basic") != "basic"
+
 Plug 'tomasiser/vim-code-dark'
+let g:codedark_transparent=1
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
-Plug 'antoinemadec/coc-fzf', {'branch': 'release'}
 Plug 'honza/vim-snippets'
-let g:coc_fzf_preview = 'up:80%'
-let g:coc_global_extensions = ["coc-go", "coc-pyright"]
+let g:coc_global_extensions = ["coc-go", "coc-pyright", "coc-lists", "coc-typos"]
+
+" typos
+nmap ]s <Plug>(coc-typos-next)
+nmap [s <Plug>(coc-typos-prev)
+nmap z= <Plug>(coc-typos-fix)
+
 nnoremap K           :<C-u>call CocActionAsync('doHover')<CR>
+nnoremap L           :<C-u>call CocActionAsync('showSignatureHelp')<CR>
 nnoremap gt          :<C-u>call CocActionAsync('jumpTypeDefinition')<CR>
 nnoremap gi          :<C-u>call CocActionAsync('jumpImplementation')<CR>
 nnoremap gr          :<C-u>call CocActionAsync('jumpReferences')<CR>
 nnoremap qf          :<C-u>call CocActionAsync('doQuickfix')<CR>
 nnoremap gd          :<C-u>call CocActionAsync('jumpDefinition')<CR>
-nnoremap <c-]>       :<C-u>call CocActionAsync('jumpDefinition')<CR>
-nnoremap <leader>n   :<C-u>call CocActionAsync('rename')<CR>
-nnoremap <leader>a   :<C-u>CocFzfList diagnostics --current-buf<cr>
-nnoremap <leader>t   :<C-u>CocList outline<CR>
+nnoremap <leader>rn   :<C-u>call CocActionAsync('rename')<CR>
+
+noremap  <c-p>       :<C-u>CocList files<CR>
+noremap  <c-e>       :<C-u>CocList mru<CR>
+noremap  <leader>p   :<C-u>CocListResume<CR>
+
+nnoremap <leader>m  :<C-U>CocList marks<CR>
+nnoremap <leader>w  y:<C-U><C-R>=printf("CocList -A grep %s", expand("<cword>"))<CR>
+nnoremap <leader>s  :<C-U><C-R>=printf("CocList -A grep ")<CR>
+vnoremap <leader>s  y:<C-U><C-R>=printf("CocList -A grep %s", getreg('"'))<CR>
+nnoremap <leader>h  :<C-U>CocList helptags<CR>
+
+nnoremap <leader>a   :<C-u>CocList -A --normal diagnostics --current-buf<CR>
+nnoremap <leader>t   :<C-u>CocList -A outline<CR>
 nnoremap <leader>c   :<C-u>CocList commands<CR>
-inoremap <expr><c-j> coc#float#scroll(1)
-inoremap <expr><c-k> coc#float#scroll(0)
-nnoremap <expr><c-j> coc#float#scroll(1)
-nnoremap <expr><c-k> coc#float#scroll(0)
+nnoremap <leader>j   :<C-u>CocList cmdhistory<CR>
+nnoremap <leader>l   :<C-u>CocList<CR>
+
+nnoremap <nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
+nnoremap <nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
+inoremap <nowait><expr> <C-f> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(1)\<cr>" : "\<Right>"
+inoremap <nowait><expr> <C-b> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(0)\<cr>" : "\<Left>"
+vnoremap <nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
+vnoremap <nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
+
 inoremap <expr><c-y> coc#_select_confirm()
 inoremap <expr><c-n> coc#pum#visible() ? coc#pum#next(1): coc#refresh()
 inoremap <expr><c-p> coc#pum#visible() ? coc#pum#prev(1): "\<c-p>"
@@ -92,4 +117,6 @@ call plug#end()
 if get(g:, "feature_mode", "basic") != "basic" |colorscheme codedark |endif
 for g in ['Normal', 'EndOfBuffer', 'LineNr', "Directory"]
     exe "hi ".g." ctermbg=NONE guibg=NONE" | endfor
-
+hi CursorLine ctermbg=22
+hi StatusLine ctermbg=58
+hi StatusLineNC ctermbg=238

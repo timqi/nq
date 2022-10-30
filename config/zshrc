@@ -97,8 +97,8 @@ iploc() {
 
 
 # fzf
-export FZF_DEFAULT_COMMAND='rg --files'
-export FZF_DEFAULT_OPTS='--ansi -m --color dark --bind=ctrl-l:toggle-all --bind=ctrl-j:preview-half-page-down --bind=ctrl-k:preview-half-page-up --bind=ctrl-/:toggle-preview --inline-info --preview-window noborder,wrap'
+export FZF_DEFAULT_COMMAND='rg --files --color never'
+export FZF_DEFAULT_OPTS='--ansi -m --color dark --bind=ctrl-l:toggle-all --bind=ctrl-j:preview-half-page-down --bind=ctrl-k:preview-half-page-up --bind=ctrl-/:toggle-preview --inline-info --preview-window noborder,wrap --height=11'
 fzf-history-widget() {
   selected=`history -n 0 |awk '!x[$0]++' |FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS -e +s +m --tac --query ${(qqq)LBUFFER}" fzf`
   BUFFER=$selected; CURSOR=$#BUFFER; zle redisplay
@@ -130,6 +130,14 @@ precmd() {
 }
 LOCAL_MACHINE_NAME=`hostname`
 PROMPT=$'%(?:%F{2}:%F{1})${LOCAL_MACHINE_NAME:->} %B%F{4}%c%b%F{8}${__git_branch}%f%{$reset_color%} %# '
+
+toggle-tmux-popup() {
+    if [ "$(tmux display-message -p -F "#{session_name}")" = "popup" ];then
+        tmux detach-client
+    else
+        tmux popup -d '#{pane_current_path}' -xC -yC -w99% -h99% -E "zsh -i -c 'tmux new-session -A -s popup'"
+    fi
+}
 
 
 # Auto source ~/.platformrc
