@@ -55,58 +55,6 @@ let g:fzf_layout = { 'window': 'enew' }
 let g:fzf_commits_log_options =  "-200 --color=always"
 let g:fzf_preview_window = ['up:80%', 'ctrl-/']
 
-"## Advanced features ##
-if get(g:, "feature_mode", "basic") != "basic"
-
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
-Plug 'honza/vim-snippets'
-let g:coc_global_extensions = ["coc-go", "coc-pyright", "coc-lists", "coc-typos"]
-
-" typos
-nmap ]s <Plug>(coc-typos-next)
-nmap [s <Plug>(coc-typos-prev)
-nmap z= <Plug>(coc-typos-fix)
-
-nnoremap K           :<C-u>call CocActionAsync('doHover')<CR>
-nnoremap L           :<C-u>call CocActionAsync('showSignatureHelp')<CR>
-nnoremap gt          :<C-u>call CocActionAsync('jumpTypeDefinition')<CR>
-nnoremap gi          :<C-u>call CocActionAsync('jumpImplementation')<CR>
-nnoremap gr          :<C-u>call CocActionAsync('jumpReferences')<CR>
-nnoremap qf          :<C-u>call CocActionAsync('doQuickfix')<CR>
-nnoremap gd          :<C-u>call CocActionAsync('jumpDefinition')<CR>
-nnoremap <leader>rn   :<C-u>call CocActionAsync('rename')<CR>
-
-noremap  <c-p>       :<C-u>CocList files<CR>
-noremap  <c-e>       :<C-u>CocList mru<CR>
-noremap  <leader>p   :<C-u>CocListResume<CR>
-
-nnoremap <leader>m  :<C-U>CocList marks<CR>
-nnoremap <leader>w  y:<C-U><C-R>=printf("CocList -A grep %s", expand("<cword>"))<CR>
-nnoremap <leader>s  :<C-U><C-R>=printf("CocList -A grep ")<CR>
-vnoremap <leader>s  y:<C-U><C-R>=printf("CocList -A grep %s", getreg('"'))<CR>
-nnoremap <leader>h  :<C-U>CocList helptags<CR>
-
-nnoremap <leader>a   :<C-u>CocList -A --normal diagnostics --current-buf<CR>
-nnoremap <leader>t   :<C-u>CocList -A outline<CR>
-nnoremap <leader>c   :<C-u>CocList commands<CR>
-nnoremap <leader>j   :<C-u>CocList cmdhistory<CR>
-nnoremap <leader>l   :<C-u>CocList<CR>
-
-nnoremap <nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
-nnoremap <nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
-inoremap <nowait><expr> <C-f> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(1)\<cr>" : "\<Right>"
-inoremap <nowait><expr> <C-b> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(0)\<cr>" : "\<Left>"
-vnoremap <nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
-vnoremap <nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
-
-inoremap <expr><c-y> coc#_select_confirm()
-inoremap <expr><c-n> coc#pum#visible() ? coc#pum#next(1): coc#refresh()
-inoremap <expr><c-p> coc#pum#visible() ? coc#pum#prev(1): "\<c-p>"
-inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
-
-endif
-"## Advanced features end ##
-
 Plug 'TovarishFin/vim-solidity'
 Plug 'tomasiser/vim-code-dark'
 let g:codedark_transparent=1
