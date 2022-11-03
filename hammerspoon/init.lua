@@ -65,7 +65,6 @@ end
 
 function closeAlert()
     for _, shortcut in ipairs(app_shortcuts) do shortcut:disable() end
-    for _, shortcut in ipairs(pasteShortcuts) do shortcut:disable() end
     hs.alert.closeAll(); collectgarbage("collect")
 end
 app_shortcuts[#app_shortcuts+1] = hs.hotkey.new({"ctrl"}, "c", closeAlert)
@@ -156,52 +155,6 @@ hs.hotkey.bind({'shift', 'cmd', 'ctrl'}, 'r', function()
 end)
 hs.alert.show("Config Loaded")
 hs.logger.setGlobalLogLevel(1)
-
-
--- Pasteboard manager
-hs.pasteboard.watcher.interval(2)
-function readPasteboardTable()
-    local file = io.open(os.getenv("HOME").."/.pasteboard", "r")
-    if file == nil then return {} end
-    local content = file:read("*a"); file:close()
-    if content == "" then return {} end
-    return hs.json.decode(content)
-end
-pasteShortcuts, pb_watcher = {}, hs.pasteboard.watcher.new(function()
-    local text = ""
-    for idx, uti in ipairs(hs.pasteboard.contentTypes()) do
-        if uti == "public.utf8-plain-text" then text = hs.pasteboard.readString() end
-    end
-    if text == "" then return end
-    local arr = readPasteboardTable()
-    for idx, el in ipairs(arr) do if el == text then table.remove(arr, idx) end end
-    table.insert(arr, 1, text)
-    while #arr >= 12 do table.remove(arr, #arr) end
-    local file = io.open(os.getenv("HOME").."/.pasteboard", "w")
-    file:write(hs.json.encode(arr))
-    file:close()
-end)
-pb_watcher:start()
-function pasteSelect(idx)
-    hs.pasteboard.setContents(readPasteboardTable()[idx])
-    hs.eventtap.keyStroke({"cmd"}, "v")
-    closeAlert()
-end
-for idx=1,11 do key = string.char(96+idx)
-    pasteShortcuts[#pasteShortcuts+1] = hs.hotkey.new({}, key, 
-        function() pasteSelect(idx) end)
-end
-pasteShortcuts[#pasteShortcuts+1] = hs.hotkey.new({}, "ESCAPE", closeAlert)
-pasteShortcuts[#pasteShortcuts+1] = hs.hotkey.new({"ctrl"}, "c", closeAlert)
-hs.hotkey.bind({"shift", "cmd"}, "v", function()
-    hs.alert.closeAll()
-    local msg = "-- Pasteboard --"
-    for idx, el in ipairs(readPasteboardTable()) do
-        msg = msg.."\n"..string.char(96+idx)..": "..el:gsub("[\r\n]+", ""):sub(1, 50)
-    end
-    hs.alert.show(msg, {radius=5}, hs.screen.mainScreen(), true)
-    for _, shortcut in ipairs(pasteShortcuts) do shortcut:enable() end
-end)
 
 
 require("mouse")
