@@ -155,7 +155,7 @@ install_config() {
     link "$conf_dir/tmux.conf" "$HOME/.tmux.conf"
 
     case `uname -a` in *Darwin*)
-        #link "$conf_dir/alacritty.yml" "$HOME/.alacritty.yml"
+        link "$conf_dir/alacritty.yml" "$HOME/.alacritty.yml"
         #link "$conf_dir/wezterm.lua" "$HOME/.wezterm.lua"
         rm -rf "$HOME/.hammerspoon"
         link "$HOME/.config/nq/hammerspoon" "$HOME/.hammerspoon"

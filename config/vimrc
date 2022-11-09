@@ -1,4 +1,4 @@
-"if get(s:, 'loaded', 0) != 0 | finish | else | let s:loaded = 1 | endif
+if get(s:, 'loaded', 0) != 0 | finish | else | let s:loaded = 1 | endif
 set encoding=utf-8 fileencodings=utf-8,ucs-bom,gbk,gb18030,big5,euc-jp,latin1
 let mapleader = "\<space>"
 
@@ -8,7 +8,7 @@ set backspace=indent,eol,start
 set completeopt=menu,preview
 set noswapfile nobackup nowritebackup
 set cindent autoindent smartindent expandtab smarttab 
-set nu signcolumn=number laststatus=1 mouse=a
+set nu signcolumn=number laststatus=1 mouse-=a
 set wildignore+=.bak,*.swp,*.class,*.pyc,*DS_Store*,*.swp,*/.Trash/*
 set updatetime=1000
 set ts=4 sw=4 sts=4
@@ -56,12 +56,9 @@ let g:fzf_commits_log_options =  "-200 --color=always"
 let g:fzf_preview_window = ['up:80%', 'ctrl-/']
 
 Plug 'TovarishFin/vim-solidity'
-Plug 'tomasiser/vim-code-dark'
-let g:codedark_transparent=1
 
 call plug#end()
 
-if get(g:, "feature_mode", "basic") != "basic" |colorscheme codedark |endif
 for g in ['Normal', 'EndOfBuffer', 'LineNr', "Directory"]
     exe "hi ".g." ctermbg=NONE guibg=NONE" | endfor
 hi CursorLine ctermbg=22
