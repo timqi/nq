@@ -1,4 +1,4 @@
-if get(s:, 'loaded', 0) != 0 | finish | else | let s:loaded = 1 | endif
+"if get(s:, 'loaded', 0) != 0 | finish | else | let s:loaded = 1 | endif
 set encoding=utf-8 fileencodings=utf-8,ucs-bom,gbk,gb18030,big5,euc-jp,latin1
 let mapleader = "\<space>"
 
@@ -8,7 +8,7 @@ set backspace=indent,eol,start
 set completeopt=menu,preview
 set noswapfile nobackup nowritebackup
 set cindent autoindent smartindent expandtab smarttab 
-set nu signcolumn=number laststatus=1 mouse-=a
+set nu signcolumn=number laststatus=1 mouse-=a cursorline
 set wildignore+=.bak,*.swp,*.class,*.pyc,*DS_Store*,*.swp,*/.Trash/*
 set updatetime=1000
 set ts=4 sw=4 sts=4
@@ -47,20 +47,25 @@ Plug 'junegunn/fzf.vim'
 noremap  <c-e>      :<C-U>call fzf#vim#history()<CR>
 noremap  <c-p>      :<C-U>call fzf#vim#files('')<CR>
 nnoremap <leader>m  :<C-U>call fzf#vim#marks()<CR>
+nnoremap <leader>t  :<C-U>BTags<CR>
+nnoremap <leader>r  y:<C-U><C-R>=printf("Tags %s", expand("<cword>"))<CR>
 nnoremap <leader>w  y:<C-U><C-R>=printf("Rg %s", expand("<cword>"))<CR>
 nnoremap <leader>s  :<C-U><C-R>=printf("Rg ")<CR>
-vnoremap <leader>s  y:<C-U><C-R>=printf("Rg %s", getreg('"'))<CR>
-nnoremap <leader>t  :<C-U>BTags<CR>
 let g:fzf_layout = { 'window': 'enew' }
 let g:fzf_commits_log_options =  "-200 --color=always"
 let g:fzf_preview_window = ['up:80%', 'ctrl-/']
 
 Plug 'TovarishFin/vim-solidity'
+Plug 'leafgarland/typescript-vim'
 
 call plug#end()
 
 for g in ['Normal', 'EndOfBuffer', 'LineNr', "Directory"]
     exe "hi ".g." ctermbg=NONE guibg=NONE" | endfor
-hi CursorLine ctermbg=22
+hi LineNr ctermfg=4
+hi CursorLine ctermbg=237
 hi StatusLine ctermbg=58
 hi StatusLineNC ctermbg=238
+hi Search ctermbg=240
+hi Visual ctermbg=240
+hi VisualNOS ctermbg=240

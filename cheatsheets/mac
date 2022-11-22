@@ -30,3 +30,7 @@ defaults write com.microsoft.VSCodeInsiders ApplePressAndHoldEnabled -bool false
 defaults write com.visualstudio.code.oss ApplePressAndHoldEnabled -bool false    # For VS Codium
 defaults write -g ApplePressAndHoldEnabled -bool false # for global
 defaults delete -g ApplePressAndHoldEnabled # to disable
+
+# Proxifier 注册码
+3CWNN-WYTP4-SD83W-ASDFR-84KEA
+P427L-9Y552-5433E-8DSR3-58Z68
