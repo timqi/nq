@@ -1,6 +1,6 @@
 # https://github.com/alacritty/alacritty/blob/master/alacritty.yml
 window:
-  opacity: 0.85
+  opacity: 0.9
   decorations: none
   startup_mode: Maximized
 

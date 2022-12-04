@@ -28,7 +28,6 @@ au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
     \| exe "normal! g'\"" | endif
 
 call plug#begin('~/.vim/plugged')
-Plug 'christoomey/vim-tmux-navigator'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-fugitive'
 Plug 'jiangmiao/auto-pairs'
@@ -120,7 +119,7 @@ for g in ['Normal', 'EndOfBuffer', 'LineNr', "Directory"]
 hi LineNr ctermfg=4
 hi CursorLine ctermbg=237
 hi StatusLine ctermbg=58
-hi StatusLineNC ctermbg=238
+hi StatusLineNC ctermbg=244
 hi Search ctermbg=240
 hi Visual ctermbg=240
 hi VisualNOS ctermbg=240
