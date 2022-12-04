@@ -190,7 +190,7 @@ resample = function(points, n)
             thispoint = points[i]
         end
     end
-    -- somtimes we fall a rounding-error short of adding the last point, so add it if so
+    -- sometimes we fall a rounding-error short of adding the last point, so add it if so
     if #newpoints == n - 1 then
         newpoints[#newpoints+1] = Point(points[#points][1], points[#points][2])
     end

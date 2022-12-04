@@ -40,7 +40,7 @@ function doCanvas(type)
         canvas:hide(); canvas:delete();
         ----- handle tracking
         for _, v in pairs(points) do v[1], v[2] = v.x, v.y end
-        local name, score, cloestIndex = gestures.recognize(points)
+        local name, score, _ = gestures.recognize(points)
         if name == nil or score < 0.8 then
             gesture_alert("No pattern found.")
         else

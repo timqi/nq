@@ -51,7 +51,7 @@ install_gh() {
     done
     [ -z $app ] && log "$1 is not supported yet, return" && return
     [ $arch = "unknown" ] && \
-        log "Archetect is unknow, can't install, return" && return
+        log "Architect is unknow, can't install, return" && return
 
     case $app in
     "nv")     curr_ver=`command -v nv >/dev/null && echo $(nv -v|head -n 1|cut -d " " -f2) || echo "0.0.0"`;;
@@ -64,19 +64,19 @@ install_gh() {
     esac
 
     url="https://api.github.com/repos/$repo/releases/latest"
-    lastest_ver=`curl -s ${url} --connect-timeout 10| grep 'tag_name' | cut -d\" -f4`
-    [ "$curr_ver" = "$lastest_ver" ] && log "$app: $curr_ver, is the newest" && return
+    latest_ver=`curl -s ${url} --connect-timeout 10| grep 'tag_name' | cut -d\" -f4`
+    [ "$curr_ver" = "$latest_ver" ] && log "$app: $curr_ver, is the newest" && return
 
-    log "Will install: $app. lastest_ver:'$lastest_ver' arch:'$arch'; curr_ver:'$curr_ver'"
-    base_url="https://github.com/$repo/releases/download/$lastest_ver"
+    log "Will install: $app. latest_ver:'$latest_ver' arch:'$arch'; curr_ver:'$curr_ver'"
+    base_url="https://github.com/$repo/releases/download/$latest_ver"
     case $app in
     "nv")     url="$base_url/nvim-$arch.tar.gz";;
-    "rg")     url="$base_url/ripgrep-$lastest_ver-$arch.tar.gz";;
-    "fzf")    url="$base_url/fzf-$lastest_ver-$arch";;
-    "zoxide") url="$base_url/zoxide-${lastest_ver:1:100}-$arch.tar.gz";;
+    "rg")     url="$base_url/ripgrep-$latest_ver-$arch.tar.gz";;
+    "fzf")    url="$base_url/fzf-$latest_ver-$arch";;
+    "zoxide") url="$base_url/zoxide-${latest_ver:1:100}-$arch.tar.gz";;
     "jq")     url="$base_url/jq-$arch";;
     "cheat")  url="$base_url/cheat-$arch.gz";;
-    "bat")    url="$base_url/bat-$lastest_ver-$arch.tar.gz";;
+    "bat")    url="$base_url/bat-$latest_ver-$arch.tar.gz";;
     esac
 
     tar_file="$tmp_dir/$app.tar.gz"
@@ -99,8 +99,8 @@ install_gh() {
     fzf|zoxide) mv "$tmp_app_dir/$app" $bin_dir;;
     nv) rm -rf "$local_dir/nvim" && cp -r "$tmp_app_dir" "$local_dir/nvim" && \
         link "../nvim/bin/nvim" "$bin_dir/nv";;
-    rg) mv "$tmp_app_dir/ripgrep-$lastest_ver-$arch/$app" $bin_dir;;
-    bat) mv "$tmp_app_dir/$app-$lastest_ver-$arch/$app" $bin_dir;;
+    rg) mv "$tmp_app_dir/ripgrep-$latest_ver-$arch/$app" $bin_dir;;
+    bat) mv "$tmp_app_dir/$app-$latest_ver-$arch/$app" $bin_dir;;
     jq) chmod +x "$bin_dir/$app";;
     cheat) chmod +x "$bin_dir/$app"
         cheat_dir=$HOME/.config/cheat
@@ -120,7 +120,7 @@ nn() {
     node_root="$local_dir/node"; node_path="$node_root/$ver"
     case $1 in
         list) log "Current: $(node -v)"; for ver in `ls $node_root`; do echo "  - $ver"; done;;
-        install) [ -d "$node_path" ] && log "v$ver alreay installed, return" && return
+        install) [ -d "$node_path" ] && log "v$ver allreay installed, return" && return
             case `uname -a` in
             *Linux*x86_64*) filename="node-v$ver-linux-x64.tar.xz";;
             *Darwin*ARM64*) filename="node-v$ver-darwin-arm64.tar.gz";;
@@ -194,6 +194,7 @@ install_vimrc() {
     conf_dir="$HOME/.config/nq/config"
     vim_config_dir="$HOME/.vim" 
     link "$conf_dir/coc-settings.json" "$vim_config_dir"
+    [ -d "$HOME/.config/nvim" ] && link "$conf_dir/coc-settings.json" "$HOME/.config/nvim"
 
     feature_mode=`[ "$1" = "basic" ] && echo "basic" || echo "full"`
     echo "let g:feature_mode=\"$feature_mode\"" > $HOME/.vimrc

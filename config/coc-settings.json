@@ -1,0 +1,35 @@
+// vim: set filetype=jsonc
+{
+  "suggest.maxCompleteItemCount": 10,
+  "suggest.keepCompleteopt": false,
+  "suggest.removeDuplicateItems": true,
+  "snippets.ultisnips.enable": false,
+
+  "list.source.files.command": "rg",
+  "list.source.files.args": [
+      "--files",
+      "--color",
+      "never"
+  ],
+
+  "pyright.inlayHints.functionReturnTypes": false,
+  "pyright.inlayHints.variableTypes": false,
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportOptionalSubscript": "none",
+    "reportGeneralTypeIssues": "none",
+    "reportOptionalOperand": "warning",
+    "reportOptionalMemberAccess": "none"
+  },
+  "list.normalMappings": {
+    "<C-c>": "do:exit",
+    "<C-v>": "action:vsplit"
+  },
+  "list.insertMappings": {
+	"<C-j>": "feedkeys:<Down>",
+    "<C-k>": "feedkeys:<Up>",
+    "<C-c>": "do:exit",
+    "<C-v>": "action:vsplit"
+  },
+  "git.enableGutters": false
+}
+
