@@ -39,6 +39,7 @@ install_gh() {
         zoxide=ajeetdsouza/zoxide;x86_64-unknown-linux-musl;aarch64-apple-darwin \
         jq=stedolan/jq;linux64;osx-amd64 \
         cheat=cheat/cheat;linux-amd64;darwin-amd64 \
+        lazygit=jesseduffield/lazygit;Linux_x86_64;Darwin_arm64 \
         bat=sharkdp/bat;x86_64-unknown-linux-musl;x86_64-apple-darwin "
     for item in $arr; do
         if [ `echo $item|cut -d "=" -f1` != "$1" ]; then continue; fi
@@ -60,7 +61,8 @@ install_gh() {
     "zoxide") curr_ver=`command -v zoxide >/dev/null && echo $(zoxide -V|cut -d " " -f2) || echo "0.0.0"`;;
     "jq")     curr_ver=`command -v jq >/dev/null && echo $(jq --version|head -n 1|cut -d "-" -f2) || echo "0.0.0"`;;
     "cheat")  curr_ver=`command -v cheat >/dev/null && echo $(cheat -v) || echo "0.0.0"`;;
-    "bat")  curr_ver=`command -v bat >/dev/null && echo "v$(bat -V|head -n 1|cut -d ' ' -f2)" || echo "0.0.0"`;;
+    "bat")    curr_ver=`command -v bat >/dev/null && echo "v$(bat -V|head -n 1|cut -d ' ' -f2)" || echo "0.0.0"`;;
+    "lazygit")curr_ver=`command -v lazygit >/dev/null && echo "v$(lazygit -version | grep -oP 'version=.+?,' | cut -d= -f2 | cut -d, -f1)" || echo "0"`
     esac
 
     url="https://api.github.com/repos/$repo/releases/latest"
@@ -77,6 +79,7 @@ install_gh() {
     "jq")     url="$base_url/jq-$arch";;
     "cheat")  url="$base_url/cheat-$arch.gz";;
     "bat")    url="$base_url/bat-$latest_ver-$arch.tar.gz";;
+    "lazygit")url="$base_url/lazygit_${latest_ver:1:100}_$arch.tar.gz";;
     esac
 
     tar_file="$tmp_dir/$app.tar.gz"
@@ -96,7 +99,7 @@ install_gh() {
     fi
 
     case $app in
-    fzf|zoxide) mv "$tmp_app_dir/$app" $bin_dir;;
+    fzf|zoxide|lazygit) mv "$tmp_app_dir/$app" $bin_dir;;
     nv) rm -rf "$local_dir/nvim" && cp -r "$tmp_app_dir" "$local_dir/nvim" && \
         link "../nvim/bin/nvim" "$bin_dir/nv";;
     rg) mv "$tmp_app_dir/ripgrep-$latest_ver-$arch/$app" $bin_dir;;
@@ -234,7 +237,7 @@ install_brew() {
 #set -x
 case $1 in
     vimrc) install_vimrc;;
-    rg|fzf|zoxide|jq|nv|cheat|bat) install_gh $1;;
+    rg|fzf|zoxide|jq|nv|cheat|bat|lazygit) install_gh $1;;
     go) install_go;;
     node) nn install;;
     conda) install_conda;;

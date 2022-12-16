@@ -48,8 +48,9 @@ alias abrew='arch -arm64 brew'
 alias g='git'
 alias pipx='PYTHONUSERBASE=$HOME/.local/python /usr/bin/python3 -m pip'
 alias vim='nv'
-#alias bat='bat --theme="Visual Studio Dark+" --style=numbers'
-#export BAT_THEME="Visual Studio Dark+"
+alias lg='lazygit'
+
+export BAT_THEME="Solarized (dark)"
 
 # init homebrew
 brew_path="/opt/homebrew/bin/brew"

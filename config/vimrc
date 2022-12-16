@@ -11,8 +11,7 @@ set cindent autoindent smartindent expandtab smarttab
 set nu signcolumn=number laststatus=1 mouse=v cursorline
 set wildignore+=.bak,*.swp,*.class,*.pyc,*DS_Store*,*.swp,*/.Trash/*
 set updatetime=1000
-set ts=4 sw=4 sts=4
-set autoread t_Co=256
+set autoread ts=4 sw=4 sts=4
 au FileType javascript,html,vue setlocal sw=2 ts=2 sts=2
 
 syntax on
@@ -53,9 +52,12 @@ noremap  <c-e>      :<C-U>call fzf#vim#history()<CR>
 noremap  <c-p>      :<C-U>call fzf#vim#files('')<CR>
 nnoremap <leader>m  :<C-U>call fzf#vim#marks()<CR>
 nnoremap <leader>t  :<C-U>BTags<CR>
+nnoremap <leader>y  :<C-U>Tags<CR>
+nnoremap <leader>h  :<C-U>Helptags<CR>
 nnoremap <leader>r  y:<C-U><C-R>=printf("Tags %s", expand("<cword>"))<CR>
 nnoremap <leader>w  y:<C-U><C-R>=printf("Rg %s", expand("<cword>"))<CR>
 nnoremap <leader>s  :<C-U><C-R>=printf("Rg ")<CR>
+nnoremap <leader>j  :History:<CR>
 let g:fzf_layout = { 'window': 'enew' }
 let g:fzf_commits_log_options =  "-200 --color=always"
 let g:fzf_preview_window = ['up:80%', 'ctrl-/']
@@ -65,10 +67,12 @@ Plug 'leafgarland/typescript-vim'
 
 
 
-"## Advanced features ##
-if get(g:, "feature_mode", "basic") != "basic"
+if has("nvim")
+Plug 'github/copilot.vim'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
-let g:coc_global_extensions = ["coc-go", "coc-pyright", "coc-typos", "coc-lists"]
+let g:coc_global_extensions = ["coc-go", "coc-pyright", "coc-typos"]
+Plug 'antoinemadec/coc-fzf'
+let g:coc_fzf_preview = 'up:80%'
 
 " typos
 nmap ]s <Plug>(coc-typos-next)
@@ -82,23 +86,11 @@ nnoremap gi          :<C-u>call CocActionAsync('jumpImplementation')<CR>
 nnoremap gr          :<C-u>call CocActionAsync('jumpReferences')<CR>
 nnoremap qf          :<C-u>call CocActionAsync('doQuickfix')<CR>
 nnoremap gd          :<C-u>call CocActionAsync('jumpDefinition')<CR>
-nnoremap <leader>rn   :<C-u>call CocActionAsync('rename')<CR>
+nnoremap <leader>rn  :<C-u>call CocActionAsync('rename')<CR>
 
-noremap  <leader>p   :<C-u>CocList files<CR>
-noremap  <leader>e   :<C-u>CocList mru<CR>
-"noremap  <leader>p   :<C-u>CocListResume<CR>
-
-nnoremap <leader>m  :<C-U>CocList marks<CR>
-nnoremap <leader>w  y:<C-U><C-R>=printf("CocList -A grep %s", expand("<cword>"))<CR>
-nnoremap <leader>s  :<C-U><C-R>=printf("CocList -A grep ")<CR>
-vnoremap <leader>s  y:<C-U><C-R>=printf("CocList -A grep %s", getreg('"'))<CR>
-nnoremap <leader>h  :<C-U>CocList helptags<CR>
-
-nnoremap <leader>a   :<C-u>CocList -A --normal diagnostics --current-buf<CR>
-nnoremap <leader>t   :<C-u>CocList -A outline<CR>
-nnoremap <leader>c   :<C-u>CocList commands<CR>
-nnoremap <leader>j   :<C-u>CocList cmdhistory<CR>
-nnoremap <leader>l   :<C-u>CocList<CR>
+nnoremap <leader>a   :<C-u>CocFzfList diagnostics --current-buf<CR>
+nnoremap <leader>c   :<C-u>CocFzfList commands<CR>
+nnoremap <leader>l   :<C-u>CocFzfList<CR>
 
 nnoremap <nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
 nnoremap <nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
@@ -112,20 +104,21 @@ inoremap <expr><c-n> coc#pum#visible() ? coc#pum#next(1): coc#refresh()
 inoremap <expr><c-p> coc#pum#visible() ? coc#pum#prev(1): "\<c-p>"
 inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
 
+
 endif
 "## Advanced features end ##
-
 call plug#end()
 
-colorscheme codedark
 
+set termguicolors
+colorscheme codedark
 for g in ['Normal', 'EndOfBuffer', 'LineNr', "Directory"]
     exe "hi ".g." ctermbg=NONE guibg=NONE" | endfor
 hi LineNr ctermfg=4
-hi CursorLine ctermbg=237
-hi StatusLine ctermbg=58
-hi StatusLineNC ctermbg=244
-hi Search ctermbg=240
-hi Visual ctermbg=240
-hi VisualNOS ctermbg=240
+hi CursorLine ctermbg=237 guibg=#386641
+hi StatusLine ctermbg=58 guibg=#6a994e
+hi StatusLineNC ctermbg=244 guibg=#6d6875
+hi Search ctermbg=240 guibg=#495057
+hi Visual ctermbg=240 guibg=#495057
+hi VisualNOS ctermbg=240 guibg=#495057
 

@@ -1,3 +1,6 @@
+[core]
+	excludesfile = ~/.config/nq/config/gitignore
+
 [log]
     date = format-local:%Y%m%d %H:%M
 

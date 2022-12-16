@@ -1,0 +1,6 @@
+tags
+**__pycache__**
+**__pytest_cache__*
+*.pyc
+node_modules/
+
