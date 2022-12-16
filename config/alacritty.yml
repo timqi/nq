@@ -1,6 +1,6 @@
 # https://github.com/alacritty/alacritty/blob/master/alacritty.yml
 window:
-  opacity: 0.9
+  opacity: 0.93
   decorations: none
   startup_mode: Maximized
 
@@ -36,12 +36,16 @@ shell:
     - /Users/qiqi/Downloads
 
 colors:
+  # vscode
   primary:
     background: '#1e1e1e'
     foreground: '#d4d4d4'
+  #cursor:
+  #  text: CellBackground
+  #  cursor: CellForeground
   cursor:
-    text: CellBackground
-    cursor: CellForeground
+    text: '#1e1e1e'
+    cursor: '#00bc00'
   normal:
     black:   '#1e1e1e'
     red:     '#f44747'
