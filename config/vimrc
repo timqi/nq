@@ -118,7 +118,7 @@ hi LineNr ctermfg=4
 hi CursorLine ctermbg=237 guibg=#386641
 hi StatusLine ctermbg=58 guibg=#6a994e
 hi StatusLineNC ctermbg=244 guibg=#6d6875
-hi Search ctermbg=240 guibg=#495057
-hi Visual ctermbg=240 guibg=#495057
-hi VisualNOS ctermbg=240 guibg=#495057
+hi Search ctermbg=240 guibg=#03045e
+hi Visual ctermbg=240 guibg=#03045e
+hi VisualNOS ctermbg=240 guibg=#03045e
 
