@@ -1,6 +1,6 @@
 # https://github.com/alacritty/alacritty/blob/master/alacritty.yml
 window:
-  opacity: 0.93
+  opacity: 0.9
   decorations: none
   startup_mode: Maximized
 
@@ -14,7 +14,7 @@ font:
     x: 0
     y: 1
   normal:
-    family: Menlo
+    family: SF Mono
     # style: Light
 
 bell:
@@ -26,7 +26,7 @@ selection:
   semantic_escape_chars: ",│`|:\"' ()[]{}<>\t"
 
 shell:
-  program: /opt/homebrew/bin/tmux
+  program: /Users/qiqi/.config/nq/bin/alacritty-tmux
   args:
     - new-session
     - -A

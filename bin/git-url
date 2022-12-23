@@ -31,6 +31,13 @@ def get_url(path):
         ptn = "git@(?P<host>.+):(?P<username>[\w\d]+)/(?P<repo>[\w\d]+)"
         r = re.match(ptn, remote_url).groupdict()
         remote_url = f"https://{r['host']}/{r['username']}/{r['repo']}"
+    elif remote_url.startswith("ssh://"):
+        # ssh://git@gitlab.fish:1022/f2pool/node_images/kas.git
+        remote_url = (
+            remote_url.replace("ssh://git@", "https://")
+            .replace(":1022/", "/")
+            .replace(".git", "")
+        )
 
     related_path = path.replace(base_dir, "")
     branch, _ = _run("git rev-parse --abbrev-ref HEAD")

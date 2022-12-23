@@ -131,14 +131,6 @@ precmd() {
 LOCAL_MACHINE_NAME=`hostname`
 PROMPT=$'%(?:%F{2}:%F{1})${LOCAL_MACHINE_NAME:->} %B%F{4}%c%b%F{8}${__git_branch}%f%{$reset_color%} %# '
 
-toggle-tmux-popup() {
-    if [ "$(tmux display-message -p -F "#{session_name}")" = "popup" ];then
-        tmux detach-client
-    else
-        tmux popup -d '#{pane_current_path}' -xC -yC -w99% -h99% -E "zsh -i -c 'tmux new-session -A -s popup'"
-    fi
-}
-
 
 # Auto source ~/.platformrc
 [ -f "$HOME/.platformrc" ] && . "$HOME/.platformrc"
