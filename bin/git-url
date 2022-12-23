@@ -15,7 +15,7 @@ def _run(cmd):
     )
 
 
-def get_url(path):
+def get_url(path, remotes):
     base_dir = path
     while len(base_dir) > 2:
         if os.path.exists(os.path.join(base_dir, ".git")):
@@ -25,26 +25,33 @@ def get_url(path):
         print("Not in a git repository")
         sys.exit(-1)
 
-    stdout, _ = _run("git config --get remote.origin.url")
-    remote_url = stdout[:-4] if stdout.endswith(".git") else stdout
-    if remote_url.startswith("git@"):
-        ptn = "git@(?P<host>.+):(?P<username>[\w\d]+)/(?P<repo>[\w\d]+)"
-        r = re.match(ptn, remote_url).groupdict()
-        remote_url = f"https://{r['host']}/{r['username']}/{r['repo']}"
-    elif remote_url.startswith("ssh://"):
-        # ssh://git@gitlab.fish:1022/f2pool/node_images/kas.git
-        remote_url = (
-            remote_url.replace("ssh://git@", "https://")
-            .replace(":1022/", "/")
-            .replace(".git", "")
-        )
-
     related_path = path.replace(base_dir, "")
     branch, _ = _run("git rev-parse --abbrev-ref HEAD")
+    if "heads/" in branch:
+        branch = branch.replace("heads/", "")
 
-    url = f"{remote_url}/tree/{branch}{related_path}"
-    print(url)
+    urls = {}
+    for remote in remotes:
+        stdout, _ = _run(f"git config --get remote.{remote}.url")
+        remote_url = stdout[:-4] if stdout.endswith(".git") else stdout
+        if remote_url.startswith("git@"):
+            ptn = "git@(?P<host>.+):(?P<username>[\w\d]+)/(?P<repo>[\w\d]+)"
+            r = re.match(ptn, remote_url).groupdict()
+            remote_url = f"https://{r['host']}/{r['username']}/{r['repo']}"
+        elif remote_url.startswith("ssh://"):
+            # ssh://git@gitlab.fish:1022/f2pool/node_images/kas.git
+            remote_url = (
+                remote_url.replace("ssh://git@", "https://")
+                .replace(":1022/", "/")
+                .replace(".git", "")
+            )
+        urls[remote] = f"{remote_url}/tree/{branch}{related_path}"
+
+    for obj in urls:
+        print(f"{obj}:\t{urls[obj]}")
+
     if which("open"):
+        url = urls["fish"] if "fish" in urls else urls["origin"]
         _run(f"open {url}")
 
 
@@ -53,4 +60,5 @@ if __name__ == "__main__":
     path = (
         cwd if len(sys.argv) < 2 else os.path.join(cwd, os.path.expanduser(sys.argv[1]))
     )
-    get_url(path)
+    remotes, _ = _run("git remote")
+    get_url(path, remotes.splitlines())
