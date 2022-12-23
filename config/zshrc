@@ -100,9 +100,9 @@ iploc() {
 
 # fzf
 export FZF_DEFAULT_COMMAND='rg --files --color never'
-export FZF_DEFAULT_OPTS='--ansi -m --color dark --bind=ctrl-l:toggle-all --bind=ctrl-j:preview-half-page-down --bind=ctrl-k:preview-half-page-up --bind=ctrl-/:toggle-preview --inline-info --preview-window wrap --height=11'
+export FZF_DEFAULT_OPTS='--ansi -m --color dark --bind=ctrl-l:toggle-all --bind=ctrl-j:preview-half-page-down --bind=ctrl-k:preview-half-page-up --bind=ctrl-/:toggle-preview --inline-info --preview-window wrap --height=10'
 fzf-history-widget() {
-  selected=`history -n 0 |awk '!x[$0]++' |FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS -e +s +m --tac --query ${(qqq)LBUFFER}" fzf`
+  selected=`history -n 0 |awk '!x[$0]++' |FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS -e +s +m --layout=reverse --tac --query ${(qqq)LBUFFER}" fzf`
   BUFFER=$selected; CURSOR=$#BUFFER; zle redisplay
 }
 zle -N fzf-history-widget && bindkey '^R' fzf-history-widget
@@ -113,14 +113,12 @@ eval "$(zoxide init zsh --cmd z --hook none)"
 _zoxide_zsh_tab_completion() {
     (( $+compstate )) && compstate[insert]=menu
     local keyword="${words:2}"
-    [[ -z $keyword ]] && _files -/ && return
     local completions=(${(@f)"$(zoxide query -l "$keyword")"})
-    [[ ${#completions[@]} ]] && _files -/ ||\
-        compadd -U -V z "${(@)completions}"
+    compadd -U -V z "${(@)completions}"
 }
-[ "${+functions[compdef]}" -ne 0 ] &&\
+[ "${+functions[compdef]}" -ne 0 ] && compdef -d z &&\
     compdef _zoxide_zsh_tab_completion z 2> /dev/null
-## zoxide auto add
+# zoxide auto add
 alias zdd='zoxide add `pwd`'; alias zl='zoxide query -l -s'
 chpwd() { [ -e ".git" ] && zdd }
 
