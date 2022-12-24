@@ -6,6 +6,18 @@ from shutil import which
 import re
 
 
+class bcolors:
+    HEADER = "\033[95m"
+    OKBLUE = "\033[94m"
+    OKCYAN = "\033[96m"
+    OKGREEN = "\033[92m"
+    WARNING = "\033[93m"
+    FAIL = "\033[91m"
+    ENDC = "\033[0m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+
+
 def _run(cmd):
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
     stdout, stderr = p.communicate()
@@ -48,7 +60,15 @@ def get_url(path, remotes):
         urls[remote] = f"{remote_url}/tree/{branch}{related_path}"
 
     for obj in urls:
-        print(f"{obj}:\t{urls[obj]}")
+        print(f"{bcolors.HEADER}{obj}:\t{urls[obj]}{bcolors.ENDC}")
+        base_url = urls[obj].split("/tree/")[0]
+        if "gitlab" in base_url:
+            print(f"  - overview:\t{base_url}")
+            print(f"  - pipelines:\t{base_url}/-/pipelines")
+            print(f"  - tags:\t{base_url}/-/tags")
+            print(f"  - merge reqs:\t{base_url}/-/merge_requests")
+        elif "github" in base_url:
+            print(f"  - overview:\t{base_url}")
 
     if which("open"):
         url = urls["fish"] if "fish" in urls else urls["origin"]
