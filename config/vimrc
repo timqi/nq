@@ -112,6 +112,8 @@ endif
 call plug#end()
 
 
+command! Lg execute '!tmux popup -d "\#{pane_current_path}" -xC -yC -w99\% -h99\% -E "zsh -i -c lazygit"'
+
 function! s:GoToWorkspace(directory)
     execute 'cd '.a:directory
     execute 'CocRestart'

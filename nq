@@ -102,7 +102,6 @@ install_gh() {
     fzf) mv "$tmp_app_dir/$app" $bin_dir; mkdir -p ~/.fzf;;
     zoxide|lazygit) mv "$tmp_app_dir/$app" $bin_dir;;
     nv) rm -rf "$local_dir/nvim" && cp -r "$tmp_app_dir" "$local_dir/nvim" && \
-        link "../nvim/bin/nvim" "$bin_dir/nv" && \
         link "../nvim/bin/nvim" "$bin_dir/nvim";;
     rg) mv "$tmp_app_dir/ripgrep-$latest_ver-$arch/$app" $bin_dir;;
     bat) mv "$tmp_app_dir/$app-$latest_ver-$arch/$app" $bin_dir;;
