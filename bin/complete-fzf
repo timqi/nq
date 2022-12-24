@@ -1,0 +1,227 @@
+#!/usr/bin/env python3
+
+import os
+from os.path import exists
+import sys
+import subprocess
+
+os.environ["FZF_DEFAULT_OPTS"] = (
+    os.environ.get("FZF_DEFAULT_OPTS", "") + " --layout=reverse"
+)
+
+
+class bcolors:
+    HEADER = "\033[95m"
+    OKBLUE = "\033[94m"
+    OKCYAN = "\033[96m"
+    OKGREEN = "\033[92m"
+    WARNING = "\033[93m"
+    FAIL = "\033[91m"
+    ENDC = "\033[0m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+
+
+def _run(cmd, stdin=None):
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=subprocess.PIPE, shell=True)
+    if isinstance(stdin, str):
+        stdin = stdin.encode("utf8")
+    stdout, stderr = p.communicate(input=stdin)
+    return (
+        stdout.decode("utf-8").strip() if stdout else "",
+        stderr.decode("utf-8").strip() if stderr else "",
+    )
+
+
+def select_from_container(only_running=False, return_origin=False):
+    format = "--format 'table {{.ID}}\t{{.State}}\t{{.Names}}\t{{.Image}}'"
+    cmd = "docker ps " + (" " if only_running else "-a ") + format
+    containers, _ = _run(cmd)
+    containers = containers.splitlines()[1:]
+
+    if exists("./docker-compose.yml") or exists("./docker-compose.yaml"):
+        cmd = "docker-compose ps" + ("" if only_running else " -a")
+        compose, _ = _run(cmd)
+        compose_container_names = set(
+            [line.split()[0] for line in compose.splitlines()[1:]]
+        )
+
+        def _get_container_key(line):
+            name = line.split()[2]
+            return 1 if name in compose_container_names else 2
+
+        containers.sort(key=_get_container_key)
+
+    stdout, _ = _run("fzf -e", stdin="\n".join(containers))
+    if return_origin:
+        return stdout
+    return "" if not stdout else stdout.split()[2]
+
+
+def ssh_list_hosts(ori):
+    with open(os.path.expanduser("~/.ssh/config")) as f:
+        hosts = []
+        for line in f:
+            if not line.startswith("Host "):
+                continue
+            if line.startswith("Host *"):
+                continue
+            hosts += [host.strip() for host in line.split()[1:]]
+    stdout, _ = _run("fzf -e", stdin="\n".join(hosts))
+    return f"{ori} {stdout} " if stdout else ori
+
+
+def kill_with_pids(ori):
+    stdout, _ = _run("ps -ef | fzf -e")
+    pids = [line.split()[1] for line in stdout.splitlines()]
+    return f"{ori} {' '.join(pids)} " if pids else ori
+
+
+def top_with_pids(ori):
+    stdout, _ = _run("ps -ef | fzf -e")
+    pids = [line.split()[1] for line in stdout.splitlines()]
+    if len(pids) > 20:
+        pids = pids[:20]
+    return f"{ori} -p {','.join(pids)} " if pids else ori
+
+
+def docker_container_log(ori):
+    name = select_from_container(only_running=False)
+    return f"d logs -f {name} --tail=10" if name else ori
+
+
+def docker_container_exec_shell(ori):
+    name = select_from_container(only_running=True)
+    if not name:
+        return ori
+    os_info, _ = _run(f"docker exec {name} cat /etc/os-release")
+    os_info = os_info.splitlines()[0]
+    print(
+        f"\n{bcolors.HEADER}{bcolors.BOLD}[ {name} ]",
+        os_info,
+        bcolors.ENDC,
+        file=sys.stderr,
+    )
+    sh = "sh" if "alpine" in os_info.lower() else "bash"
+    return f"d exec -it {name} {sh} "
+
+
+def docker_inspect(ori):
+    cmds = [
+        "docker images --format 'table img {{.ID}}\t{{.Repository}}\t{{.Tag}}'",
+        "docker volume ls --format 'table vol {{.Name}}'",
+        "docker network ls --format 'table net {{.ID}}\t{{.Name}}\t{{.Driver}}\t{{.Scope}}'",
+        "docker ps -a --format 'table ps  {{.ID}}\t{{.State}}\t{{.Names}}\t{{.Image}}'",
+    ]
+    r = [_run(cmd)[0].split("\n", 1)[1] for cmd in cmds]
+    stdout, _ = _run("fzf -e", stdin="\n".join(r))
+    items = []
+    for line in stdout.strip().splitlines():
+        if line.startswith("ps"):
+            items.append(line.split()[3])
+        elif line.startswith("img"):
+            _, _, repo, tag = line.split()
+            items.append(f"{repo}:{tag}")
+        elif line.startswith("net"):
+            items.append(line.split()[2])
+        elif line.startswith("vol"):
+            items.append(line.split()[1])
+    return f"d inspect {' '.join(items)} " if items else ori
+
+
+def docker_image_remove(ori):
+    stdout, _ = _run(
+        "docker images --format 'table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}'"
+    )
+    stdout, _ = _run("fzf -e", stdin=stdout.split("\n", 1)[1])
+    items = []
+    for line in stdout.strip().splitlines():
+        id, repo, tag, size = line.split()
+        items.append(f"{repo}:{tag}")
+    return f"d rmi {' '.join(items)} " if items else ori
+
+
+def docker_container_run(ori):
+    stdout, _ = _run(
+        "docker images --format 'table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}'"
+    )
+    stdout, _ = _run("fzf -e", stdin=stdout.split("\n", 1)[1])
+    out = stdout.split()
+    return f"d run --rm -it {out[1]}:{out[2]} sh " if out else ori
+
+
+def docker_container_remove(ori):
+    stdout = select_from_container(only_running=False, return_origin=True)
+    if not stdout:
+        return ori
+
+    stop, rm = [], []
+    for line in stdout.strip().splitlines():
+        if line.startswith("CONTAINER ID"):
+            continue
+        id, state, name, image = line.split()
+        rm.append(name)
+        if state != "exited":
+            stop.append(name)
+    cmd = ""
+    if len(stop) > 0:
+        cmd += f"d stop {' '.join(stop)} && "
+    cmd += f"d rm {' '.join(rm)} "
+    return cmd
+
+
+def git_checkout(ori):
+    branch, _ = _run("git branch -a --format='%(refname:short)'")
+    lines = ["br: " + line.strip() for line in branch.splitlines()]
+    tag, _ = _run("git tag")
+    lines += ["tag: " + line.strip() for line in tag.splitlines()]
+    stdout, _ = _run("fzf -e", stdin="\n".join(lines))
+    ref = stdout.split()[1]
+    return f"{ori} {ref} " if ref else ori
+
+
+def show_process_of_port(ori):
+    stdout, _ = _run("sudo netstat -tunlp | fzf -e")
+    print(f"\n{bcolors.HEADER}{bcolors.BOLD}[{stdout}]{bcolors.ENDC}", file=sys.stderr)
+    pid = stdout.split()[-1].split("/")[0]
+    return f"ps -Tf -p {pid}" if pid else ori
+
+
+prefix = {
+    "ssh": ssh_list_hosts,
+    "kill": kill_with_pids,
+    "top": top_with_pids,
+    "d run": docker_container_run,
+    "d l": docker_container_log,
+    "d sh": docker_container_exec_shell,
+    "d i": docker_inspect,
+    "d rmi": docker_image_remove,
+    "d rm": docker_container_remove,
+    "g ck": git_checkout,
+    "g checkout": git_checkout,
+    "net": show_process_of_port,
+}
+
+alias = {
+    "d": "docker",
+    "g": "git",
+    "dc": "docker-compose",
+}
+
+if len(sys.argv) < 2:
+    print(bcolors.HEADER + "Prefix\t\tDescription" + bcolors.ENDC)
+    for item in prefix:
+        key = (item + ":").ljust(15)
+        print(f"{key} {prefix[item].__name__}")
+else:
+    ori = sys.argv[1].strip()
+    for k, v in alias.items():
+        if ori.startswith(v + " "):
+            ori = ori.replace(v + " ", k + " ", 1)
+            break
+    result = ""
+    for item in prefix:
+        if ori.startswith(item):
+            result = prefix[item](ori)
+            break
+    print(result if result else ori)

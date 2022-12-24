@@ -49,6 +49,8 @@ alias g='git'
 alias pipx='PYTHONUSERBASE=$HOME/.local/python /usr/bin/python3 -m pip'
 alias vim='nv'
 alias lg='lazygit'
+alias d='docker'
+alias dc='docker-compose'
 
 export BAT_THEME="Solarized (dark)"
 
@@ -56,24 +58,6 @@ export BAT_THEME="Solarized (dark)"
 brew_path="/opt/homebrew/bin/brew"
 [ -f $brew_path ] && [ -z $HOMEBREW_PREFIX ] &&\
     eval "$($brew_path shellenv)"
-
-#
-# functions
-#
-fss() { 
-    host=`cat ~/.ssh/config | grep "Host " | awk '{print $2}' |grep -v "*" |fzf --layout=reverse`
-    [ -n "$TMUX" ] && tmux rename-window "$host"
-    [ -n "$KITTY_PID" ] && kitty @ set-tab-title "$host"
-    echo -en "\033]0;$host\a"
-    ssh $host
-    # if [ $host = "ali-cnhkb-dev-host-00" ]; then
-    #     while true; do
-    #         ssh -t $host "tmux new-session -A -s mono"
-    #     done
-    # elif [ $host != "local" ]; then
-    #     ssh $host
-    # fi
-}
 
 printcolors() {
     for i in {0..255} ; do
@@ -102,10 +86,15 @@ iploc() {
 export FZF_DEFAULT_COMMAND='rg --files --color never'
 export FZF_DEFAULT_OPTS='--ansi -m --color dark --bind=ctrl-l:toggle-all --bind=ctrl-j:preview-half-page-down --bind=ctrl-k:preview-half-page-up --bind=ctrl-/:toggle-preview --inline-info --preview-window wrap --height=10'
 fzf-history-widget() {
-  selected=`history -n 0 |awk '!x[$0]++' |FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS -e +s +m --layout=reverse --tac --query ${(qqq)LBUFFER}" fzf`
+  selected=`history -n 0 |awk '!x[$0]++' |FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS -e +s +m --tac --query ${(qqq)LBUFFER} --layout=reverse" fzf`
   BUFFER=$selected; CURSOR=$#BUFFER; zle redisplay
 }
 zle -N fzf-history-widget && bindkey '^R' fzf-history-widget
+
+fzf-complete-widget() {
+  BUFFER=$(complete-fzf "$LBUFFER"); CURSOR=$#BUFFER; zle redisplay
+}
+zle -N fzf-complete-widget && bindkey '^T' fzf-complete-widget
 
 
 # zoxide
