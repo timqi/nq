@@ -118,7 +118,8 @@ def docker_inspect(ori):
         "docker network ls --format 'table net {{.ID}}\t{{.Name}}\t{{.Driver}}\t{{.Scope}}'",
         "docker ps -a --format 'table ps  {{.ID}}\t{{.State}}\t{{.Names}}\t{{.Image}}'",
     ]
-    r = [_run(cmd)[0].split("\n", 1)[1] for cmd in cmds]
+    r = [_run(cmd)[0].split("\n", 1) for cmd in cmds]
+    r = [x[1] if len(x) > 1 else "" for x in r]
     stdout, _ = _run(f"fzf -e {_history('docker')}", stdin="\n".join(r))
     items = []
     for line in stdout.strip().splitlines():
