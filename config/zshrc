@@ -84,7 +84,7 @@ iploc() {
 
 # fzf
 export FZF_DEFAULT_COMMAND='rg --files --color never'
-export FZF_DEFAULT_OPTS='--ansi -m --color dark --bind=ctrl-l:toggle-all --bind=ctrl-j:preview-half-page-down --bind=ctrl-k:preview-half-page-up --bind=ctrl-/:toggle-preview --inline-info --preview-window wrap --height=10'
+export FZF_DEFAULT_OPTS="--ansi -m --color dark --bind=ctrl-l:toggle-all --bind=ctrl-d:preview-half-page-down --bind=ctrl-u:preview-half-page-up --bind=ctrl-/:toggle-preview --inline-info --preview-window wrap --height=10"
 fzf-history-widget() {
   selected=`history -n 0 |awk '!x[$0]++' |FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS -e +s +m --tac --query ${(qqq)LBUFFER} --layout=reverse" fzf`
   BUFFER=$selected; CURSOR=$#BUFFER; zle redisplay

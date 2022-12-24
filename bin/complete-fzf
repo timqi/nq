@@ -33,6 +33,11 @@ def _run(cmd, stdin=None):
     )
 
 
+def _history(name):
+    file = os.path.expanduser(f"~/.fzf/{name}")
+    return f"--history={file}"
+
+
 def select_from_container(only_running=False, return_origin=False):
     format = "--format 'table {{.ID}}\t{{.State}}\t{{.Names}}\t{{.Image}}'"
     cmd = "docker ps " + (" " if only_running else "-a ") + format
@@ -52,7 +57,7 @@ def select_from_container(only_running=False, return_origin=False):
 
         containers.sort(key=_get_container_key)
 
-    stdout, _ = _run("fzf -e", stdin="\n".join(containers))
+    stdout, _ = _run(f"fzf -e {_history('docker')}", stdin="\n".join(containers))
     if return_origin:
         return stdout
     return "" if not stdout else stdout.split()[2]
@@ -67,7 +72,7 @@ def ssh_list_hosts(ori):
             if line.startswith("Host *"):
                 continue
             hosts += [host.strip() for host in line.split()[1:]]
-    stdout, _ = _run("fzf -e", stdin="\n".join(hosts))
+    stdout, _ = _run(f"fzf -e {_history('host')}", stdin="\n".join(hosts))
     return f"{ori} {stdout} " if stdout else ori
 
 
@@ -114,7 +119,7 @@ def docker_inspect(ori):
         "docker ps -a --format 'table ps  {{.ID}}\t{{.State}}\t{{.Names}}\t{{.Image}}'",
     ]
     r = [_run(cmd)[0].split("\n", 1)[1] for cmd in cmds]
-    stdout, _ = _run("fzf -e", stdin="\n".join(r))
+    stdout, _ = _run(f"fzf -e {_history('docker')}", stdin="\n".join(r))
     items = []
     for line in stdout.strip().splitlines():
         if line.startswith("ps"):
@@ -133,7 +138,7 @@ def docker_image_remove(ori):
     stdout, _ = _run(
         "docker images --format 'table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}'"
     )
-    stdout, _ = _run("fzf -e", stdin=stdout.split("\n", 1)[1])
+    stdout, _ = _run(f"fzf -e {_history('docker')}", stdin=stdout.split("\n", 1)[1])
     items = []
     for line in stdout.strip().splitlines():
         id, repo, tag, size = line.split()
@@ -145,7 +150,7 @@ def docker_container_run(ori):
     stdout, _ = _run(
         "docker images --format 'table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}'"
     )
-    stdout, _ = _run("fzf -e", stdin=stdout.split("\n", 1)[1])
+    stdout, _ = _run(f"fzf -e {_history('docker')}", stdin=stdout.split("\n", 1)[1])
     out = stdout.split()
     return f"d run --rm -it {out[1]}:{out[2]} sh " if out else ori
 
@@ -187,6 +192,11 @@ def show_process_of_port(ori):
     return f"ps -Tf -p {pid}" if pid else ori
 
 
+def to_workspace_of_zoxide(ori):
+    stdout, _ = _run(f"zoxide query -l | fzf -e {_history('zoxide')}")
+    return f"cd {stdout} " if stdout else ori
+
+
 prefix = {
     "ssh": ssh_list_hosts,
     "kill": kill_with_pids,
@@ -200,6 +210,7 @@ prefix = {
     "g ck": git_checkout,
     "g checkout": git_checkout,
     "net": show_process_of_port,
+    "cd": to_workspace_of_zoxide,
 }
 
 alias = {

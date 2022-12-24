@@ -7,7 +7,7 @@ set hlsearch incsearch ignorecase smartcase
 set backspace=indent,eol,start
 set completeopt=menu,preview
 set noswapfile nobackup nowritebackup
-set cindent autoindent smartindent expandtab smarttab 
+set cindent autoindent smartindent expandtab smarttab
 set nu signcolumn=number laststatus=1 mouse=v cursorline
 set wildignore+=.bak,*.swp,*.class,*.pyc,*DS_Store*,*.swp,*/.Trash/*
 set updatetime=1000
@@ -61,13 +61,14 @@ nnoremap <leader>j  :History:<CR>
 let g:fzf_layout = { 'window': 'enew' }
 let g:fzf_commits_log_options =  "-200 --color=always"
 let g:fzf_preview_window = ['up:80%', 'ctrl-/']
+let g:fzf_history_dir = '~/.fzf'
 
 Plug 'TovarishFin/vim-solidity'
 Plug 'leafgarland/typescript-vim'
 
 
-
 if has("nvim")
+Plug 'tpope/vim-commentary'
 Plug 'github/copilot.vim'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 let g:coc_global_extensions = ["coc-go", "coc-pyright", "coc-typos"]
@@ -109,6 +110,18 @@ inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm() : "\<C-g>u\<C
 endif
 "## Advanced features end ##
 call plug#end()
+
+
+function! s:GoToWorkspace(directory)
+    execute 'cd '.a:directory
+    execute 'CocRestart'
+    execute 'Files'
+endfunction
+command! Workspaces call fzf#run(fzf#wrap({
+      \ 'source': 'zoxide query -l',
+      \ 'sink': function('s:GoToWorkspace'),
+      \ 'options': '--prompt "Workspace> " '
+      \ }))
 
 
 set termguicolors
