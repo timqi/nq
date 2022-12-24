@@ -12,6 +12,8 @@ set nu signcolumn=number laststatus=1 mouse=v cursorline
 set wildignore+=.bak,*.swp,*.class,*.pyc,*DS_Store*,*.swp,*/.Trash/*
 set updatetime=1000
 set autoread ts=4 sw=4 sts=4
+set laststatus=2
+set statusline=%F\ %h%w%m%r%=%-14.(%l,%c%V%)\ %P
 au FileType javascript,html,vue setlocal sw=2 ts=2 sts=2
 
 syntax on

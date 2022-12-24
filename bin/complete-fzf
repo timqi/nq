@@ -57,7 +57,7 @@ def select_from_container(only_running=False, return_origin=False):
 
         containers.sort(key=_get_container_key)
 
-    stdout, _ = _run(f"fzf -e {_history('docker')}", stdin="\n".join(containers))
+    stdout, _ = _run(f"fzf -e {_history('docker')} --prompt='Container> '", stdin="\n".join(containers))
     if return_origin:
         return stdout
     return "" if not stdout else stdout.split()[2]
@@ -72,18 +72,18 @@ def ssh_list_hosts(ori):
             if line.startswith("Host *"):
                 continue
             hosts += [host.strip() for host in line.split()[1:]]
-    stdout, _ = _run(f"fzf -e {_history('host')}", stdin="\n".join(hosts))
+    stdout, _ = _run(f"fzf -e {_history('host')} --prompt='Host> '", stdin="\n".join(hosts))
     return f"{ori} {stdout} " if stdout else ori
 
 
 def kill_with_pids(ori):
-    stdout, _ = _run("ps -ef | fzf -e")
+    stdout, _ = _run("ps -ef | fzf -e --prompt='Process> '")
     pids = [line.split()[1] for line in stdout.splitlines()]
     return f"{ori} {' '.join(pids)} " if pids else ori
 
 
 def top_with_pids(ori):
-    stdout, _ = _run("ps -ef | fzf -e")
+    stdout, _ = _run("ps -ef | fzf -e --prompt='Process> '")
     pids = [line.split()[1] for line in stdout.splitlines()]
     if len(pids) > 20:
         pids = pids[:20]
@@ -120,7 +120,7 @@ def docker_inspect(ori):
     ]
     r = [_run(cmd)[0].split("\n", 1) for cmd in cmds]
     r = [x[1] if len(x) > 1 else "" for x in r]
-    stdout, _ = _run(f"fzf -e {_history('docker')}", stdin="\n".join(r))
+    stdout, _ = _run(f"fzf -e {_history('docker')} --prompt='Inspect> '", stdin="\n".join(r))
     items = []
     for line in stdout.strip().splitlines():
         if line.startswith("ps"):
@@ -139,7 +139,7 @@ def docker_image_remove(ori):
     stdout, _ = _run(
         "docker images --format 'table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}'"
     )
-    stdout, _ = _run(f"fzf -e {_history('docker')}", stdin=stdout.split("\n", 1)[1])
+    stdout, _ = _run(f"fzf -e {_history('docker')} --prompt='Image> '", stdin=stdout.split("\n", 1)[1])
     items = []
     for line in stdout.strip().splitlines():
         id, repo, tag, size = line.split()
@@ -151,7 +151,7 @@ def docker_container_run(ori):
     stdout, _ = _run(
         "docker images --format 'table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}'"
     )
-    stdout, _ = _run(f"fzf -e {_history('docker')}", stdin=stdout.split("\n", 1)[1])
+    stdout, _ = _run(f"fzf -e {_history('docker')} --prompt='Image> '", stdin=stdout.split("\n", 1)[1])
     out = stdout.split()
     return f"d run --rm -it {out[1]}:{out[2]} sh " if out else ori
 
@@ -181,7 +181,7 @@ def git_checkout(ori):
     lines = ["br: " + line.strip() for line in branch.splitlines()]
     tag, _ = _run("git tag")
     lines += ["tag: " + line.strip() for line in tag.splitlines()]
-    stdout, _ = _run("fzf -e", stdin="\n".join(lines))
+    stdout, _ = _run(f"fzf -e {_history('git')} --prompt='Ref> '", stdin="\n".join(lines))
     ref = stdout.split()[1]
     return f"{ori} {ref} " if ref else ori
 
@@ -194,8 +194,20 @@ def show_process_of_port(ori):
 
 
 def to_workspace_of_zoxide(ori):
-    stdout, _ = _run(f"zoxide query -l | fzf -e {_history('zoxide')}")
+    stdout, _ = _run(f"zoxide query -l | fzf -e {_history('zoxide')} --prompt='Workspace> '")
     return f"cd {stdout} " if stdout else ori
+
+
+def git_show_ref(ori):
+    preview_opt = "--preview-window=right,30%"
+    preview = '''--preview="echo {}|cut -d' ' -f1|xargs git diff-tree --no-commit-id --name-only -r"'''
+    stdout, _ = _run(f"git log --color=always| fzf -e {preview} {preview_opt} --prompt='Ref> '")
+    return f"g show {stdout.split()[0]} " if stdout else ori
+
+
+def git_diff_with_name(ori):
+    stdout, _ = _run(f"git diff --name-only| fzf -e {_history('git')} --prompt='File> '")
+    return f"g diff {stdout} " if stdout else ori
 
 
 prefix = {
@@ -204,14 +216,17 @@ prefix = {
     "top": top_with_pids,
     "d run": docker_container_run,
     "d l": docker_container_log,
+    "d e": docker_container_exec_shell,
     "d sh": docker_container_exec_shell,
     "d i": docker_inspect,
     "d rmi": docker_image_remove,
     "d rm": docker_container_remove,
-    "g ck": git_checkout,
-    "g checkout": git_checkout,
     "net": show_process_of_port,
     "cd": to_workspace_of_zoxide,
+    "g ck": git_checkout,
+    "g checkout": git_checkout,
+    "g s": git_show_ref,
+    "g d": git_diff_with_name,
 }
 
 alias = {

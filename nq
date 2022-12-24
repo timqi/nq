@@ -256,7 +256,7 @@ case $1 in
 
     brew) install_brew;;
 
-    *) log "supported app: rg,fzf,zoxide,bat,vimrc,zplug,go,node,conda,ctags,jq,cheat,pytools,config"
+    *) log "supported app: rg,fzf,zoxide,bat,vimrc,zplug,go,node,conda,ctags,jq,cheat,config"
        log "supported groups:"
        log "  all: install all components"
        log "  basic: basic feature set; vimrc basic,zplug,jq,cheat,config"
