@@ -9,8 +9,8 @@ else
     git clone https://github.com/timqi/nq.git $nq_path
 fi
 
-case `uname -a` in
-*Linux*) sudo ln -sfv $nq_path/nq /usr/bin;;
-*Darwin*) ln -sfv $nq_path/nq/nq ~/.local/bin;; 
+case `uname -s` in
+Linux) sudo ln -sfv $nq_path/nq /usr/bin;;
+Darwin) ln -sfv $nq_path/nq/nq ~/.local/bin;; 
 esac
 

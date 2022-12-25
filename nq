@@ -2,9 +2,12 @@
 
 local_dir="$HOME/.local"
 bin_dir="$HOME/.local/bin"
-tmp_dir="$HOME/.cache/nq"
+tmp_dir="/tmp/nq"
 [ ! -d $bin_dir ] && mkdir -p $bin_dir
 [ ! -d $tmp_dir ] && mkdir -p $tmp_dir
+
+# Result: Darwin, Linux
+ARCH=`uname -s`
 
 log() { printf "\033[0;32m$1\033[0m\n"; }
 link() { printf "\033[0;32m" && ln -sfv $1 $2 && printf "\033[0m"; }
@@ -17,105 +20,191 @@ link_dir_bin() {
 
 install_go() {
     ver="1.19"
-    case `go version` in *$ver*) log "go$ver already installed, return" && return;; esac
-    case `uname -a` in
-    *Linux*x86_64*) filename="go$ver.linux-amd64.tar.gz";;
-    *Darwin*ARM64*) filename="go$ver.darwin-arm64.tar.gz";;
-    *Darwin*x86_64*) filename="go$ver.darwin-amd64.tar.gz";;
-    esac
-    curl --progress-bar -L -o "$tmp_dir/$filename" "https://dl.google.com/go/$filename"
+    command -v go >/dev/null &&\
+        case `go version` in *$ver*) log "go$ver already installed, return" && return;; esac ||\
+        log "go is not installed now"
+
+    log "will install go$ver"
+    filename=`[ $ARCH = "Darwin" ] &&\
+        echo "go$ver.darwin-amd64.tar.gz" ||\
+        echo "go$ver.linux-amd64.tar.gz"`
     GODIR="$local_dir/go"
     [ ! -d $GODIR ] && mkdir -p $GODIR || rm -rf "$GODIR/*"
-    tar -xzf "$tmp_dir/$filename" --strip-components 1 -C $GODIR
+    curl --progress-bar -L "https://dl.google.com/go/$filename" |\
+        tar -xz --strip-components 1 -C $GODIR
     link "$GODIR/bin/go" "$bin_dir"
     link "$GODIR/bin/gofmt" "$bin_dir"
 }
 
-install_gh() {
-    # binary_name=repo_name;linux_x86_64_arch;darwin_arm64_arch
-    arr="rg=BurntSushi/ripgrep;x86_64-unknown-linux-musl;x86_64-apple-darwin \
-        nv=neovim/neovim;linux64;macos;macos \
-        fzf=junegunn/fzf;linux_amd64.tar.gz;darwin_arm64.zip \
-        zoxide=ajeetdsouza/zoxide;x86_64-unknown-linux-musl;aarch64-apple-darwin \
-        jq=stedolan/jq;linux64;osx-amd64 \
-        cheat=cheat/cheat;linux-amd64;darwin-amd64 \
-        lazygit=jesseduffield/lazygit;Linux_x86_64;Darwin_arm64 \
-        bat=sharkdp/bat;x86_64-unknown-linux-musl;x86_64-apple-darwin "
-    for item in $arr; do
-        if [ `echo $item|cut -d "=" -f1` != "$1" ]; then continue; fi
-        repo=`echo $item|cut -d "=" -f2|cut -d ";" -f1`
-        app=$1; arch="unknown"
-        case `uname -a` in
-        *Linux*x86_64*) arch=`echo $item|cut -d "=" -f2|cut -d ";" -f2`;;
-        *Darwin*ARM64*) arch=`echo $item|cut -d "=" -f2|cut -d ";" -f3`;;
-        esac
-    done
-    [ -z $app ] && log "$1 is not supported yet, return" && return
-    [ $arch = "unknown" ] && \
-        log "Architect is unknow, can't install, return" && return
+download_url() {
+    # $1: repo, $2: latest_ver, $3: filename
+    url="https://github.com/$1/releases/download/$2/$3"
+    echo "$url"
+}
 
-    case $app in
-    "nv")     curr_ver=`command -v nv >/dev/null && echo $(nv -v|head -n 1|cut -d " " -f2) || echo "0.0.0"`;;
-    "rg")     curr_ver=`command -v rg >/dev/null && echo $(rg -V|cut -d " " -f2) || echo "0.0.0"`;;
-    "fzf")    curr_ver=`command -v fzf >/dev/null && echo $(fzf --version|cut -d " " -f1) || echo "0.0.0"`;;
-    "zoxide") curr_ver=`command -v zoxide >/dev/null && echo $(zoxide -V|cut -d " " -f2) || echo "0.0.0"`;;
-    "jq")     curr_ver=`command -v jq >/dev/null && echo $(jq --version|head -n 1|cut -d "-" -f2) || echo "0.0.0"`;;
-    "cheat")  curr_ver=`command -v cheat >/dev/null && echo $(cheat -v) || echo "0.0.0"`;;
-    "bat")    curr_ver=`command -v bat >/dev/null && echo "v$(bat -V|head -n 1|cut -d ' ' -f2)" || echo "0.0.0"`;;
-    "lazygit")curr_ver=`command -v lazygit >/dev/null && echo "v$(lazygit -version | grep -oP 'version=.+?,' | cut -d= -f2 | cut -d, -f1)" || echo "0"`
-    esac
+github_install_logic() {
+    # $1: app $2: version function $3: repo $4: install function
+    curr=`command -v $1 >/dev/null && echo $($2) || echo 'unknown'`
+    url="https://api.github.com/repos/$3/releases/latest"
+    ver=`curl -s ${url} --connect-timeout 10| grep 'tag_name' | cut -d\" -f4`
+    [ "$curr" = "$ver" ] && log "[$1] $ver is the latest, return" && return
+    log "[$1] will install $ver, current: $curr"
+    $4 $ver $curr
+    ls -alh "$bin_dir/$1"
+}
 
-    url="https://api.github.com/repos/$repo/releases/latest"
-    latest_ver=`curl -s ${url} --connect-timeout 10| grep 'tag_name' | cut -d\" -f4`
-    [ "$curr_ver" = "$latest_ver" ] && log "$app: $curr_ver, is the newest" && return
+install_bat() {
+    app=bat
+    repo="sharkdp/$app"
+    bat_version() {
+        echo "v$($app -V|cut -d' ' -f2)"
+    }
+    bat_install() {
+        # $1: lastest version $2: current version
+        ar=`[ $ARCH = "Darwin" ] && echo "x86_64-apple-darwin" || echo "x86_64-unknown-linux-musl"`
+        url=`download_url $repo $ver "$app-$ver-$ar.tar.gz"`
+        log "url: $url"
+        curl --progress-bar -L -H "Cache-Control: no-cache" $url |\
+            tar -zx -C $tmp --strip-components 1
+        mv "$tmp/$app" "$bin_dir"
+    }
+    github_install_logic $app ${app}_version $repo ${app}_install
+}
 
-    log "Will install: $app. latest_ver:'$latest_ver' arch:'$arch'; curr_ver:'$curr_ver'"
-    base_url="https://github.com/$repo/releases/download/$latest_ver"
-    case $app in
-    "nv")     url="$base_url/nvim-$arch.tar.gz";;
-    "rg")     url="$base_url/ripgrep-$latest_ver-$arch.tar.gz";;
-    "fzf")    url="$base_url/fzf-$latest_ver-$arch";;
-    "zoxide") url="$base_url/zoxide-${latest_ver:1:100}-$arch.tar.gz";;
-    "jq")     url="$base_url/jq-$arch";;
-    "cheat")  url="$base_url/cheat-$arch.gz";;
-    "bat")    url="$base_url/bat-$latest_ver-$arch.tar.gz";;
-    "lazygit")url="$base_url/lazygit_${latest_ver:1:100}_$arch.tar.gz";;
-    esac
+install_lazygit() {
+    app=lazygit
+    repo="jesseduffield/$app"
+    lazygit_version() {
+        echo "v$($app -version | egrep -o 'version=.+?,' | cut -d= -f2 | cut -d, -f1)"
+    }
+    lazygit_install() {
+        # $1: lastest version $2: current version
+        ar=`[ $ARCH = "Darwin" ] && echo "Darwin_arm64" || echo "Linux_x86_64"`
+        url=`download_url $repo $1 "${app}_${1:1:100}_$ar.tar.gz"`
+        log "url: $url"
+        curl --progress-bar -L -H "Cache-Control: no-cache" $url |\
+            tar -zx -C $tmp
+        mv "$tmp/$app" "$bin_dir"
+    }
+    github_install_logic $app ${app}_version $repo ${app}_install
+}
 
-    tar_file="$tmp_dir/$app.tar.gz"
-    curl --progress-bar -L -H "Cache-Control: no-cache" -o $tar_file $url
-    tmp_app_dir="$tmp_dir/$app"
-    [ ! -d $tmp_app_dir ] && mkdir -p $tmp_app_dir
-    if [ $app = "fzf" ] && [ `uname -s` = "Darwin" ]; then
-        unzip -d $tmp_app_dir "$tar_file"
-    elif [ $app = "jq" ]; then
-        mv $tar_file $bin_dir/jq
-    elif [ $app = "cheat" ]; then
-        gzip -f -d $tar_file && mv $tmp_dir/cheat.tar $bin_dir/cheat
-    elif [ $app = "nv" ]; then
-        tar -zxf $tar_file --strip-components 1 -C "$tmp_app_dir"
-    else
-        tar -zxf $tar_file -C "$tmp_app_dir"
-    fi
+install_cheat() {
+    app=cheat
+    repo="cheat/cheat"
+    cheat_version() {
+        echo "$(cheat -v)"
+    }
+    cheat_install() {
+        # $1: lastest version $2: current version
+        ar=`[ $ARCH = "Darwin" ] && echo "darwin-amd64" || echo "linux-amd64"`
+        url=`download_url $repo $1 "cheat-$ar.gz"`
+        log "url: $url"
+        curl --progress-bar -L -H "Cache-Control: no-cache" $url |\
+            gzip -d > "$tmp/cheat"
 
-    case $app in
-    fzf) mv "$tmp_app_dir/$app" $bin_dir; mkdir -p ~/.fzf;;
-    zoxide|lazygit) mv "$tmp_app_dir/$app" $bin_dir;;
-    nv) rm -rf "$local_dir/nvim" && cp -r "$tmp_app_dir" "$local_dir/nvim" && \
-        link "../nvim/bin/nvim" "$bin_dir/nvim";;
-    rg) mv "$tmp_app_dir/ripgrep-$latest_ver-$arch/$app" $bin_dir;;
-    bat) mv "$tmp_app_dir/$app-$latest_ver-$arch/$app" $bin_dir;;
-    jq) chmod +x "$bin_dir/$app";;
-    cheat) chmod +x "$bin_dir/$app"
+        mv "$tmp/cheat" "$bin_dir"
+        chmod +x "$bin_dir/$app"
         cheat_dir=$HOME/.config/cheat
         [ ! -d $cheat_dir ] && mkdir -p $cheat_dir && cheat --init > $cheat_dir/conf.yml
         cheat_dir=$cheat_dir/cheatsheets; [ ! -d $cheat_dir ] && mkdir -p $cheat_dir
         community_dir=$cheat_dir/community
-        [ -d $community ] && cd $cheat_dir &&\
+        [ -d $community_dir ] && cd $cheat_dir &&\
             git pull --depth 1 --rebase --allow-unrelated-histories && cd - ||
-            git clone --depth=1 "tar -cvf /path/to/foo.tar /path/to/foo/https://github.com/cheat/cheatsheets" community
-        link "$HOME/.config/nq/cheatsheets" "$cheat_dir/personal";;
-    esac
+            git clone --depth=1 "https://github.com/cheat/cheatsheets"
+        link "$HOME/.config/nq/cheatsheets" "$cheat_dir/personal"
+    }
+    github_install_logic $app ${app}_version $repo ${app}_install
+}
+
+install_jq() {
+    app=jq
+    repo="stedolan/jq"
+    jq_version() {
+        echo "jq-$(jq --version|head -n 1|cut -d "-" -f2)"
+    }
+    jq_install() {
+        ar=`[ $ARCH = "Darwin" ] && echo "osx-amd64" || echo "linux64"`
+        url=`download_url $repo $1 "jq-$ar"`
+        log "url: $url"
+        curl --progress-bar -L -H "Cache-Control: no-cache" $url -o "$tmp/$app"
+        mv "$tmp/$app" "$bin_dir"
+        chmod +x "$bin_dir/$app"
+    }
+    github_install_logic $app ${app}_version $repo ${app}_install
+}
+
+install_zoxide() {
+    app=zoxide
+    repo="ajeetdsouza/zoxide"
+    zoxide_version() {
+        echo `zoxide -V|cut -d " " -f2`
+    }
+    zoxide_install() {
+        ar=`[ $ARCH = "Darwin" ] && echo "aarch64-apple-darwin" || echo "x86_64-unknown-linux-musl"`
+        url=`download_url $repo $1 "zoxide-${1:1:100}-$ar.tar.gz"`
+        log "url: $url"
+        curl --progress-bar -L -H "Cache-Control: no-cache" $url |\
+            tar -zx -C $tmp
+        mv "$tmp/$app" "$bin_dir"
+    }
+    github_install_logic $app ${app}_version $repo ${app}_install
+}
+
+install_fzf() {
+    app=fzf
+    repo="junegunn/fzf"
+    fzf_version() {
+        echo `fzf --version|cut -d " " -f1`
+    }
+    fzf_install() {
+        ar=`[ $ARCH = "Darwin" ] && echo "darwin_arm64.zip" || echo "linux_amd64.tar.gz"`
+        url=`download_url $repo $1 "fzf-${1}-$ar"`
+        log "url: $url"
+        curl --progress-bar -L -H "Cache-Control: no-cache" $url -o "$tmp/$app.dl"
+        if [ $ARCH = "Darwin" ]; then
+            unzip "$tmp/$app.dl" -d "$tmp"
+        else
+            tar -zx -C $tmp -f "$tmp/$app.dl"
+        fi
+        mv "$tmp/$app" "$bin_dir"
+    }
+    github_install_logic $app ${app}_version $repo ${app}_install
+}
+
+install_rg() {
+    app=rg
+    repo="BurntSushi/ripgrep"
+    rg_version() {
+        echo `rg -V|cut -d " " -f2`
+    }
+    rg_install() {
+        ar=`[ $ARCH = "Darwin" ] && echo "x86_64-apple-darwin" || echo "x86_64-unknown-linux-musl"`
+        url=`download_url $repo $1 "ripgrep-${1}-$ar.tar.gz"`
+        log "url: $url"
+        curl --progress-bar -L -H "Cache-Control: no-cache" $url |\
+            tar -zx -C $tmp --strip-components=1
+        mv "$tmp/$app" "$bin_dir"
+    }
+    github_install_logic $app ${app}_version $repo ${app}_install
+}
+
+install_nvim() {
+    app=nvim
+    repo="neovim/neovim"
+    nvim_version() {
+        echo `nvim -v|head -n 1|cut -d " " -f2`
+    }
+    nvim_install() {
+        ar=`[ $ARCH = "Darwin" ] && echo "macos" || echo "linux64"`
+        url=`download_url $repo $1 "nvim-$ar.tar.gz"`
+        log "url: $url"
+        curl --progress-bar -L -H "Cache-Control: no-cache" $url |\
+            tar -zx -C $tmp --strip-components=1
+        rm -rf "$local_dir/nvim" && cp -r "$tmp" "$local_dir/nvim"
+        link "../nvim/bin/nvim" "$bin_dir/nvim"
+    }
+    github_install_logic $app ${app}_version $repo ${app}_install
 }
 
 nn() {
@@ -124,7 +213,7 @@ nn() {
     node_root="$local_dir/node"; node_path="$node_root/$ver"
     case $1 in
         list) log "Current: $(node -v)"; for ver in `ls $node_root`; do echo "  - $ver"; done;;
-        install) [ -d "$node_path" ] && log "v$ver allreay installed, return" && return
+        install) [ -d "$node_path" ] && log "[node] v$ver installed, return" && return
             case `uname -a` in
             *Linux*x86_64*) filename="node-v$ver-linux-x64.tar.xz";;
             *Darwin*ARM64*) filename="node-v$ver-darwin-arm64.tar.gz";;
@@ -148,15 +237,19 @@ nn() {
     esac
 }
 
+install_node() {
+    nn install
+}
+
 install_conda() {
     command -v conda >/dev/null && log "conda exist, return" && return
-    case `uname -a` in
-    *Linux*x86_64*) url="https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh";;
-    #*Darwin*ARM64*) url="https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-x86_64.sh";;
-    *Darwin*ARM64*) url="https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-arm64.sh";;
-    esac
-    curl --progress-bar -o "$tmp_dir/conda.sh" $url -L
-    sh "$tmp_dir/conda.sh" -b -f -s -p "$local_dir/conda"
+    base_url="https://github.com/conda-forge/miniforge/releases/latest/download"
+    
+    filename=`[ $ARCH = "Darwin" ] &&\
+        echo "Miniforge3-MacOSX-arm64.sh" ||\
+        echo "Miniforge3-Linux-x86_64.sh"`
+    curl --progress-bar -o "$tmp/conda.sh" $url -L
+    sh "$tmp/conda.sh" -b -f -s -p "$local_dir/conda"
 }
 
 install_config() {
@@ -167,9 +260,8 @@ install_config() {
     rm -rf "$HOME/.ctags.d" && mkdir "$HOME/.ctags.d" && \
         link "$conf_dir/ctags" "$HOME/.ctags.d/default.ctags"
 
-    case `uname -a` in *Darwin*)
+    case $ARCH in Darwin)
         link "$conf_dir/alacritty.yml" "$HOME/.alacritty.yml"
-        #link "$conf_dir/wezterm.lua" "$HOME/.wezterm.lua"
         rm -rf "$HOME/.hammerspoon"
         link "$HOME/.config/nq/hammerspoon" "$HOME/.hammerspoon"
     esac
@@ -190,14 +282,16 @@ install_zplug() {
 }
 
 install_vimrc() {
-    install_gh rg
-    install_gh fzf
+    install_rg
+    install_fzf
     plug_file="$HOME/.vim/autoload/plug.vim"
     [ ! -f $plug_file ] && curl --progress-bar -fLo $plug_file --create-dirs \
         "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
     conf_dir="$HOME/.config/nq/config"
     vim_config_dir="$HOME/.vim" 
     link "$conf_dir/coc-settings.json" "$vim_config_dir"
+
+
     [ -d "$HOME/.config/nvim" ] && link "$conf_dir/coc-settings.json" "$HOME/.config/nvim"
 
     feature_mode=`[ "$1" = "basic" ] && echo "basic" || echo "full"`
@@ -207,58 +301,69 @@ install_vimrc() {
 }
 
 install_ctags() {
-    if [ `uname -s` = "Darwin" ]; then
+    if [ "$ARCH" = "Darwin" ]; then
         brew install universal-ctags
-    else
-        tmp_ctags="$tmp_dir/ctags"
-        git clone https://github.com/universal-ctags/ctags.git $tmp_ctags --depth=1
-        cd $tmp_ctags
-        log "configure ctags ..."
-        ./autogen.sh >/dev/null
-        ./configure --prefix="$tmp_ctags" >/dev/null
-        log "make ctags ..."
-        make >/dev/null
-        make install >/dev/null
-        cp $tmp_ctags/bin/* "$bin_dir/"
-        cd -
+        return
     fi
+
+    git clone https://github.com/universal-ctags/ctags.git $tmp --depth=1
+    cd $tmp
+    log "configure ctags ..."
+    ./autogen.sh >/dev/null
+    ./configure --prefix="$tmp" >/dev/null
+    log "make ctags ..."
+    make >/dev/null
+    make install >/dev/null
+    cp $tmp/bin/* "$bin_dir"
+    cd -
 }
 
-install_brew() {
-    log "install Xcode command line tools..."
-    xcode-select --install
-    log "install brew..."
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+#install_brew() {
+#    log "install Xcode command line tools..."
+#    xcode-select --install
+#    log "install brew..."
+#    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     
-    brew install hammerspoon docker google-chrome notion clashx visual-studio-code
-    #brew install wechat eudic keka
-    brew install telegram discord slack zoom
-}
+#    brew install hammerspoon docker google-chrome notion clashx visual-studio-code
+#    #brew install wechat eudic keka
+#    brew install telegram discord slack zoom
+#}
 
 #set -x
-case $1 in
-    vimrc) install_vimrc;;
-    rg|fzf|zoxide|jq|nv|cheat|bat|lazygit) install_gh $1;;
-    go) install_go;;
-    node) nn install;;
-    conda) install_conda;;
-    zplug) install_zplug;;
-    ctags) install_ctags;;
-    config) install_config;;
+all_items() {
+    while read -r line; do
+        case $line in
+            "install_"*) item=`echo ${line#install_} | cut -d ' ' -f1`;
+                funcs="$funcs$item,";;
+        esac
+    done <<< "`declare -f | grep ' ()'`"
+    echo "${funcs%,}"
+}
 
-    all) install_vimrc; install_gh zoxide; install_go;
-        install_gh jq; install_gh cheat;
-        nn install; install_conda; install_zplug;
-        install_ctags; install_config; install_gh bat;;
+basic_items="zplug,config"
 
-    basic) install_vimrc basic; install_zplug; install_config; install_gh jq;
-        install_gh cheat; install_gh zoxide;;
+handle_item_install() {
+    item=$1
+    log "[$item] start install..."
+    tmp="$tmp_dir/$item" && mkdir -p $tmp
+    install_$1
+}
 
-    brew) install_brew;;
-
-    *) log "supported app: rg,fzf,zoxide,bat,vimrc,zplug,go,node,conda,ctags,jq,cheat,config"
-       log "supported groups:"
-       log "  all: install all components"
-       log "  basic: basic feature set; vimrc basic,zplug,jq,cheat,config"
-esac
-
+if [ "`type -t install_$1`" = "function" ]; then
+    handle_item_install $1
+elif [ "$1" = "all" ]; then
+    items=`all_items`
+    for item in ${items//,/ }; do
+        handle_item_install $item
+    done
+elif [ "$1" = "basic" ]; then
+    for item in ${basic_items//,/ }; do
+        handle_item_install $item
+    done
+else
+    items=`all_items`
+    log "supported app: $items"
+    log "supported groups:"
+    log "  all: install all components"
+    log "  basic: $basic_items"
+fi
