@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 local_dir="$HOME/.local"
 bin_dir="$HOME/.local/bin"
@@ -185,20 +185,16 @@ nn() {
     case $1 in
         list) log "Current: $(node -v)"; for ver in `ls $node_root`; do echo "  - $ver"; done;;
         install) [ -d "$node_path" ] && log "[node] v$ver installed, return" && return
-            case `uname -a` in
-            *Linux*x86_64*) filename="node-v$ver-linux-x64.tar.xz";;
-            *Darwin*ARM64*) filename="node-v$ver-darwin-arm64.tar.gz";;
-            *Darwin*x86_64*) filename="node-v$ver-linux-x64.tar.xz";;
-            esac
+            filename=`[ "$ARCH" = "Darwin" ] &&\
+                echo "node-v$ver-darwin-arm64.tar.gz" ||\
+                echo "node-v$ver-linux-x64.tar.gz"`
             url="https://nodejs.org/dist/v$ver/$filename"
-            curl --progress-bar -L -o "$tmp_dir/$filename" $url && mkdir -p $node_path
-            case `uname -a` in
-            *Linux*) tar -xf "$tmp_dir/$filename" --strip-components 1 -C $node_path;;
-            *Darwin*) tar -xzf "$tmp_dir/$filename" --strip-components 1 -C $node_path;;
-            esac
+            mkdir -p $node_path
+            curl --progress-bar -L $url | tar -zx -C $node_path --strip-components=1
             nn use $ver;;
         rm) rm -rf $node_path;;
-        use) rm -f "$local_dir/bin/node" && link "$local_dir/node/$ver/bin" "$local_dir/bin/node";;
+        use) rm -f "$local_dir/bin/node" &&\
+            link "$local_dir/node/$ver/bin" "$local_dir/bin/node";;
         *) echo "  nn list"
            echo "  nn use [ver default:$default_ver]"
            echo "  nn install [ver default:$default_ver]"
@@ -257,10 +253,10 @@ install_vimrc() {
         "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
 
     conf_dir="$HOME/.config/nq/config"
-    link "$conf_dir/coc-settings.json" "$HOME/.vim"
     link "$conf_dir/vimrc" "$HOME/.vimrc"
 
     [ ! -d "$HOME/.config/nvim" ] && mkdir -p "$HOME/.config/nvim"
+    link "$conf_dir/coc-settings.json" "$HOME/.config/nvim"
     nvimrc="$HOME/.config/nvim/init.vim" && rm -f $nvimrc
     echo "set runtimepath^=~/.vim\nlet &packpath = &runtimepath" > $nvimrc
     echo "source $conf_dir/vimrc" >> $nvimrc
