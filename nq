@@ -43,10 +43,11 @@ download_url() {
 }
 
 github_install_logic() {
-    # $1: app $2: version function $3: repo $4: install function
     curr=`command -v $1 >/dev/null && echo $($2) || echo 'unknown'`
-    url="https://api.github.com/repos/$3/releases/latest"
-    ver=`curl -s ${url} --connect-timeout 10| grep 'tag_name' | cut -d\" -f4`
+    url="https://api.github.com/repos/$3/releases"
+    ver=`curl -s ${url} --connect-timeout 10 |\
+        grep 'tag_name' | grep -v "nightly" | grep -v "stable" |\
+        head -n 1 | cut -d\" -f4`
     [ "$curr" = "$ver" ] && log "[$1] $ver is the latest, return" && return
     log "[$1] will install $ver, current: $curr"
     $4 $ver $curr
@@ -60,7 +61,6 @@ install_bat() {
         echo "v$($app -V|cut -d' ' -f2)"
     }
     bat_install() {
-        # $1: lastest version $2: current version
         ar=`[ $ARCH = "Darwin" ] && echo "x86_64-apple-darwin" || echo "x86_64-unknown-linux-musl"`
         url=`download_url $repo $ver "$app-$ver-$ar.tar.gz"`
         log "url: $url"
@@ -78,7 +78,6 @@ install_lazygit() {
         echo "v$($app -version | egrep -o 'version=.+?,' | cut -d= -f2 | cut -d, -f1)"
     }
     lazygit_install() {
-        # $1: lastest version $2: current version
         ar=`[ $ARCH = "Darwin" ] && echo "Darwin_arm64" || echo "Linux_x86_64"`
         url=`download_url $repo $1 "${app}_${1:1:100}_$ar.tar.gz"`
         log "url: $url"
@@ -199,7 +198,6 @@ nn() {
             esac
             nn use $ver;;
         rm) rm -rf $node_path;;
-        #use) link_dir_bin "$local_dir/node/$ver/bin";;
         use) rm -f "$local_dir/bin/node" && link "$local_dir/node/$ver/bin" "$local_dir/bin/node";;
         *) echo "  nn list"
            echo "  nn use [ver default:$default_ver]"
@@ -214,7 +212,7 @@ install_node() {
 }
 
 install_conda() {
-    command -v conda >/dev/null && log "conda exist, return" && return
+    command -v conda >/dev/null && log "[conda] exist, return" && return
     base_url="https://github.com/conda-forge/miniforge/releases/latest/download"
     
     filename=`[ $ARCH = "Darwin" ] &&\
@@ -254,22 +252,22 @@ install_zplug() {
 }
 
 install_vimrc() {
-    install_rg
-    install_fzf
     plug_file="$HOME/.vim/autoload/plug.vim"
     [ ! -f $plug_file ] && curl --progress-bar -fLo $plug_file --create-dirs \
         "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
+
     conf_dir="$HOME/.config/nq/config"
-    vim_config_dir="$HOME/.vim" 
-    link "$conf_dir/coc-settings.json" "$vim_config_dir"
+    link "$conf_dir/coc-settings.json" "$HOME/.vim"
+    link "$conf_dir/vimrc" "$HOME/.vimrc"
 
+    [ ! -d "$HOME/.config/nvim" ] && mkdir -p "$HOME/.config/nvim"
+    nvimrc="$HOME/.config/nvim/init.vim" && rm -f $nvimrc
+    echo "set runtimepath^=~/.vim\nlet &packpath = &runtimepath" > $nvimrc
+    echo "source $conf_dir/vimrc" >> $nvimrc
 
-    [ -d "$HOME/.config/nvim" ] && link "$conf_dir/coc-settings.json" "$HOME/.config/nvim"
-
-    feature_mode=`[ "$1" = "basic" ] && echo "basic" || echo "full"`
-    echo "let g:feature_mode=\"$feature_mode\"" > $HOME/.vimrc
-    echo "source $conf_dir/vimrc" >> $HOME/.vimrc
-    vim +PlugInstall +qall
+    command -v nvim >/dev/null &&\
+        nvim +PlugInstall +qall ||\
+        vim +PlugInstall +qall
 }
 
 install_ctags() {
