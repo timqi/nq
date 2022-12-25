@@ -315,6 +315,7 @@ handle_item_install() {
     log "[$item] start install..."
     tmp="$tmp_dir/$item" && mkdir -p $tmp
     install_$1
+    rm -rf "$tmp"
 }
 
 if [ "`type -t install_$1`" = "function" ]; then
