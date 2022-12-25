@@ -89,34 +89,6 @@ install_lazygit() {
     github_install_logic $app ${app}_version $repo ${app}_install
 }
 
-install_cheat() {
-    app=cheat
-    repo="cheat/cheat"
-    cheat_version() {
-        echo "$(cheat -v)"
-    }
-    cheat_install() {
-        # $1: lastest version $2: current version
-        ar=`[ $ARCH = "Darwin" ] && echo "darwin-amd64" || echo "linux-amd64"`
-        url=`download_url $repo $1 "cheat-$ar.gz"`
-        log "url: $url"
-        curl --progress-bar -L -H "Cache-Control: no-cache" $url |\
-            gzip -d > "$tmp/cheat"
-
-        mv "$tmp/cheat" "$bin_dir"
-        chmod +x "$bin_dir/$app"
-        cheat_dir=$HOME/.config/cheat
-        [ ! -d $cheat_dir ] && mkdir -p $cheat_dir && cheat --init > $cheat_dir/conf.yml
-        cheat_dir=$cheat_dir/cheatsheets; [ ! -d $cheat_dir ] && mkdir -p $cheat_dir
-        community_dir=$cheat_dir/community
-        [ -d $community_dir ] && cd $cheat_dir &&\
-            git pull --depth 1 --rebase --allow-unrelated-histories && cd - ||
-            git clone --depth=1 "https://github.com/cheat/cheatsheets"
-        link "$HOME/.config/nq/cheatsheets" "$cheat_dir/personal"
-    }
-    github_install_logic $app ${app}_version $repo ${app}_install
-}
-
 install_jq() {
     app=jq
     repo="stedolan/jq"
