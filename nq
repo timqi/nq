@@ -160,6 +160,23 @@ install_rg() {
     github_install_logic $app ${app}_version $repo ${app}_install
 }
 
+install_fd() {
+    app=fd
+    repo="sharkdp/fd"
+    fd_version() {
+        echo "v`fd -V|cut -d" " -f2`"
+    }
+    fd_install() {
+        ar=`[ $ARCH = "Darwin" ] && echo "x86_64-apple-darwin" || echo "i686-unknown-linux-musl"`
+        url=`download_url $repo $1 "fd-$1-$ar.tar.gz"`
+        log "url: $url"
+        curl --progress-bar -L -H "Cache-Control: no-cache" $url |\
+            tar -zx -C $tmp --strip-components=1
+        mv "$tmp/$app" "$bin_dir"
+    }
+    github_install_logic $app ${app}_version $repo ${app}_install
+}
+
 install_nvim() {
     app=nvim
     repo="neovim/neovim"

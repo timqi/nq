@@ -40,6 +40,7 @@ export LC_ALL=$LANG
 export TERM="xterm-256color"
 export PYTHONUSERBASE=$HOME/.local
 export PYTHONPATH=".:$local_dir/python/lib/python/site-packages"
+export BAT_THEME="Solarized (dark)"
 
 
 alias ls='ls --color'
@@ -53,8 +54,6 @@ alias dc='docker-compose'
 alias vip='nvim +Files'
 alias vie='nvim +History'
 alias vig='nvim +Commits'
-
-export BAT_THEME="Solarized (dark)"
 
 # init homebrew
 brew_path="/opt/homebrew/bin/brew"
@@ -85,7 +84,8 @@ iploc() {
 
 
 # fzf
-export FZF_DEFAULT_COMMAND='rg --files --color never'
+#export FZF_DEFAULT_COMMAND='rg --files --color never'
+export FZF_DEFAULT_COMMAND='fd --type file --follow --color=never'
 export FZF_DEFAULT_OPTS="--ansi -m --color dark --bind=ctrl-l:toggle-all --bind=ctrl-d:preview-half-page-down --bind=ctrl-u:preview-half-page-up --bind=ctrl-/:toggle-preview --inline-info --preview-window wrap --height=10"
 fzf-history-widget() {
   selected=`history -n 0 |awk '!x[$0]++' |FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS -e +s +m --tac --query ${(qqq)LBUFFER} --layout=reverse" fzf`
