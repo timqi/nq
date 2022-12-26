@@ -237,6 +237,13 @@ def git_diff_with_name(ori):
     return f"g diff {stdout} " if stdout else ori
 
 
+def supervisorctl_tail(ori):
+    stdout, _ = _run(
+        f"sudo supervisorctl status| fzf -e {_history('supervisor')} --prompt='Process> '"
+    )
+    return f"sv tail -f {stdout.split()[0]} " if stdout else ori
+
+
 prefix = {
     "ssh": ssh_list_hosts,
     "kill": kill_with_pids,
@@ -254,12 +261,14 @@ prefix = {
     "g checkout": git_checkout,
     "g s": git_show_ref,
     "g d": git_diff_with_name,
+    "sv t": supervisorctl_tail,
 }
 
 alias = {
     "d": "docker",
     "g": "git",
     "dc": "docker-compose",
+    "sv": "sudo supervisorctl",
 }
 
 if len(sys.argv) < 2:

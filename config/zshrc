@@ -54,6 +54,7 @@ alias dc='docker-compose'
 alias vip='nvim +Files'
 alias vie='nvim +History'
 alias vig='nvim +Commits'
+alias sv="sudo supervisorctl"
 
 # init homebrew
 brew_path="/opt/homebrew/bin/brew"
