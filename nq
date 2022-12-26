@@ -303,6 +303,11 @@ install_ctags() {
     cd -
 }
 
+install_chtsh() {
+    curl --silent -L https://cht.sh/:cht.sh > "$bin_dir/cht.sh"
+    chmod +x "$bin_dir/cht.sh"
+}
+
 #install_brew() {
 #    log "install Xcode command line tools..."
 #    xcode-select --install

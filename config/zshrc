@@ -40,7 +40,6 @@ export LC_ALL=$LANG
 export TERM="xterm-256color"
 export PYTHONUSERBASE=$HOME/.local
 export PYTHONPATH=".:$local_dir/python/lib/python/site-packages"
-export BAT_THEME="Solarized (dark)"
 
 
 alias ls='ls --color'
@@ -56,6 +55,10 @@ alias vip='nvim +Files'
 alias vie='nvim +History'
 alias vig='nvim +Commits'
 alias sv="sudo supervisorctl"
+
+alias bat='bat -p'
+alias m='bat --language=man --color=always'
+export BAT_THEME="Solarized (dark)"
 
 # init homebrew
 brew_path="/opt/homebrew/bin/brew"
