@@ -59,6 +59,13 @@ alias sv="sudo supervisorctl"
 alias bat='bat -p'
 alias m='bat --language=man --color=always'
 export BAT_THEME="Solarized (dark)"
+man() {
+    if /usr/bin/man $@ 2>&1 >/dev/null; then
+        /usr/bin/man $@ | col -bx | bat --language=man --color=always
+    elif $1 --help 2>&1 >/dev/null; then
+        $1 --help | bat --language=man --color=always
+    fi
+}
 
 # init homebrew
 brew_path="/opt/homebrew/bin/brew"
