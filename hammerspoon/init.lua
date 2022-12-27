@@ -131,8 +131,11 @@ hs.hotkey.bind(hyper, "e", function()
     local screen = win:screen()
     win:move(win:frame():toUnitRect(screen:frame()), screen:next(), true, 0)
 end)
-hs.hotkey.bind(hyper, "n", function() hs.eventtap.keyStroke({}, "pagedown") end)
-hs.hotkey.bind(hyper, "p", function() hs.eventtap.keyStroke({}, "pageup") end)
+
+function send_pagedown() hs.eventtap.keyStroke({}, "pagedown") end
+hs.hotkey.bind(hyper, "n", send_pagedown, nil, send_pagedown)
+function send_pageup() hs.eventtap.keyStroke({}, "pageup") end
+hs.hotkey.bind(hyper, "p", send_pageup, nil, send_pageup)
 
 -- Bitcoin menubar
 menu = hs.menubar.new():setClickCallback(function()
