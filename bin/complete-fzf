@@ -34,8 +34,9 @@ def _run(cmd, stdin=None):
 
 
 def _history(name):
-    file = os.path.expanduser(f"~/.fzf/{name}")
-    return f"--history={file}"
+    return ""
+    # file = os.path.expanduser(f"~/.fzf/{name}")
+    # return f"--history={file}"
 
 
 def select_from_container(only_running=False, return_origin=False):

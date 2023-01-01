@@ -68,7 +68,6 @@ nnoremap <leader>j  :History:<CR>
 let g:fzf_layout = { 'window': 'enew' }
 let g:fzf_commits_log_options =  "-200 --color=always"
 let g:fzf_preview_window = ['up:80%', 'ctrl-/']
-let g:fzf_history_dir = '~/.fzf'
 
 Plug 'TovarishFin/vim-solidity'
 Plug 'leafgarland/typescript-vim'
