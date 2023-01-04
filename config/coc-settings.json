@@ -3,13 +3,13 @@
   "suggest.maxCompleteItemCount": 10,
   "suggest.keepCompleteopt": false,
   "suggest.removeDuplicateItems": true,
-  "snippets.ultisnips.enable": false,
+  "snippets.ultisnips.enable": true,
 
-  "list.source.files.command": "rg",
+  "list.source.files.command": "fd",
   "list.source.files.args": [
-      "--files",
-      "--color",
-      "never"
+      "--type=file",
+      "--follow",
+      "--color=never"
   ],
 
   "pyright.inlayHints.functionReturnTypes": false,

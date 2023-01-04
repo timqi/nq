@@ -33,8 +33,22 @@ Plug 'tomasiser/vim-code-dark'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-fugitive'
 Plug 'jiangmiao/auto-pairs'
+Plug 'tpope/vim-commentary'
 Plug '907th/vim-auto-save'
 Plug 'sbdchd/neoformat'
+Plug 'junegunn/fzf'
+Plug 'junegunn/fzf.vim'
+
+if has('nvim')
+Plug 'Shougo/neosnippet.vim'
+Plug 'Shougo/neosnippet-snippets'
+Plug 'github/copilot.vim'
+Plug 'antoinemadec/coc-fzf'
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+endif
+call plug#end()
+
 nnoremap = :Neoformat<cr>
 let g:neoformat_basic_format_align = 1
 let g:neoformat_basic_format_trim = 1
@@ -50,11 +64,9 @@ let g:neoformat_rust_rustfmt = {
     \ }
 
 let g:auto_save = 1
-let g:netrw_dirhistmax = 0
 let g:tmux_navigator_save_on_switch = 2
+let g:netrw_dirhistmax = 0
 
-Plug 'junegunn/fzf'
-Plug 'junegunn/fzf.vim'
 noremap  <c-e>      :<C-U>call fzf#vim#history()<CR>
 noremap  <c-p>      :<C-U>call fzf#vim#files('')<CR>
 nnoremap <leader>m  :<C-U>call fzf#vim#marks()<CR>
@@ -69,61 +81,74 @@ let g:fzf_layout = { 'window': 'enew' }
 let g:fzf_commits_log_options =  "-200 --color=always"
 let g:fzf_preview_window = ['up:80%', 'ctrl-/']
 
-Plug 'TovarishFin/vim-solidity'
-Plug 'leafgarland/typescript-vim'
 
-
+" Configuration for Neovim
 if has("nvim")
-Plug 'tpope/vim-commentary'
-Plug 'github/copilot.vim'
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
-let g:coc_global_extensions = ["coc-go", "coc-pyright", "coc-typos"]
-Plug 'antoinemadec/coc-fzf'
+let g:coc_global_extensions = [
+    \ "coc-go",
+    \ "coc-pyright",
+    \ "coc-typos",
+    \ "coc-neosnippet",
+    \]
 let g:coc_fzf_preview = 'up:80%'
 let g:coc_fzf_opts = ['--layout=default']
+imap <C-k> <Plug>(neosnippet_expand_or_jump)
+smap <C-k> <Plug>(neosnippet_expand_or_jump)
+xmap <C-k> <Plug>(neosnippet_expand_target)
 
 " typos
 nmap ]s <Plug>(coc-typos-next)
 nmap [s <Plug>(coc-typos-prev)
 nmap z= <Plug>(coc-typos-fix)
 
-nnoremap K           :<C-u>call CocActionAsync('doHover')<CR>
-nnoremap L           :<C-u>call CocActionAsync('showSignatureHelp')<CR>
-nnoremap gt          :<C-u>call CocActionAsync('jumpTypeDefinition')<CR>
-nnoremap gi          :<C-u>call CocActionAsync('jumpImplementation')<CR>
-nnoremap gr          :<C-u>call CocActionAsync('jumpReferences')<CR>
-nnoremap qf          :<C-u>call CocActionAsync('doQuickfix')<CR>
-nnoremap gd          :<C-u>call CocActionAsync('jumpDefinition')<CR>
-nnoremap <leader>rn  :<C-u>call CocActionAsync('rename')<CR>
+nnoremap K  :<C-u>call CocActionAsync('doHover')<CR>
+nnoremap gd :<C-u>call CocActionAsync('jumpDefinition')<CR>
+nnoremap gt :<C-u>call CocActionAsync('jumpTypeDefinition')<CR>
+nnoremap gi :<C-u>call CocActionAsync('jumpImplementation')<CR>
+nnoremap gr :<C-u>call CocActionAsync('jumpReferences')<CR>
+nnoremap gs :<C-u>call CocActionAsync('showSignatureHelp')<CR>
+nnoremap ga :<C-u>call CocActionAsync('refactor')<CR>
+nnoremap gf :<C-u>call CocActionAsync('doQuickfix')<CR>
 
 nnoremap <leader>a   :<C-u>CocFzfList diagnostics --current-buf<CR>
 nnoremap <leader>c   :<C-u>CocFzfList commands<CR>
 nnoremap <leader>l   :<C-u>CocFzfList<CR>
 
-nnoremap <nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
-nnoremap <nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
-inoremap <nowait><expr> <C-f> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(1)\<cr>" : "\<Right>"
-inoremap <nowait><expr> <C-b> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(0)\<cr>" : "\<Left>"
-vnoremap <nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
-vnoremap <nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
+noremap <nowait><expr> <C-d> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
+noremap <nowait><expr> <C-u> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
 
-inoremap <expr><c-y> coc#_select_confirm()
-inoremap <expr><c-n> coc#pum#visible() ? coc#pum#next(1): coc#refresh()
-inoremap <expr><c-p> coc#pum#visible() ? coc#pum#prev(1): "\<c-p>"
-inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+inoremap <expr> <c-n> coc#pum#visible() ? coc#pum#next(1): coc#refresh()
+inoremap <expr> <c-p> coc#pum#visible() ? coc#pum#prev(1): "\<c-p>"
+inoremap <expr> <cr>  coc#pum#visible() ? coc#_select_confirm() : "\<CR>"
+inoremap <expr> <c-space> coc#refresh()
 
-
+lua <<EOF
+require("nvim-treesitter.configs").setup({
+    ensure_installed = { "c", "lua", "rust", "go", "python", "solidity", "dockerfile", "yaml" },
+    auto_install = true, sync_install = false,
+    -- ignore_install = { "javascript" },
+    highlight = {
+        enable = true,
+        disable = function(lang, buf)
+            local max_filesize = 100 * 1024 -- 100 KB
+            local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
+            if ok and stats and stats.size > max_filesize then
+                return true
+            end
+        end,
+        additional_vim_regex_highlighting = false,
+    },
+})
+EOF
+echo "Neovim loaded..."
 endif
-"## Advanced features end ##
-call plug#end()
-
 
 command! Lg execute '!tmux popup -d "\#{pane_current_path}" -xC -yC -w99\% -h99\% -E "zsh -i -c lazygit"'
 
 function! s:GoToWorkspace(directory)
     execute 'cd '.a:directory
-    execute 'CocRestart'
     execute 'Files'
+    if exists(":CocRestart") | execute 'CocRestart' | endif
 endfunction
 command! Workspaces call fzf#run(fzf#wrap({
       \ 'source': 'zoxide query -l',

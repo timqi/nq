@@ -1,6 +1,8 @@
-tags
+.idea/
+.vscode/
 **__pycache__**
 **__pytest_cache__*
 *.pyc
+tags
 node_modules/
 

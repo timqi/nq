@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
 import os
-from os.path import exists
-import sys
+import platform
 import subprocess
+import sys
+from os.path import exists
 
 os.environ["FZF_DEFAULT_OPTS"] = (
-    os.environ.get("FZF_DEFAULT_OPTS", "") + " --layout=reverse"
+        os.environ.get("FZF_DEFAULT_OPTS", "") + " --layout=reverse"
 )
 
 
@@ -33,10 +34,8 @@ def _run(cmd, stdin=None):
     )
 
 
-def _history(name):
-    return ""
-    # file = os.path.expanduser(f"~/.fzf/{name}")
-    # return f"--history={file}"
+def _is_macos():
+    return platform.system() == "Darwin"
 
 
 def select_from_container(only_running=False, return_origin=False):
@@ -59,7 +58,7 @@ def select_from_container(only_running=False, return_origin=False):
         containers.sort(key=_get_container_key)
 
     stdout, _ = _run(
-        f"fzf -e {_history('docker')} --prompt='Container> '",
+        f"fzf -e --prompt='Container> '",
         stdin="\n".join(containers),
     )
     if return_origin:
@@ -76,9 +75,7 @@ def ssh_list_hosts(ori):
             if line.startswith("Host *"):
                 continue
             hosts += [host.strip() for host in line.split()[1:]]
-    stdout, _ = _run(
-        f"fzf -e {_history('host')} --prompt='Host> '", stdin="\n".join(hosts)
-    )
+    stdout, _ = _run(f"fzf -e --prompt='Host> '", stdin="\n".join(hosts))
     return f"{ori} {stdout} " if stdout else ori
 
 
@@ -93,6 +90,8 @@ def top_with_pids(ori):
     pids = [line.split()[1] for line in stdout.splitlines()]
     if len(pids) > 20:
         pids = pids[:20]
+    if _is_macos():
+        return f"top {' '.join(['-pid ' + pid for pid in pids])} " if pids else ori
     return f"{ori} -p {','.join(pids)} " if pids else ori
 
 
@@ -126,9 +125,7 @@ def docker_inspect(ori):
     ]
     r = [_run(cmd)[0].split("\n", 1) for cmd in cmds]
     r = [x[1] if len(x) > 1 else "" for x in r]
-    stdout, _ = _run(
-        f"fzf -e {_history('docker')} --prompt='Inspect> '", stdin="\n".join(r)
-    )
+    stdout, _ = _run(f"fzf -e --prompt='Inspect> '", stdin="\n".join(r))
     items = []
     for line in stdout.strip().splitlines():
         if line.startswith("ps"):
@@ -148,7 +145,7 @@ def docker_image_remove(ori):
         "docker images --format 'table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}'"
     )
     stdout, _ = _run(
-        f"fzf -e {_history('docker')} --prompt='Image> '",
+        f"fzf -e --prompt='Image> '",
         stdin=stdout.split("\n", 1)[1],
     )
     items = []
@@ -163,7 +160,7 @@ def docker_container_run(ori):
         "docker images --format 'table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}'"
     )
     stdout, _ = _run(
-        f"fzf -e {_history('docker')} --prompt='Image> '",
+        f"fzf -e --prompt='Image> '",
         stdin=stdout.split("\n", 1)[1],
     )
     out = stdout.split()
@@ -179,7 +176,7 @@ def docker_container_remove(ori):
     for line in stdout.strip().splitlines():
         if line.startswith("CONTAINER ID"):
             continue
-        id, state, name, image = line.split()
+        _, state, name, _ = line.split()
         rm.append(name)
         if state != "exited":
             stop.append(name)
@@ -195,9 +192,7 @@ def git_checkout(ori):
     lines = ["br: " + line.strip() for line in branch.splitlines()]
     tag, _ = _run("git tag")
     lines += ["tag: " + line.strip() for line in tag.splitlines()]
-    stdout, _ = _run(
-        f"fzf -e {_history('git')} --prompt='Ref> '", stdin="\n".join(lines)
-    )
+    stdout, _ = _run(f"fzf -e --prompt='Ref> '", stdin="\n".join(lines))
     ref = stdout.split()[1]
     return f"{ori} {ref} " if ref else ori
 
@@ -211,13 +206,11 @@ def show_process_of_port(ori):
 
 def to_directory(ori):
     if ori.replace("cd", "").strip() == "":
-        stdout, _ = _run(
-            f"zoxide query -l | fzf -e {_history('zoxide')} --prompt='Zoxide Workspace> '"
-        )
+        stdout, _ = _run(f"zoxide query -l | fzf -e --prompt='Zoxide Workspace> '")
     else:
         prefix = ori.replace("cd", "").strip()
         stdout, _ = _run(
-            f"fd --type directory '' {prefix} | fzf -e {_history('zoxide')} --prompt='Directory> '"
+            f"fd --type directory '' {prefix} | fzf -e --prompt='Directory> '"
         )
     return f"cd {stdout} " if stdout else ori
 
@@ -232,17 +225,31 @@ def git_show_ref(ori):
 
 
 def git_diff_with_name(ori):
-    stdout, _ = _run(
-        f"git diff --name-only| fzf -e {_history('git')} --prompt='File> '"
-    )
+    stdout, _ = _run(f"git diff --name-only| fzf -e --prompt='File> '")
     return f"g diff {stdout} " if stdout else ori
 
 
 def supervisorctl_tail(ori):
-    stdout, _ = _run(
-        f"sudo supervisorctl status| fzf -e {_history('supervisor')} --prompt='Process> '"
-    )
+    stdout, _ = _run(f"sudo supervisorctl status| fzf -e --prompt='Process> '")
     return f"sv tail -f {stdout.split()[0]} " if stdout else ori
+
+
+def golang_unit_test_by_function(ori):
+    stdout, _ = _run(
+        f"rg --no-follow --color=always --no-line-number --no-heading -g '*_test.go' -r '$1' 'func (Test.*)\\(.*' . | fzf -e --prompt='Test Fuc> '"
+    )
+    file, case = stdout.splitlines()[0].split(":")
+    exe = "gotest" if ori.startswith("got") else "go test"
+    return f"{exe} {os.path.dirname(file)} -v -run {case}$ "
+
+
+def python_test_by_function(ori):
+    stdout, _ = _run(
+        f"rg --no-follow --color=always --no-line-number --no-heading -g 'test_*.py' -r '$1' '.*def (test_.*)\\(.*' . | fzf -e --prompt='Test Fuc> '"
+    )
+    _, case = stdout.splitlines()[0].split(":")
+    exe = "brownie test" if ori.startswith("bt") else "pytest"
+    return f"{exe} -s -k {case}$ "
 
 
 prefix = {
@@ -263,6 +270,10 @@ prefix = {
     "g s": git_show_ref,
     "g d": git_diff_with_name,
     "sv t": supervisorctl_tail,
+    "got": golang_unit_test_by_function,
+    "go t": golang_unit_test_by_function,
+    "pyt": python_test_by_function,
+    "bt": python_test_by_function,
 }
 
 alias = {

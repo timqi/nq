@@ -26,7 +26,7 @@ install_go() {
 
     log "will install go$ver"
     filename=`[ $ARCH = "Darwin" ] &&\
-        echo "go$ver.darwin-amd64.tar.gz" ||\
+        echo "go$ver.darwin-arm64.tar.gz" ||\
         echo "go$ver.linux-amd64.tar.gz"`
     GODIR="$local_dir/go"
     [ ! -d $GODIR ] && mkdir -p $GODIR || rm -rf "$GODIR/*"

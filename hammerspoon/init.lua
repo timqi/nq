@@ -20,12 +20,16 @@ launcher_msg = "-- Launcher --"
 app_shortcuts = {}
 app_table = {
     j = {a="Alacritty", g=pos.full, gb=pos.full},
+    g = {a="GoLand", g=pos.full, gb=pos.full},
     v = {a="Visual Studio Code", g=pos.right, gb=pos.full},
+    m = {a="PyCharm", g=pos.right, gb=pos.full},
+    d = {a="DataGrip", g=pos.right, gb=pos.full},
+
     c = {a="Google Chrome", g=pos.left, gb=pos.full},
     x = {a="Safari", g=pos.left, gb=pos.full},
+
     s = {a="Slack", g=pos.left, gb=pos.full},
     w = {a="WeChat",},
-    m = {a="Activity Monitor",},
     f = {a="Finder",},
     e = {a="Eudb_en",},
     z = {a="zoom.us"},
