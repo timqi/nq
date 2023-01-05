@@ -23,7 +23,7 @@ local_dir="$HOME/.local"
 # Handle PATH
 case $PATH in 
     *$local_dir/bin*) ;;
-    *) PATH="$HOME/go/bin:$local_dir/bin:$local_dir/bin/node:$local_dir/python/bin:/usr/local/bin:$HOME/.config/nq/bin:$PATH"
+    *) PATH="$HOME/go/bin:$local_dir/bin:$local_dir/bin/node:/usr/local/bin:$HOME/.config/nq/bin:$PATH:$local_dir/conda/bin:"
        export PATH;;
 esac
 
@@ -39,14 +39,15 @@ export LANG=en_US.UTF-8
 export LC_ALL=$LANG
 export TERM="xterm-256color"
 export PYTHONUSERBASE=$HOME/.local
-export PYTHONPATH=".:$local_dir/python/lib/python/site-packages"
+#export PYTHONPATH=".:$local_dir/python/lib/python/site-packages"
+export PYTHONPATH="."
 
 
 alias ls='ls --color'
 alias grep='grep --color=auto'
 alias abrew='arch -arm64 brew'
 alias g='git'
-alias pipx='PYTHONUSERBASE=$HOME/.local/python /usr/bin/python3 -m pip'
+alias pipx="$HOME/.local/conda/bin/python -m pip"
 alias Lg='lazygit'
 alias d='docker'
 alias dc='docker-compose'

@@ -205,8 +205,9 @@ def show_process_of_port(ori):
 
 
 def to_directory(ori):
-    if ori.replace("cd", "").strip() == "":
-        stdout, _ = _run(f"zoxide query -l | fzf -e --prompt='Zoxide Workspace> '")
+    if ori.replace("cd", "").strip() == "" or ori.startswith("z"):
+        query = ori.replace("z", "").strip() if ori.startswith("z") else ""
+        stdout, _ = _run(f"zoxide query -l {query} | fzf -e --prompt='Zoxide Workspace> '")
     else:
         prefix = ori.replace("cd", "").strip()
         stdout, _ = _run(
@@ -265,6 +266,7 @@ prefix = {
     "d rm": docker_container_remove,
     "net": show_process_of_port,
     "cd": to_directory,
+    "z": to_directory,
     "g ck": git_checkout,
     "g checkout": git_checkout,
     "g s": git_show_ref,

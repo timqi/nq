@@ -140,7 +140,7 @@ require("nvim-treesitter.configs").setup({
     },
 })
 EOF
-echo "Neovim loaded..."
+echo "Neovim loaded"
 endif
 
 command! Lg execute '!tmux popup -d "\#{pane_current_path}" -xC -yC -w99\% -h99\% -E "zsh -i -c lazygit"'
