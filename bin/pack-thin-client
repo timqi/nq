@@ -1,0 +1,41 @@
+#!/usr/bin/bash
+
+
+bins="rg,fd,fzf,cht.sh,jq,zoxide,fzf"
+nq_bins="complete-fzf,git-url,shprofile"
+
+
+tmpdir="/tmp/nqpack"
+tmpdir_bin="$tmpdir/bin"
+mkdir -p "$tmpdir_bin"
+for bin in $(echo $bins | tr "," "\n"); do
+    echo "Packing $bin"
+    cp "$HOME/.local/bin/$bin" "$tmpdir_bin/"
+done
+for bin in $(echo $nq_bins | tr "," "\n"); do
+    echo "Packing $bin"
+    cp "$HOME/.config/nq/bin/$bin" "$tmpdir_bin/"
+done
+
+cd "$tmpdir_bin"
+tar_name="nq.thin.tar.gz"
+echo "Tarballing $tar_name ..."
+tar -czf $tar_name *
+
+tmp_git="$tmpdir/git"
+mkdir -p $tmp_git
+mv $tar_name $tmp_git/
+cd $tmp_git
+cp $HOME/.config/nq/bin/thin-installer README
+
+
+git init
+git add .
+git commit -m "nq.thin.tar.gz"
+git branch -M main
+git remote add origin git@github.com:timqi/nq_thin_client.git
+git push -f origin main
+
+
+rm -rf $tmpdir
+

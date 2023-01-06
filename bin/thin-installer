@@ -1,0 +1,19 @@
+#!/bin/sh
+# curl -s https://raw.githubusercontent.com/timqi/nq_thin_client/main/README | sh
+
+base_url="https://github.com/timqi/nq_thin_client/raw/main"
+
+target="$HOME/.local/bin"
+mkdir -p $target
+curl -L -H "Cache-Control: no-cache" --progress-bar "$base_url/nq.thin.tar.gz" | tar -zx -C $target
+
+profile="$HOME/.profile"
+
+source_cmd="source $target/shprofile"
+if [ ! -f "$profile" ]; then
+    echo "$source_cmd" > $profile
+else
+    if ! grep -q "$source_cmd" $profile; then
+        echo -e "\n$source_cmd\n" >> $profile
+    fi
+fi

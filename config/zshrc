@@ -38,8 +38,6 @@ export EDITOR=vim
 export LANG=en_US.UTF-8
 export LC_ALL=$LANG
 export TERM="xterm-256color"
-export PYTHONUSERBASE=$HOME/.local
-#export PYTHONPATH=".:$local_dir/python/lib/python/site-packages"
 export PYTHONPATH="."
 
 
@@ -96,7 +94,6 @@ iploc() {
 
 
 # fzf
-#export FZF_DEFAULT_COMMAND='rg --files --color never'
 export FZF_DEFAULT_COMMAND='fd --type file --follow --color=never'
 export FZF_DEFAULT_OPTS="--ansi -m --color dark --bind=ctrl-l:toggle-all --bind=ctrl-d:preview-half-page-down --bind=ctrl-u:preview-half-page-up --bind=ctrl-/:toggle-preview --inline-info --preview-window wrap --height=10"
 fzf-history-widget() {
