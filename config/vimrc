@@ -30,8 +30,8 @@ au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
     \| exe "normal! g'\"" | endif
 
 call plug#begin('~/.vim/plugged')
-Plug 'TovarishFin/vim-solidity'
-Plug 'leafgarland/typescript-vim'
+"Plug 'TovarishFin/vim-solidity'
+"Plug 'leafgarland/typescript-vim'
 Plug 'easymotion/vim-easymotion'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-fugitive'
