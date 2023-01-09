@@ -29,8 +29,7 @@ export FZF_DEFAULT_COMMAND='rg --files --color=never'
 export FZF_DEFAULT_OPTS="--ansi -m --color dark --bind=ctrl-l:toggle-all --bind=ctrl-d:preview-half-page-down --bind=ctrl-u:preview-half-page-up --bind=ctrl-/:toggle-preview --inline-info --preview-window wrap --height=10"
 
 _confirm_run() {
-    echo -e "\033[1;32m$1\033[0m"
-    read -p "$1 [confirm]:" -n 1 key
+    read -p "$1[confirm]:" -n 1 key
     if [ "$key" = "" ]; then
         eval "$1"
     fi

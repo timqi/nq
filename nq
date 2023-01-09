@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+case $SHELL in 
+    *zsh*) ;;
+    *) echo "Should be run in zsh" && exit;;
+esac
+
 local_dir="$HOME/.local"
 bin_dir="$HOME/.local/bin"
 tmp_dir="/tmp/nq"
@@ -329,8 +334,6 @@ all_items() {
     done <<< "`declare -f | grep ' ()'`"
     echo "${funcs%,}"
 }
-
-basic_items="zplug,config"
 
 handle_item_install() {
     item=$1

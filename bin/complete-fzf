@@ -145,7 +145,8 @@ def docker_image_remove(ori):
     items = []
     for line in stdout.strip().splitlines():
         id, repo, tag, size = line.split()
-        items.append(f"{repo}:{tag}")
+        label = f"{repo}:{tag}"
+        items.append(label if label != "<none>:<none>" else id)
     return f"d rmi {' '.join(items)} " if items else ori
 
 
