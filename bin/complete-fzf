@@ -7,7 +7,7 @@ import sys
 from os.path import exists
 
 os.environ["FZF_DEFAULT_OPTS"] = (
-        os.environ.get("FZF_DEFAULT_OPTS", "") + " --layout=reverse"
+    os.environ.get("FZF_DEFAULT_OPTS", "") + " --layout=reverse"
 )
 
 
@@ -106,12 +106,6 @@ def docker_container_exec_shell(ori):
         return ori
     os_info, _ = _run(f"docker exec {name} cat /etc/os-release")
     os_info = os_info.splitlines()[0]
-    print(
-        f"\n{bcolors.HEADER}{bcolors.BOLD}[ {name} ]",
-        os_info,
-        bcolors.ENDC,
-        file=sys.stderr,
-    )
     sh = "sh" if "alpine" in os_info.lower() else "bash"
     return f"d exec -it {name} {sh} "
 
@@ -207,7 +201,9 @@ def show_process_of_port(ori):
 def to_directory(ori):
     if ori.replace("cd", "").strip() == "" or ori.startswith("z"):
         query = ori.replace("z", "").strip() if ori.startswith("z") else ""
-        stdout, _ = _run(f"zoxide query -l {query} | fzf -e --prompt='Zoxide Workspace> '")
+        stdout, _ = _run(
+            f"zoxide query -l {query} | fzf -e --prompt='Zoxide Workspace> '"
+        )
     else:
         prefix = ori.replace("cd", "").strip()
         stdout, _ = _run(

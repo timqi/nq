@@ -2,30 +2,22 @@
 # Used only in thin client packages
 #
 
-local_dir="$HOME/.local"
-
 # Handle PATH
 case $PATH in 
-    *$local_dir/bin*) ;;
-    *) PATH="$local_dir/bin:$PATH"
+    *nq/bin*) ;;
+    *) PATH="$HOME/nq/bin:$PATH"
        export PATH;;
 esac
 
 
 export EDITOR=vim
 export LANG=en_US.UTF-8
-export LC_ALL=$LANG
 
 
-alias ls='ls --color'
-alias grep='grep --color=auto'
 alias g='git'
-alias Lg='lazygit'
 alias d='docker'
 alias dc='docker-compose'
 alias vip='vim +Files'
-alias vie='vim +History'
-alias vig='vim +Commits'
 alias sv="sudo supervisorctl"
 
 
@@ -33,12 +25,12 @@ alias sv="sudo supervisorctl"
 alias zdd='zoxide add `pwd`'; alias zl='zoxide query -l -s'
 
 # fzf
-export FZF_DEFAULT_COMMAND='fd --type file --follow --color=never'
+export FZF_DEFAULT_COMMAND='rg --files --color=never'
 export FZF_DEFAULT_OPTS="--ansi -m --color dark --bind=ctrl-l:toggle-all --bind=ctrl-d:preview-half-page-down --bind=ctrl-u:preview-half-page-up --bind=ctrl-/:toggle-preview --inline-info --preview-window wrap --height=10"
 
 _confirm_run() {
     echo -e "\033[1;32m$1\033[0m"
-    read -p "Press enter to run command Above:" -n 1 key
+    read -p "$1 [confirm]:" -n 1 key
     if [ "$key" = "" ]; then
         eval "$1"
     fi

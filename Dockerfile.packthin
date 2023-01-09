@@ -1,0 +1,70 @@
+#
+# Will put nq.thin.tar.gz to /out, mount if need
+#
+FROM --platform=linux/amd64 alpine as builder
+
+# https://github.com/vim/vim/tags
+ARG VIMVERSION=v9.0.1153 
+# https://github.com/mjakob-gh/build-static-tmux/releases
+ARG TMUXVERSION=v3.3a
+ARG NQTOOLS="rg,fzf,chtsh,jq,zoxide"
+ARG VIMPLUGINS="auto-pairs,fzf,fzf.vim,neoformat,vim-auto-save,vim-easymotion,vim-fugitive,vim-surround"
+
+
+RUN apk update && apk add gcc make musl-dev bash \
+        ncurses-static curl git \
+        ncurses-terminfo-base
+
+# Build VIM
+WORKDIR /vim
+RUN wget -O- https://github.com/vim/vim/archive/${VIMVERSION}.tar.gz | tar xz -C . --strip-components 1
+RUN LDFLAGS="-static" ./configure \
+        --prefix=/usr/local/vim \
+        --disable-gtktest \
+        --disable-gui \
+        --disable-netbeans \
+        --disable-selinux \
+        --without-x \
+        --with-tlib=ncursesw \
+        --enable-multibyte \
+        --with-features=huge
+RUN make -j`nproc` && make install
+
+WORKDIR /usr/local/vim/share/vim/vim90
+RUN rm -rf doc/ tutor/ spell/ bugreport.vim
+RUN mkdir -p /nqthin/vim && cp -r . /nqthin/vim/runtime
+RUN cp -r /etc/terminfo /nqthin/vim/terminfo
+RUN cp /usr/local/vim/bin/vim /nqthin/vim/
+RUN strip /nqthin/vim/vim
+
+
+# Pack tmux
+WORKDIR /nqthin/bin
+RUN curl --silent --progress-bar -o tmux.gz \
+    -L https://github.com/mjakob-gh/build-static-tmux/releases/download/$TMUXVERSION/tmux.linux-amd64.stripped.gz
+RUN gzip -d tmux.gz && chmod +x tmux
+
+
+# Build nq bin tools
+COPY ./nq /root/.config/nq/nq
+WORKDIR /root/.config/nq
+RUN ./nq ${NQTOOLS}
+WORKDIR /nqthin/bin
+RUN for bin in ${NQTOOLS//,/ }; do mv "$HOME/.local/bin/$bin" .; strip $bin; done
+
+
+# Pack vim
+WORKDIR /nqthin/vim
+COPY ./config/vimrc /root/.vimrc
+RUN curl --progress-bar -o "/root/.vim/autoload/plug.vim" --create-dirs \
+        -L "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
+RUN VIMRUNTIME=./runtime ./vim +PlugInstall +qall
+RUN mv /root/.vim/autoload . && mkdir plugged
+RUN for d in ${VIMPLUGINS//,/ }; do mv "$HOME/.vim/plugged/$d" plugged/; done
+RUN find -type d | egrep '(doc|\.git)$' |xargs rm -rf
+
+# Tarballing
+WORKDIR /nqthin
+RUN [ ! -d /out ] && mkdir /out
+RUN tar -czf /out/nq.thin.tar.gz *
+

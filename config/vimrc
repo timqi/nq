@@ -29,9 +29,9 @@ endfor
 au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
     \| exe "normal! g'\"" | endif
 
-call plug#begin('~/.vim/plugged')
-"Plug 'TovarishFin/vim-solidity'
-"Plug 'leafgarland/typescript-vim'
+silent! call plug#begin('~/.vim/plugged')
+Plug 'TovarishFin/vim-solidity'
+Plug 'leafgarland/typescript-vim'
 Plug 'easymotion/vim-easymotion'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-fugitive'
@@ -46,7 +46,7 @@ Plug 'Shougo/neosnippet-snippets', {'on': []}
 Plug 'github/copilot.vim', {'on': []}
 Plug 'neoclide/coc.nvim', {'branch': 'release', 'on': []}
 Plug 'antoinemadec/coc-fzf', {'on': []}
-call plug#end()
+silent! call plug#end()
 
 nmap s <Plug>(easymotion-s)
 xmap s <Plug>(easymotion-s)
@@ -140,11 +140,6 @@ function! LoadLsp()
     inoremap <expr> <c-space> coc#refresh()
 endfunction
 command! LoadLsp exe 'call LoadLsp()'
-
-if has("nvim")
-    call LoadLsp()
-    echo "Neovim loaded"
-endif
 
 
 for g in ['Normal', 'EndOfBuffer', 'LineNr', "Directory"]

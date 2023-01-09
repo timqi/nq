@@ -304,8 +304,8 @@ install_ctags() {
 }
 
 install_chtsh() {
-    curl --silent -L https://cht.sh/:cht.sh > "$bin_dir/cht.sh"
-    chmod +x "$bin_dir/cht.sh"
+    curl --silent -L https://cht.sh/:cht.sh > "$bin_dir/chtsh"
+    chmod +x "$bin_dir/chtsh"
 }
 
 #install_brew() {
@@ -347,14 +347,13 @@ elif [ "$1" = "all" ]; then
     for item in ${items//,/ }; do
         handle_item_install $item
     done
-elif [ "$1" = "basic" ]; then
-    for item in ${basic_items//,/ }; do
+elif [[ "$1" == *,* ]]; then
+    for item in ${1//,/ }; do
         handle_item_install $item
     done
 else
+    log '`nq all` to install all components'
     items=`all_items`
-    log "supported app: $items"
-    log "supported groups:"
-    log "  all: install all components"
-    log "  basic: $basic_items"
+    log "apps: $items"
 fi
+
