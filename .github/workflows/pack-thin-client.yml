@@ -1,0 +1,26 @@
+name: Pack Thin Client
+
+on:
+  workflow_dispatch:
+
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build thin client
+      run: docker build --tag nqthinclient . -f Dockerfile.packthin
+
+    - name: Extract tarball
+      run: docker run --rm -v $PWD:/dist nqthinclient cp /out/nq.thin.tar.gz /dist/
+
+    - name: Upload binaries to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: thin
+        file: nq.thin.tar.gz
+        overwrite: true
+        body: "https://github.com/timqi/nq/blob/main/thin-installer"
+

@@ -1,27 +1,37 @@
 #
-# url=https://raw.githubusercontent.com/timqi/nq_thin_client/main/README; if command -v curl 2>&1 >/dev/null; then curl -s --progress-bar -L $url | sh; elif command -v wget 2>&1 >/dev/null; then wget -O- $url | sh; fi; [ -d $HOME/nq ] && source $HOME/nq/shprofile
-
-download_and_decompress() {
-    url=$1
-    target=$2
-    echo "Download to $target"
+# url=https://raw.githubusercontent.com/timqi/nq/main/thin-installer; if command -v curl 2>&1 >/dev/null; then curl -s --progress-bar -L $url | sh; elif command -v wget 2>&1 >/dev/null; then wget -O- $url | sh; fi; [ -d $HOME/nq ] && source $HOME/nq/shprofile
+#
+#
+download() {
+    echo "Download to $2"
     if command -v curl 2>&1 >/dev/null; then
-        curl -L -H "Cache-Control: no-cache" --progress-bar "$url" | tar -zx -C $target
+        curl -L -H "Cache-Control: no-cache" --progress-bar "$1" -o $2
     elif command -v wget 2>&1 >/dev/null; then
-        wget $1 -O - | tar -zx -C $target
+        wget $1 -O $2
     fi
 }
 
-base_url="https://raw.githubusercontent.com/timqi/nq_thin_client"
+download_and_decompress() {
+    echo "Download to $2"
+    if command -v curl 2>&1 >/dev/null; then
+        curl -L -H "Cache-Control: no-cache" --progress-bar "$1" | tar -zx -C $2
+    elif command -v wget 2>&1 >/dev/null; then
+        wget $1 -O - | tar -zx -C $2
+    fi
+}
 
-# download
+# Download thin client
 nq_dir="$HOME/nq"
 [ -d $nq_dir ] && rm -rf $nq_dir
 mkdir -p $nq_dir
-download_and_decompress "$base_url/main/nq.thin.tar.gz" "$nq_dir"
-download_and_decompress "$base_url/vim/vim.thin.tar.gz" "$nq_dir/vim"
+download_and_decompress http://github.com/timqi/nq/releases/download/release/nq.thin.tar.gz "$nq_dir"
 
-# add vim executable
+# Download configs
+download https://raw.githubusercontent.com/timqi/nq/main/config/vimrc $HOME/nq/vim/vimrc
+download https://raw.githubusercontent.com/timqi/nq/main/config/tmux.conf $HOME/.tmux.conf
+download https://raw.githubusercontent.com/timqi/nq/main/config/shprofile $nq_dir/shprofile
+
+# Add vim executable
 vim_dir="$nq_dir/vim"
 ln -sv $vim_dir $HOME/.vim
 cat <<EOF > "$nq_dir/bin/vim"
@@ -29,15 +39,12 @@ VIMRUNTIME="$vim_dir/runtime" "$vim_dir/vim" \$@
 EOF
 chmod +x "$nq_dir/bin/vim"
 
-# handle terminfo in alpine
-if grep -q "alpine" /etc/os-release; then
-    mv "$nq_dir/vim/terminfo" /etc
+# Handle terminfo
+if [ ! -d /etc/terminfo ]; then
+   mv "$nq_dir/vim/terminfo" /etc
 fi
 
-
-ln -sv $nq_dir/tmux.conf $HOME/.tmux.conf
-
-# add source shprofile
+# Add source shprofile
 profile="$HOME/.profile"
 source_cmd="source $nq_dir/shprofile"
 if [ ! -f "$profile" ]; then
