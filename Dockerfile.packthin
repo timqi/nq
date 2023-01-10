@@ -7,7 +7,7 @@ FROM --platform=linux/amd64 alpine as builder
 ARG VIMVERSION=v9.0.1153 
 # https://github.com/mjakob-gh/build-static-tmux/releases
 ARG TMUXVERSION=v3.3a
-ARG NQTOOLS="rg,fzf,chtsh,jq,zoxide"
+ARG NQTOOLS="rg,fzf,fd,chtsh,jq,zoxide"
 ARG VIMPLUGINS="auto-pairs,fzf,fzf.vim,neoformat,vim-auto-save,vim-easymotion,vim-fugitive,vim-surround"
 
 

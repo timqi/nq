@@ -30,8 +30,6 @@ au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
     \| exe "normal! g'\"" | endif
 
 silent! call plug#begin('~/.vim/plugged')
-Plug 'TovarishFin/vim-solidity'
-Plug 'leafgarland/typescript-vim'
 Plug 'easymotion/vim-easymotion'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-fugitive'
@@ -69,8 +67,8 @@ let g:auto_save = 1
 let g:tmux_navigator_save_on_switch = 2
 let g:netrw_dirhistmax = 0
 
-noremap  <c-p>      :<C-U>call fzf#vim#files('')<CR>
-noremap  <leader>e  :<C-U>call fzf#vim#history()<CR>
+noremap  <c-j>      :<C-U>call fzf#vim#files('')<CR>
+noremap  <c-h>      :<C-U>call fzf#vim#history()<CR>
 nnoremap <leader>m  :<C-U>call fzf#vim#marks()<CR>
 nnoremap <leader>t  :<C-U>BTags<CR>
 nnoremap <leader>y  :<C-U>Tags<CR>
@@ -138,6 +136,8 @@ function! LoadLsp()
     inoremap <expr> <c-p> coc#pum#visible() ? coc#pum#prev(1): "\<c-p>"
     inoremap <expr> <cr>  coc#pum#visible() ? coc#_select_confirm() : "\<CR>"
     inoremap <expr> <c-space> coc#refresh()
+
+    echo "Lsp Loaded"
 endfunction
 command! LoadLsp exe 'call LoadLsp()'
 

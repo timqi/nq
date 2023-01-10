@@ -50,7 +50,9 @@ alias Lg='lazygit'
 alias d='docker'
 alias dc='docker-compose'
 alias vim='nvim'
-alias vip='nvim +Files'
+alias vih='nvim +History'
+alias vij='nvim +Files'
+alias vip='nvim +Files +LoadLsp'
 alias sv="sudo supervisorctl"
 
 alias bat='bat -p'
@@ -102,10 +104,9 @@ fzf-history-widget() {
 zle -N fzf-history-widget && bindkey '^R' fzf-history-widget
 
 fzf-complete-widget() {
-  BUFFER=$(complete-fzf "$LBUFFER"); CURSOR=$#BUFFER; zle redisplay
+  BUFFER=$(complete-fzf --alias="`alias`" --section="$LBUFFER"); CURSOR=$#BUFFER; zle redisplay
 }
-zle -N fzf-complete-widget && bindkey '^T' fzf-complete-widget
-
+zle -N fzf-complete-widget && bindkey '^J' fzf-complete-widget
 
 # zoxide
 eval "$(zoxide init zsh --cmd z --hook none)"

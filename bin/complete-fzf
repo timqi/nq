@@ -1,30 +1,71 @@
 #!/usr/bin/env python3
+tasks = """
+[ssh-to-host]
+command=ssh ${host}
 
+[kill-with-pids]
+command=kill ${space_pids}
+
+[top-with-pids]
+command=top ${top_pids}
+
+[cd-to-zoxide-workspace]
+command=cd ${zoxide}
+
+[cd-to-custom-directory]
+command=cd ${sub_directory_of_input}
+
+[ps-from-netstat-port]
+command=ps -Tf -p ${pid_form_netstat}
+
+[docker-run-image]
+command=docker run --rm -it ${docker_image} sh
+
+[docker-container-log]
+command=docker logs -f ${docker_container} --tail=10
+
+[docker-container-execute]
+command=docker exec -it ${docker_container_with_shell}
+
+[docker-remove-images]
+command=docker rmi ${space_docker_images}
+
+[docker-remove-containers]
+command=${docker_remove_command}
+
+[docker-inspect-item]
+command=docker inspect ${docker_element}
+
+[git-check-ref]
+command=git checkout ${git_ref}
+
+[supervisort-logs]
+command=sudo supervisorctl tail -f ${sv_proc}
+
+[golang-function-test]
+command=go test ${go_test_pkg} -v -run ${go_test_func}$$
+
+[pytest-function-test]
+command=pytest -s -k ${pytest_func}
+"""
+
+import argparse
+import configparser
 import os
 import platform
+import shutil
+import string
 import subprocess
 import sys
 from os.path import exists
 
-os.environ["FZF_DEFAULT_OPTS"] = (
-    os.environ.get("FZF_DEFAULT_OPTS", "") + " --layout=reverse"
-)
-
-
-class bcolors:
-    HEADER = "\033[95m"
-    OKBLUE = "\033[94m"
-    OKCYAN = "\033[96m"
-    OKGREEN = "\033[92m"
-    WARNING = "\033[93m"
-    FAIL = "\033[91m"
-    ENDC = "\033[0m"
-    BOLD = "\033[1m"
-    UNDERLINE = "\033[4m"
+global_cache_map = {}
 
 
 def _run(cmd, stdin=None):
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=subprocess.PIPE, shell=True)
+    p = subprocess.Popen(
+        cmd, stdout=subprocess.PIPE, stdin=subprocess.PIPE, shell=True, env=os.environ
+    )
     if isinstance(stdin, str):
         stdin = stdin.encode("utf8")
     stdout, stderr = p.communicate(input=stdin)
@@ -34,83 +75,56 @@ def _run(cmd, stdin=None):
     )
 
 
+def sudo_wrapper(func):
+    def wrap(*args, **kwargs):
+        if os.getuid() == 0:
+            return func(*args, **kwargs)
+
+        argv = [arg.replace("\n", "\\\n") for arg in sys.argv]
+        cmd = "sudo " + " ".join(argv) + " --run-identifier " + func.__name__
+        stdout, stderr = _run(cmd)
+        if stderr:
+            error(stderr)
+        return stdout
+
+    return wrap
+
+
 def _is_macos():
     return platform.system() == "Darwin"
 
 
-def select_from_container(only_running=False, return_origin=False):
-    format = "--format 'table {{.ID}}\t{{.State}}\t{{.Names}}\t{{.Image}}'"
-    cmd = "docker ps " + (" " if only_running else "-a ") + format
-    containers, _ = _run(cmd)
-    containers = containers.splitlines()[1:]
-
-    if exists("./docker-compose.yml") or exists("./docker-compose.yaml"):
-        cmd = "docker-compose ps" + ("" if only_running else " -a")
-        compose, _ = _run(cmd)
-        compose_container_names = set(
-            [line.split()[0] for line in compose.splitlines()[1:]]
-        )
-
-        def _get_container_key(line):
-            name = line.split()[2]
-            return 1 if name in compose_container_names else 2
-
-        containers.sort(key=_get_container_key)
-
-    stdout, _ = _run(
-        f"fzf -e --prompt='Container> '",
-        stdin="\n".join(containers),
-    )
-    if return_origin:
-        return stdout
-    return "" if not stdout else stdout.split()[2]
-
-
-def ssh_list_hosts(ori):
-    with open(os.path.expanduser("~/.ssh/config")) as f:
-        hosts = []
-        for line in f:
-            if not line.startswith("Host "):
-                continue
-            if line.startswith("Host *"):
-                continue
-            hosts += [host.strip() for host in line.split()[1:]]
-    stdout, _ = _run(f"fzf -e --prompt='Host> '", stdin="\n".join(hosts))
-    return f"{ori} {stdout} " if stdout else ori
-
-
-def kill_with_pids(ori):
+def _idf_pids():
     stdout, _ = _run("ps -ef | fzf -e --prompt='Process> '")
-    pids = [line.split()[1] for line in stdout.splitlines()]
-    return f"{ori} {' '.join(pids)} " if pids else ori
+    return [line.split()[1] for line in stdout.splitlines()]
 
 
-def top_with_pids(ori):
-    stdout, _ = _run("ps -ef | fzf -e --prompt='Process> '")
-    pids = [line.split()[1] for line in stdout.splitlines()]
-    if len(pids) > 20:
-        pids = pids[:20]
+def idf_comma_pids():
+    return ",".join(_idf_pids())
+
+
+def idf_space_pids():
+    return " ".join(_idf_pids())
+
+
+def idf_top_pids():
+    pids = _idf_pids()
     if _is_macos():
-        return f"top {' '.join(['-pid ' + pid for pid in pids])} " if pids else ori
-    return f"{ori} -p {','.join(pids)} " if pids else ori
+        return " ".join(["-pid " + pid for pid in pids])
+    return "-p " + ",".join(pids)
 
 
-def docker_container_log(ori):
-    name = select_from_container(only_running=False)
-    return f"d logs -f {name} --tail=10" if name else ori
-
-
-def docker_container_exec_shell(ori):
-    name = select_from_container(only_running=True)
-    if not name:
-        return ori
-    os_info, _ = _run(f"docker exec {name} cat /etc/os-release")
+def idf_docker_container_with_shell():
+    container = idf_docker_container()
+    if not container:
+        return
+    os_info, _ = _run(f"docker exec {container} cat /etc/os-release")
     os_info = os_info.splitlines()[0]
     sh = "sh" if "alpine" in os_info.lower() else "bash"
-    return f"d exec -it {name} {sh} "
+    return container + " " + sh
 
 
-def docker_inspect(ori):
+def idf_docker_element():
     cmds = [
         "docker images --format 'table img {{.ID}}\t{{.Repository}}\t{{.Tag}}'",
         "docker volume ls --format 'table vol {{.Name}}'",
@@ -131,47 +145,80 @@ def docker_inspect(ori):
             items.append(line.split()[2])
         elif line.startswith("vol"):
             items.append(line.split()[1])
-    return f"d inspect {' '.join(items)} " if items else ori
+    return " ".join(items)
 
 
-def docker_image_remove(ori):
+def idf_space_docker_images():
+    images = _idf_docker_images()
+    return " ".join(images)
+
+
+def _idf_docker_images():
     stdout, _ = _run(
         "docker images --format 'table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}'"
     )
     stdout, _ = _run(
-        f"fzf -e --prompt='Image> '",
+        f"fzf -e --prompt='Dockr Image> '",
         stdin=stdout.split("\n", 1)[1],
     )
-    items = []
-    for line in stdout.strip().splitlines():
-        id, repo, tag, size = line.split()
-        label = f"{repo}:{tag}"
-        items.append(label if label != "<none>:<none>" else id)
-    return f"d rmi {' '.join(items)} " if items else ori
+    images = []
+    for line in stdout.splitlines():
+        id, repo, tag, _ = line.split()
+        if repo + tag == "<none><none>":
+            images.append(id)
+        else:
+            images.append(repo + ":" + tag)
+    return images
 
 
-def docker_container_run(ori):
+def idf_docker_image():
+    images = _idf_docker_images()
+    return images[0] if images else ""
+
+
+def _idf_docker_containers():
+    format = "--format 'table {{.ID}}\t{{.State}}\t{{.Names}}\t{{.Image}}'"
+    cmd = "docker ps -a " + format
+    containers, _ = _run(cmd)
+    containers = containers.splitlines()[1:]
+    if exists("./docker-compose.yml") or exists("./docker-compose.yaml"):
+        cmd = "docker-compose ps -a"
+        compose, _ = _run(cmd)
+        compose_container_names = set(
+            [line.split()[0] for line in compose.splitlines()[1:]]
+        )
+
+        def _get_container_key(line):
+            name = line.split()[2]
+            return 1 if name in compose_container_names else 2
+
+        containers.sort(key=_get_container_key)
     stdout, _ = _run(
-        "docker images --format 'table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}'"
+        f"fzf -e --prompt='Docker Container> '",
+        stdin="\n".join(containers),
     )
-    stdout, _ = _run(
-        f"fzf -e --prompt='Image> '",
-        stdin=stdout.split("\n", 1)[1],
-    )
-    out = stdout.split()
-    return f"d run --rm -it {out[1]}:{out[2]} sh " if out else ori
+    return stdout.split()[2]
 
 
-def docker_container_remove(ori):
-    stdout = select_from_container(only_running=False, return_origin=True)
-    if not stdout:
-        return ori
+def idf_docker_container():
+    containers = _idf_docker_containers()
+    return containers[0] if containers else ""
 
+
+def idf_docker_remove_command():
+    containers = _idf_docker_containers()
+    if not containers:
+        return
+    format = "--format 'table {{.Names}}\t{{.State}}'"
+    cmd = "docker ps -a " + format
+    containers, _ = _run(cmd)
     stop, rm = [], []
-    for line in stdout.strip().splitlines():
+    for line in containers.splitlines()[1:]:
         if line.startswith("CONTAINER ID"):
             continue
-        _, state, name, _ = line.split()
+        name, state = line.split()
+        if name not in containers:
+            continue
         rm.append(name)
         if state != "exited":
             stop.append(name)
@@ -182,120 +229,191 @@ def docker_container_remove(ori):
     return cmd
 
 
-def git_checkout(ori):
+def idf_git_ref():
     branch, _ = _run("git branch -a --format='%(refname:short)'")
     lines = ["br: " + line.strip() for line in branch.splitlines()]
     tag, _ = _run("git tag")
     lines += ["tag: " + line.strip() for line in tag.splitlines()]
     stdout, _ = _run(f"fzf -e --prompt='Ref> '", stdin="\n".join(lines))
     ref = stdout.split()[1]
-    return f"{ori} {ref} " if ref else ori
+    return ref if ref else None
 
 
-def show_process_of_port(ori):
+def idf_pid_form_netstat():
+    if _is_macos():
+        error("netstat not supported in macOS")
     stdout, _ = _run("sudo netstat -tunlp | fzf -e")
-    print(f"\n{bcolors.HEADER}{bcolors.BOLD}[{stdout}]{bcolors.ENDC}", file=sys.stderr)
+    print(f"\nnetstat: {stdout}", file=sys.stderr)
     pid = stdout.split()[-1].split("/")[0]
-    return f"ps -Tf -p {pid}" if pid else ori
+    return pid if pid else ""
 
 
-def to_directory(ori):
-    if ori.replace("cd", "").strip() == "" or ori.startswith("z"):
-        query = ori.replace("z", "").strip() if ori.startswith("z") else ""
-        stdout, _ = _run(
-            f"zoxide query -l {query} | fzf -e --prompt='Zoxide Workspace> '"
-        )
-    else:
-        prefix = ori.replace("cd", "").strip()
-        stdout, _ = _run(
-            f"fd --type directory '' {prefix} | fzf -e --prompt='Directory> '"
-        )
-    return f"cd {stdout} " if stdout else ori
+def idf_zoxide():
+    stdout, _ = _run(f"zoxide query -l | fzf -e --prompt='Zoxide> '")
+    return stdout.splitlines()[0] if stdout else ""
 
 
-def git_show_ref(ori):
-    preview_opt = "--preview-window=right,30%"
-    preview = '''--preview="echo {}|cut -d' ' -f1|xargs git diff-tree --no-commit-id --name-only -r"'''
-    stdout, _ = _run(
-        f"git log --color=always| fzf -e {preview} {preview_opt} --prompt='Ref> '"
+def idf_sub_directory_of_input():
+    cmd = os.environ.get("ORIGINAL_COMMAND", "")
+    parent = cmd.replace("cd", "").strip()
+    folder = os.path.expanduser(parent) if parent else "."
+    find_cmd = (
+        f"fd --type directory '' {folder}"
+        if shutil.which("fd")
+        else f"find {folder} -type d"
     )
-    return f"g show {stdout.split()[0]} " if stdout else ori
+    stdout, _ = _run(f"{find_cmd} | fzf -e --prompt='Directory> '")
+    return stdout.splitlines()[0] if stdout else ""
 
 
-def git_diff_with_name(ori):
-    stdout, _ = _run(f"git diff --name-only| fzf -e --prompt='File> '")
-    return f"g diff {stdout} " if stdout else ori
+@sudo_wrapper
+def idf_sv_proc():
+    stdout, _ = _run(f"sudo supervisorctl status| fzf -e --prompt='Supervisor Procs> '")
+    return stdout.split()[0] if stdout else None
 
 
-def supervisorctl_tail(ori):
-    stdout, _ = _run(f"sudo supervisorctl status| fzf -e --prompt='Process> '")
-    return f"sv tail -f {stdout.split()[0]} " if stdout else ori
+def _idf_go_test():
+    cache_key = "go-test-file-case"
+    if cache_key not in global_cache_map:
+        stdout, _ = _run(
+            f"rg --no-follow --color=always --no-line-number --no-heading -g '*_test.go' -r '$1' 'func (Test.*)\\(.*' . | fzf -e --prompt='Test Fuc> '"
+        )
+        file, case = stdout.splitlines()[0].split(":")
+        global_cache_map[cache_key] = (file, case)
+    return global_cache_map[cache_key]
 
 
-def golang_unit_test_by_function(ori):
-    stdout, _ = _run(
-        f"rg --no-follow --color=always --no-line-number --no-heading -g '*_test.go' -r '$1' 'func (Test.*)\\(.*' . | fzf -e --prompt='Test Fuc> '"
-    )
-    file, case = stdout.splitlines()[0].split(":")
-    exe = "gotest" if ori.startswith("got") else "go test"
-    return f"{exe} {os.path.dirname(file)} -v -run {case}$ "
+def idf_go_test_pkg():
+    return _idf_go_test()[0]
 
 
-def python_test_by_function(ori):
+def idf_go_test_func():
+    return _idf_go_test()[1]
+
+
+def idf_pytest_func():
     stdout, _ = _run(
         f"rg --no-follow --color=always --no-line-number --no-heading -g 'test_*.py' -r '$1' '.*def (test_.*)\\(.*' . | fzf -e --prompt='Test Fuc> '"
     )
     _, case = stdout.splitlines()[0].split(":")
-    exe = "brownie test" if ori.startswith("bt") else "pytest"
-    return f"{exe} -s -k {case}$ "
+    return case
 
 
-prefix = {
-    "ssh": ssh_list_hosts,
-    "kill": kill_with_pids,
-    "top": top_with_pids,
-    "d run": docker_container_run,
-    "d l": docker_container_log,
-    "d e": docker_container_exec_shell,
-    "d sh": docker_container_exec_shell,
-    "d i": docker_inspect,
-    "d rmi": docker_image_remove,
-    "d rm": docker_container_remove,
-    "net": show_process_of_port,
-    "cd": to_directory,
-    "z": to_directory,
-    "g ck": git_checkout,
-    "g checkout": git_checkout,
-    "g s": git_show_ref,
-    "g d": git_diff_with_name,
-    "sv t": supervisorctl_tail,
-    "got": golang_unit_test_by_function,
-    "go t": golang_unit_test_by_function,
-    "pyt": python_test_by_function,
-    "bt": python_test_by_function,
-}
+def error(*args, **kwargs):
+    if len(args) == 0 and len(kwargs) == 0:
+        sys.exit(0)
+    print(*args, file=sys.stderr, **kwargs)
+    sys.exit(1)
 
-alias = {
-    "d": "docker",
-    "g": "git",
-    "dc": "docker-compose",
-    "sv": "sudo supervisorctl",
-}
 
-if len(sys.argv) < 2:
-    print(bcolors.HEADER + "Prefix\t\tDescription" + bcolors.ENDC)
-    for item in prefix:
-        key = (item + ":").ljust(15)
-        print(f"{key} {prefix[item].__name__}")
-else:
-    ori = sys.argv[1].strip()
-    for k, v in alias.items():
-        if ori.startswith(v + " "):
-            ori = ori.replace(v + " ", k + " ", 1)
-            break
-    result = ""
-    for item in prefix:
-        if ori.startswith(item):
-            result = prefix[item](ori)
-            break
-    print(result if result else ori)
+def parse_alias(alias, command):
+    for line in alias.splitlines():
+        short, long = line.split("=", 1)
+        long = long.strip("'").strip('"').strip()
+        if command.startswith(long + " "):
+            return command.replace(long + " ", short + " ")
+    return command
+
+
+def idf_host():
+    with open(os.path.expanduser("~/.ssh/config")) as f:
+        hosts = []
+        for line in f:
+            if not line.startswith("Host "):
+                continue
+            if line.startswith("Host *"):
+                continue
+            hosts += [host.strip() for host in line.split()[1:]]
+    stdout, _ = _run(f"fzf -e --prompt='Host> '", stdin="\n".join(hosts))
+    return stdout.strip()
+
+
+def handle_section(section):
+    var_map, g = {}, globals()
+    command = section["command"]
+    for identifier in string.Formatter().parse(command):
+        if not identifier[1]:
+            continue
+        identifier = identifier[1]
+        idf_fun_name = "idf_" + identifier
+        if idf_fun_name not in g:
+            error("Can't get identifier ${%s}" % identifier)
+        if not callable(g[idf_fun_name]):
+            error(idf_fun_name + " is not callable")
+        val = g[idf_fun_name]()
+        var_map[identifier] = val if val else ""
+    # print(var_map)
+    command = string.Template(command).substitute(var_map)
+    return command
+
+
+def select_section(query):
+    config = configparser.ConfigParser()
+    config.read_string(tasks)
+    task_list = []
+    for section in config.sections():
+        task_list.append(f"{section}: {config[section]['command']}")
+    query = f" --query '{query}' " if query else ""
+    stdout, _ = _run(f"fzf {query} --prompt='Tasks> '", stdin="\n".join(task_list))
+    if not stdout.strip():
+        return
+    name = stdout.splitlines()[0].split(":", 1)[0]
+    return config[name]
+
+
+def handle_command(command, with_run):
+    if not with_run:
+        print(command + " ")
+        return
+    if not input(command + " [yYcr]"):
+        stdout, stderr = _run(command)
+        if stdout:
+            print(stdout)
+        if stderr:
+            print(stderr, file=sys.stderr)
+
+
+def main(args):
+    if args.list_available_identifier:
+        for item in globals().copy():
+            if item.startswith("idf_"):
+                print(item)
+        error()
+
+    os.environ["FZF_DEFAULT_OPTS"] = (
+        os.environ.get("FZF_DEFAULT_OPTS", "") + " --layout=reverse"
+    )
+
+    if args.section:
+        os.environ["ORIGINAL_COMMAND"] = args.section
+
+    if args.run_identifier:
+        if args.run_identifier not in globals():
+            error(f"No identifier {args.run_identifier} found")
+        print(globals()[args.run_identifier]())
+        sys.exit(0)
+
+    section = select_section(args.section)
+    if not section:
+        error()
+
+    command = handle_section(section)
+    if not command:
+        error()
+
+    command = parse_alias(args.alias, command)
+    if not command:
+        error()
+
+    handle_command(command, args.with_run)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--alias", default="", type=str)
+    parser.add_argument("--section", default="", type=str)
+    parser.add_argument("--run-identifier", default="", type=str)
+    parser.add_argument("--with-run", action="store_true", default=False)
+    parser.add_argument("--list-available-identifier", action="store_true")
+    args = parser.parse_args()
+    main(args)

@@ -33,8 +33,9 @@ download_and_decompress $nq_url $nq_dir
 
 # Download configs
 base_url="https://raw.githubusercontent.com/timqi/nq/main"
-download $base_url/config/vimrc $HOME/nq/vim/vimrc
-download $base_url/config/tmux.conf $HOME/.tmux.conf
+download $base_url/config/vimrc $nq_dir/vim/vimrc
+download $base_url/config/tmux.conf $nq_dir/tmux.conf
+ln -sv $nq_dir/tmux.conf $HOME/.tmux.conf
 download $base_url/config/shprofile $nq_dir/shprofile
 
 command -v python3 2>&1 >/dev/null &&\

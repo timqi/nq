@@ -3,7 +3,7 @@
 #
 
 # Handle PATH
-case $PATH in 
+case $PATH in
     *nq/bin*) ;;
     *) PATH="$HOME/nq/bin:$PATH"
        export PATH;;
@@ -15,9 +15,10 @@ export LANG=en_US.UTF-8
 
 
 alias g='git'
-alias d='docker'
-alias dc='docker-compose'
-alias vip='vim +Files'
+alias d='sudo docker'
+alias dc='sudo docker-compose'
+alias vih='vim +History'
+alias vij='vim +Files'
 alias sv="sudo supervisorctl"
 
 
@@ -25,8 +26,20 @@ alias sv="sudo supervisorctl"
 alias zdd='zoxide add `pwd`'; alias zl='zoxide query -l -s'
 
 # fzf
-export FZF_DEFAULT_COMMAND='rg --files --color=never'
+export FZF_DEFAULT_COMMAND='fd --type file --follow --color=never'
 export FZF_DEFAULT_OPTS="--ansi -m --color dark --bind=ctrl-l:toggle-all --bind=ctrl-d:preview-half-page-down --bind=ctrl-u:preview-half-page-up --bind=ctrl-/:toggle-preview --inline-info --preview-window wrap --height=10"
+
+
+case $SHELL in 
+    *bash*) 
+        fzf-complete-widget() {
+          output=$(complete-fzf --alias="`alias`" --section="$READLINE_LINE")
+          READLINE_LINE="$output"
+          READLINE_POINT=0x7fffffff
+        }
+        bind -x '"\C-j": "fzf-complete-widget;"'
+    ;;
+esac
 
 _confirm_run() {
     read -p "$1[confirm]:" -n 1 key
@@ -36,7 +49,7 @@ _confirm_run() {
 }
 
 f() {
-    cmd=`complete-fzf "$*"`
+    cmd=`complete-fzf --alias="`alias`" --section="$*"`
     _confirm_run "$cmd"
 }
 

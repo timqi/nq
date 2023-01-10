@@ -1,10 +1,5 @@
 #!/usr/bin/env bash
 
-case $SHELL in 
-    *zsh*) ;;
-    *) echo "Should be run in zsh" && exit;;
-esac
-
 local_dir="$HOME/.local"
 bin_dir="$HOME/.local/bin"
 tmp_dir="/tmp/nq"
