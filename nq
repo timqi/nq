@@ -160,6 +160,24 @@ install_rg() {
     github_install_logic $app ${app}_version $repo ${app}_install
 }
 
+install_watchexec() {
+    app=watchexec
+    repo=watchexec/watchexec
+    watchexec_version() {
+        echo `watchexec -V|cur -d  " -f2`
+    }
+    watchexec_install() {
+        ar=`[ $ARCH = "Darwin" ] && echo "aarch64-apple-darwin" || echo "x86_64-unknown-linux-musl"`
+        https://github.com/watchexec/watchexec/releases/download/v1.21.0/watchexec-1.21.0-aarch64-apple-darwin.tar.xz
+        url=`download_url $repo $1 "watchexec-${1:1:100}-$ar.tar.xz"`
+        log "url: $url"
+        curl --progress-bar -L -H "Cache-Control: no-cache" $url |\
+            tar -zx -C $tmp --strip-components=1
+        mv "$tmp/$app" "$bin_dir"
+    }
+    github_install_logic $app ${app}_version $repo ${app}_install
+}
+
 install_fd() {
     app=fd
     repo="sharkdp/fd"

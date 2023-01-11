@@ -157,6 +157,8 @@ def _idf_docker_images():
     stdout, _ = _run(
         "docker images --format 'table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}'"
     )
+    if not stdout:
+        return None
     stdout, _ = _run(
         f"fzf -e --prompt='Dockr Image> '",
         stdin=stdout.split("\n", 1)[1],

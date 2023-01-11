@@ -30,15 +30,33 @@ export FZF_DEFAULT_COMMAND='fd --type file --follow --color=never'
 export FZF_DEFAULT_OPTS="--ansi -m --color dark --bind=ctrl-l:toggle-all --bind=ctrl-d:preview-half-page-down --bind=ctrl-u:preview-half-page-up --bind=ctrl-/:toggle-preview --inline-info --preview-window wrap --height=10"
 
 
-case $SHELL in 
-    *bash*) 
-        fzf-complete-widget() {
-          output=$(complete-fzf --alias="`alias`" --section="$READLINE_LINE")
-          READLINE_LINE="$output"
-          READLINE_POINT=0x7fffffff
-        }
-        bind -x '"\C-j": "fzf-complete-widget;"'
-    ;;
+case $SHELL in
+  *bash*)
+    fzf-complete-widget() {
+      output=$(complete-fzf --alias="`alias`" --section="$READLINE_LINE")
+      READLINE_LINE="$output"
+      READLINE_POINT=0x7fffffff
+    }
+    bind -x '"\C-j": "fzf-complete-widget;"'
+
+    __fzf_history__() {
+      local output opts script
+      opts="-n2..,.. --scheme=history +m --read0"
+      script='BEGIN { getc; $/ = "\n\t"; $HISTCOUNT = $ENV{last_hist} + 1 } s/^[ *]//; print $HISTCOUNT - $. . "\t$_" if !$seen{$_}++'
+      output=$(
+        builtin fc -lnr -2147483648 |
+          last_hist=$(HISTTIMEFORMAT='' builtin history 1) perl -n -l0 -e "$script" |
+          FZF_DEFAULT_OPTS="$opts" fzf --query "$READLINE_LINE"
+      ) || return
+      READLINE_LINE=${output#*$'\t'}
+      if [[ -z "$READLINE_POINT" ]]; then
+        echo "$READLINE_LINE"
+      else
+        READLINE_POINT=0x7fffffff
+      fi
+    }
+    bind -x '"\C-r": __fzf_history__'
+  ;;
 esac
 
 _confirm_run() {
