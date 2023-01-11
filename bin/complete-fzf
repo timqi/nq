@@ -205,6 +205,11 @@ def _idf_docker_containers(only_running=False):
     return [line.split()[2] for line in stdout.splitlines()]
 
 
+def idf_docker_container():
+    containers = _idf_docker_containers()
+    return " ".join(containers)
+
+
 def idf_docker_remove_command():
     selected_containers = _idf_docker_containers()
     if not selected_containers:
