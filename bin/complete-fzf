@@ -94,6 +94,10 @@ def _is_macos():
     return platform.system() == "Darwin"
 
 
+def _add_sudo(cmd):
+    return cmd if _is_macos() else "sudo " + cmd
+
+
 def _idf_pids():
     stdout, _ = _run("ps -ef | fzf -e --prompt='Process> '")
     return [line.split()[1] for line in stdout.splitlines()]
@@ -119,7 +123,8 @@ def idf_docker_container_with_shell():
     if not containers:
         return
     container = containers[0]
-    os_info, _ = _run(f"docker exec {container} cat /etc/os-release")
+    cmd = f"docker exec {container} cat /etc/os-release"
+    os_info, _ = _run(_add_sudo(cmd))
     os_info = os_info.splitlines()[0]
     sh = "sh" if "alpine" in os_info.lower() else "bash"
     return container + " " + sh
@@ -132,6 +137,8 @@ def idf_docker_element():
         "docker network ls --format 'table net {{.ID}}\t{{.Name}}\t{{.Driver}}\t{{.Scope}}'",
         "docker ps -a --format 'table ps  {{.ID}}\t{{.State}}\t{{.Names}}\t{{.Image}}'",
     ]
+    if not _is_macos():
+        cmds = ["sudo " + cmd for cmd in cmds]
     r = [_run(cmd)[0].split("\n", 1) for cmd in cmds]
     r = [x[1] if len(x) > 1 else "" for x in r]
     stdout, _ = _run(f"fzf -e --prompt='Inspect> '", stdin="\n".join(r))
@@ -182,12 +189,14 @@ def idf_docker_image():
 def _idf_docker_containers(only_running=False):
     format = "--format 'table {{.ID}}\t{{.State}}\t{{.Names}}\t{{.Image}}'"
     cmd = "docker ps -a " + format
+    cmd = _add_sudo(cmd)
     containers, _ = _run(cmd)
     containers = containers.splitlines()[1:]
     if only_running:
         containers = [c for c in containers if c.split()[1] == "running"]
     if exists("./docker-compose.yml") or exists("./docker-compose.yaml"):
-        cmd = "docker-compose ps -a"
+        cmd = "docker-compose ps"
+        cmd = _add_sudo(cmd)
         compose, _ = _run(cmd)
         compose_container_names = set(
             [line.split()[0] for line in compose.splitlines()[1:]]
@@ -216,6 +225,7 @@ def idf_docker_remove_command():
         return
     format = "--format 'table {{.Names}}\t{{.State}}'"
     cmd = "docker ps -a " + format
+    cmd = _add_sudo(cmd)
     containers, _ = _run(cmd)
     stop, rm = [], []
     for line in containers.splitlines()[1:]:
