@@ -115,9 +115,10 @@ def idf_top_pids():
 
 
 def idf_docker_container_with_shell():
-    container = idf_docker_container()
-    if not container:
+    containers = _idf_docker_containers(only_running=True)
+    if not containers:
         return
+    container = containers[0]
     os_info, _ = _run(f"docker exec {container} cat /etc/os-release")
     os_info = os_info.splitlines()[0]
     sh = "sh" if "alpine" in os_info.lower() else "bash"
@@ -178,11 +179,13 @@ def idf_docker_image():
     return images[0] if images else ""
 
 
-def _idf_docker_containers():
+def _idf_docker_containers(only_running=False):
     format = "--format 'table {{.ID}}\t{{.State}}\t{{.Names}}\t{{.Image}}'"
     cmd = "docker ps -a " + format
     containers, _ = _run(cmd)
     containers = containers.splitlines()[1:]
+    if only_running:
+        containers = [c for c in containers if c.split()[1] == "running"]
     if exists("./docker-compose.yml") or exists("./docker-compose.yaml"):
         cmd = "docker-compose ps -a"
         compose, _ = _run(cmd)
@@ -199,17 +202,12 @@ def _idf_docker_containers():
         f"fzf -e --prompt='Docker Container> '",
         stdin="\n".join(containers),
     )
-    return stdout.split()[2]
-
-
-def idf_docker_container():
-    containers = _idf_docker_containers()
-    return containers[0] if containers else ""
+    return [line.split()[2] for line in stdout.splitlines()]
 
 
 def idf_docker_remove_command():
-    containers = _idf_docker_containers()
-    if not containers:
+    selected_containers = _idf_docker_containers()
+    if not selected_containers:
         return
     format = "--format 'table {{.Names}}\t{{.State}}'"
     cmd = "docker ps -a " + format
@@ -219,7 +217,7 @@ def idf_docker_remove_command():
         if line.startswith("CONTAINER ID"):
             continue
         name, state = line.split()
-        if name not in containers:
+        if name not in selected_containers:
             continue
         rm.append(name)
         if state != "exited":
