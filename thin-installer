@@ -1,18 +1,12 @@
 #
 # install script:
-# url=https://raw.githubusercontent.com/timqi/nq/main/thin-installer; if command -v curl 2>&1 >/dev/null; then curl -s --progress-bar -L $url | sh; elif command -v wget 2>&1 >/dev/null; then wget -O- $url | sh; fi; [ -d $HOME/nq ] && source $HOME/nq/shprofile
+# FORCE_DOWNLOAD_BIN=0; url=https://raw.githubusercontent.com/timqi/nq/main/thin-installer; if command -v curl 2>&1 >/dev/null; then curl -s --progress-bar -L $url | sh -s $FORCE_DOWNLOAD_BIN; elif command -v wget 2>&1 >/dev/null; then wget -O- $url | sh -s $FORCE_DOWNLOAD_BIN; fi; [ -d $HOME/nq ] && source $HOME/nq/shprofile
+#
+# $1: FORCE_DOWNLOAD_BIN
 #
 #
-download() {
-    echo "Download from $1"
-    echo "Download to $2"
-    if command -v curl 2>&1 >/dev/null; then
-        curl -L -H "Cache-Control: no-cache" --progress-bar "$1" -o $2
-    elif command -v wget 2>&1 >/dev/null; then
-        wget $1 -O $2
-    fi
-}
-
+FORCE_DOWNLOAD_BIN=$1
+echo "FORCE_DOWNLOAD_BIN: " $FORCE_DOWNLOAD_BIN
 download_and_decompress() {
     echo "Download from $1"
     echo "Download to $2"
@@ -23,34 +17,37 @@ download_and_decompress() {
     fi
 }
 
-nq_url="https://github.com/timqi/nq/releases/download/thin/nq.thin.tar.gz"
-
-# Download thin client
 nq_dir="$HOME/nq"
-[ -d $nq_dir ] && rm -rf $nq_dir
-mkdir -p $nq_dir
-download_and_decompress $nq_url $nq_dir
+if [ ! -d $nq_dir ] || [ "$FORCE_DOWNLOAD_BIN" = "1" ]; then
+    nq_url="https://github.com/timqi/nq/releases/download/thin/nq.thin.tar.gz"
+    [ -d $nq_dir ] && rm -rf $nq_dir
+    mkdir -p $nq_dir
+    download_and_decompress $nq_url $nq_dir
+fi
 
 # Download configs
-base_url="https://raw.githubusercontent.com/timqi/nq/main"
-download $base_url/config/vimrc $nq_dir/vim/vimrc
-download $base_url/config/tmux.conf $nq_dir/tmux.conf
-ln -sv $nq_dir/tmux.conf $HOME/.tmux.conf
-download $base_url/config/shprofile $nq_dir/shprofile
+nq_script_dir="$nq_dir/nq-main"
+[ -d $nq_script_dir ] && rm -rf $nq_script_dir
+url="https://github.com/timqi/nq/archive/main.tar.gz"
+download_and_decompress $url $nq_dir
 
-command -v python3 2>&1 >/dev/null &&\
-    download $base_url/bin/complete-fzf $nq_dir/bin/complete-fzf &&\
-    chmod +x $nq_dir/bin/complete-fzf &&\
-    download $base_url/bin/git-url $nq_dir/bin/git-url &&\
-    chmod +x $nq_dir/bin/git-url
+mv "$nq_script_dir/bin/"* "$nq_dir/bin/"
+mv "$nq_script_dir/nq" "$nq_dir/bin/"
+mv "$nq_script_dir/config/shprofile" $nq_dir/shprofile
+mv "$nq_script_dir/config/tmux.conf" $nq_dir/tmux.conf
+ln -sv $nq_dir/tmux.conf $HOME/.tmux.conf
 
 # Add vim executable
 vim_dir="$nq_dir/vim"
+mv "$nq_script_dir/config/vimrc" "$vim_dir"
 ln -sv $vim_dir $HOME/.vim
 cat <<EOF > "$nq_dir/bin/vim"
 VIMRUNTIME="$vim_dir/runtime" "$vim_dir/vim" \$@
 EOF
 chmod +x "$nq_dir/bin/vim"
+
+# Delete nq scripts
+rm -rf $nq_script_dir
 
 # Handle terminfo
 if [ ! -d /etc/terminfo ]; then
