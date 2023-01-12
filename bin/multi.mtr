@@ -1,0 +1,16 @@
+#!/bin/sh
+
+if [ -z "$TMUX" ]; then
+    echo "Should be run in tmux"
+    exit
+fi
+
+if ! command -v mtr 2>&1 >/dev/null; then
+    echo "mtr command not found"
+    exit 127
+fi
+
+for ip in "$@"
+do
+    tmux new-window mtr $ip
+done
