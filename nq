@@ -211,6 +211,11 @@ install_nvim() {
         link "../nvim/bin/nvim" "$bin_dir/nvim"
     }
     github_install_logic $app ${app}_version $repo ${app}_install
+    
+    # Install pynvim pymodule
+    [ -f $local_dir/conda/bin/python ] &&\
+        $local_dir/conda/bin/python -m pip install pynvim ||\
+        echo "Please install pynvim manually!"
 }
 
 nn() {
@@ -326,16 +331,16 @@ install_chtsh() {
     chmod +x "$bin_dir/chtsh"
 }
 
-#install_brew() {
-#    log "install Xcode command line tools..."
-#    xcode-select --install
-#    log "install brew..."
-#    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    
-#    brew install hammerspoon docker google-chrome notion clashx visual-studio-code
-#    #brew install wechat eudic keka
-#    brew install telegram discord slack zoom
-#}
+install_brew() {
+    log "install Xcode command line tools..."
+    xcode-select --install
+    log "install brew..."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+}
+
+install_rust() {
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --no-modify-path -y
+}
 
 #set -x
 all_items() {

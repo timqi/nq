@@ -4,7 +4,9 @@
   "suggest.maxCompleteItemCount": 10,
   "suggest.keepCompleteopt": false,
   "suggest.removeDuplicateItems": true,
+
   "snippets.ultisnips.enable": true,
+  "snippets.extends": { "typescript": ["javascript"] },
 
   "list.source.files.command": "fd",
   "list.source.files.args": [
