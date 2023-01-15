@@ -7,6 +7,7 @@
 #
 FORCE_DOWNLOAD_BIN=$1
 echo "FORCE_DOWNLOAD_BIN: " $FORCE_DOWNLOAD_BIN
+
 download_and_decompress() {
     echo "Download from $1"
     echo "Download to $2"

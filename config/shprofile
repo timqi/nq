@@ -14,30 +14,31 @@ export EDITOR=vim
 export LANG=en_US.UTF-8
 
 
+alias ls='ls --color'
 alias g='git'
 alias d='sudo docker'
 alias dc='sudo docker-compose'
 alias vih='vim +History'
 alias vij='vim +Files'
-alias sv="sudo supervisorctl"
-
+alias sv='sudo supervisorctl'
 
 # zoxide
-alias zdd='zoxide add `pwd`'; alias zl='zoxide query -l -s'
+alias zdd='zoxide add `pwd`'
+alias zl='zoxide query -l -s'
 
 # fzf
 export FZF_DEFAULT_COMMAND='fd --type file --follow --color=never'
-export FZF_DEFAULT_OPTS="--ansi -m --color dark --bind=ctrl-l:toggle-all --bind=ctrl-d:preview-half-page-down --bind=ctrl-u:preview-half-page-up --bind=ctrl-/:toggle-preview --inline-info --preview-window wrap --height=10"
+export FZF_DEFAULT_OPTS='--ansi -m --color dark --bind=ctrl-l:toggle-all --bind=ctrl-d:preview-half-page-down --bind=ctrl-u:preview-half-page-up --bind=ctrl-/:toggle-preview --inline-info --preview-window wrap --height=10'
 
 
 case $SHELL in
   *bash*)
-    fzf-complete-widget() {
+    __fzf_complete__() {
       output=$(complete-fzf --alias="`alias`" --section="$READLINE_LINE")
       READLINE_LINE="$output"
       READLINE_POINT=0x7fffffff
     }
-    bind -x '"\C-j": "fzf-complete-widget;"'
+    bind -x '"\C-j": __fzf_complete__'
 
     __fzf_history__() {
       local output opts script
@@ -67,7 +68,7 @@ _confirm_run() {
 }
 
 f() {
-    cmd=`complete-fzf --alias="`alias`" --section="$*"`
+    cmd=$(complete-fzf --alias="`alias`" --section="$*")
     _confirm_run "$cmd"
 }
 

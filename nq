@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 local_dir="$HOME/.local"
 [ -d $HOME/nq/bin ] && bin_dir="$HOME/nq/bin" ||\
@@ -19,6 +19,16 @@ link_dir_bin() {
     done
 }
 
+download() {
+    log "Downloading: $1" 1>&2
+    if command -v curl 2>&1 >/dev/null; then
+        curl -L -s --progress-bar "$1"
+    elif command -v wget 2>&1 >/dev/null; then
+        wget $1 -O -
+    fi
+}
+
+
 install_go() {
     ver="1.19.4"
     command -v go >/dev/null &&\
@@ -31,7 +41,7 @@ install_go() {
         echo "go$ver.linux-amd64.tar.gz"`
     GODIR="$local_dir/go"
     [ ! -d $GODIR ] && mkdir -p $GODIR || rm -rf "$GODIR/*"
-    curl --progress-bar -L "https://dl.google.com/go/$filename" |\
+    download "https://dl.google.com/go/$filename" |\
         tar -xz --strip-components 1 -C $GODIR
     link "$GODIR/bin/go" "$bin_dir"
     link "$GODIR/bin/gofmt" "$bin_dir"
@@ -46,7 +56,7 @@ download_url() {
 github_install_logic() {
     curr=`command -v $1 >/dev/null && echo $($2) || echo 'unknown'`
     url="https://api.github.com/repos/$3/releases"
-    ver=`curl -s ${url} --connect-timeout 10 |\
+    ver=`download ${url} |\
         grep 'tag_name' | grep -v "nightly" | grep -v "stable" |\
         head -n 1 | cut -d\" -f4`
     [ "$curr" = "$ver" ] && log "[$1] $ver is the latest, return" && return
@@ -64,9 +74,7 @@ install_bat() {
     bat_install() {
         ar=`[ $ARCH = "Darwin" ] && echo "x86_64-apple-darwin" || echo "x86_64-unknown-linux-musl"`
         url=`download_url $repo $ver "$app-$ver-$ar.tar.gz"`
-        log "url: $url"
-        curl --progress-bar -L -H "Cache-Control: no-cache" $url |\
-            tar -zx -C $tmp --strip-components 1
+        download $url | tar -zx -C $tmp --strip-components 1
         mv "$tmp/$app" "$bin_dir"
     }
     github_install_logic $app ${app}_version $repo ${app}_install
@@ -81,9 +89,7 @@ install_lazygit() {
     lazygit_install() {
         ar=`[ $ARCH = "Darwin" ] && echo "Darwin_arm64" || echo "Linux_x86_64"`
         url=`download_url $repo $1 "${app}_${1:1:100}_$ar.tar.gz"`
-        log "url: $url"
-        curl --progress-bar -L -H "Cache-Control: no-cache" $url |\
-            tar -zx -C $tmp
+        download $url | tar -zx -C $tmp
         mv "$tmp/$app" "$bin_dir"
     }
     github_install_logic $app ${app}_version $repo ${app}_install
@@ -98,8 +104,7 @@ install_jq() {
     jq_install() {
         ar=`[ $ARCH = "Darwin" ] && echo "osx-amd64" || echo "linux64"`
         url=`download_url $repo $1 "jq-$ar"`
-        log "url: $url"
-        curl --progress-bar -L -H "Cache-Control: no-cache" $url -o "$tmp/$app"
+        download $url > "$tmp/$app"
         mv "$tmp/$app" "$bin_dir"
         chmod +x "$bin_dir/$app"
     }
@@ -116,8 +121,7 @@ install_zoxide() {
         ar=`[ $ARCH = "Darwin" ] && echo "aarch64-apple-darwin" || echo "x86_64-unknown-linux-musl"`
         url=`download_url $repo $1 "zoxide-${1:1:100}-$ar.tar.gz"`
         log "url: $url"
-        curl --progress-bar -L -H "Cache-Control: no-cache" $url |\
-            tar -zx -C $tmp
+        download $url | tar -zx -C $tmp
         mv "$tmp/$app" "$bin_dir"
     }
     github_install_logic $app ${app}_version $repo ${app}_install
@@ -132,8 +136,7 @@ install_fzf() {
     fzf_install() {
         ar=`[ $ARCH = "Darwin" ] && echo "darwin_arm64.zip" || echo "linux_amd64.tar.gz"`
         url=`download_url $repo $1 "fzf-${1}-$ar"`
-        log "url: $url"
-        curl --progress-bar -L -H "Cache-Control: no-cache" $url -o "$tmp/$app.dl"
+        download $url -o "$tmp/$app.dl"
         if [ $ARCH = "Darwin" ]; then
             unzip "$tmp/$app.dl" -d "$tmp"
         else
@@ -153,9 +156,7 @@ install_rg() {
     rg_install() {
         ar=`[ $ARCH = "Darwin" ] && echo "x86_64-apple-darwin" || echo "x86_64-unknown-linux-musl"`
         url=`download_url $repo $1 "ripgrep-${1}-$ar.tar.gz"`
-        log "url: $url"
-        curl --progress-bar -L -H "Cache-Control: no-cache" $url |\
-            tar -zx -C $tmp --strip-components=1
+        download $url | tar -zx -C $tmp --strip-components=1
         mv "$tmp/$app" "$bin_dir"
     }
     github_install_logic $app ${app}_version $repo ${app}_install
@@ -165,15 +166,12 @@ install_watchexec() {
     app=watchexec
     repo=watchexec/watchexec
     watchexec_version() {
-        echo `watchexec -V|cur -d  " -f2`
+        echo v`watchexec -V|cut -d " " -f2`
     }
     watchexec_install() {
         ar=`[ $ARCH = "Darwin" ] && echo "aarch64-apple-darwin" || echo "x86_64-unknown-linux-musl"`
-        https://github.com/watchexec/watchexec/releases/download/v1.21.0/watchexec-1.21.0-aarch64-apple-darwin.tar.xz
         url=`download_url $repo $1 "watchexec-${1:1:100}-$ar.tar.xz"`
-        log "url: $url"
-        curl --progress-bar -L -H "Cache-Control: no-cache" $url |\
-            tar -zx -C $tmp --strip-components=1
+        download $url | tar -zx -C $tmp --strip-components=1
         mv "$tmp/$app" "$bin_dir"
     }
     github_install_logic $app ${app}_version $repo ${app}_install
@@ -188,9 +186,37 @@ install_fd() {
     fd_install() {
         ar=`[ $ARCH = "Darwin" ] && echo "x86_64-apple-darwin" || echo "i686-unknown-linux-musl"`
         url=`download_url $repo $1 "fd-$1-$ar.tar.gz"`
-        log "url: $url"
-        curl --progress-bar -L -H "Cache-Control: no-cache" $url |\
-            tar -zx -C $tmp --strip-components=1
+        download $url | tar -zx -C $tmp --strip-components=1
+        mv "$tmp/$app" "$bin_dir"
+    }
+    github_install_logic $app ${app}_version $repo ${app}_install
+}
+
+install_lsd() {
+    app=lsd
+    repo=Peltoche/lsd
+    lsd_version() {
+        echo "`lsd -V|cut -d" " -f2`"
+    }
+    lsd_install() {
+        ar=`[ $ARCH = "Darwin" ] && echo "x86_64-apple-darwin" || echo "i686-unknown-linux-musl"`
+        url=`download_url $repo $1 "lsd-${1}-$ar.tar.gz"`
+        download $url | tar -zx -C $tmp --strip-components=1
+        mv "$tmp/$app" "$bin_dir"
+    }
+    github_install_logic $app ${app}_version $repo ${app}_install
+}
+
+install_dust() {
+    app=dust
+    repo=bootandy/dust
+    dust_version() {
+        echo "v`dust -V|cut -d" " -f2`"
+    }
+    dust_install() {
+        ar=`[ $ARCH = "Darwin" ] && echo "x86_64-apple-darwin" || echo "i686-unknown-linux-musl"`
+        url=`download_url $repo $1 "dust-${1}-$ar.tar.gz"`
+        download $url | tar -zx -C $tmp --strip-components=1
         mv "$tmp/$app" "$bin_dir"
     }
     github_install_logic $app ${app}_version $repo ${app}_install
@@ -205,9 +231,7 @@ install_nvim() {
     nvim_install() {
         ar=`[ $ARCH = "Darwin" ] && echo "macos" || echo "linux64"`
         url=`download_url $repo $1 "nvim-$ar.tar.gz"`
-        log "url: $url"
-        curl --progress-bar -L -H "Cache-Control: no-cache" $url |\
-            tar -zx -C $tmp --strip-components=1
+        download $url | tar -zx -C $tmp --strip-components=1
         rm -rf "$local_dir/nvim" && cp -r "$tmp" "$local_dir/nvim"
         link "../nvim/bin/nvim" "$bin_dir/nvim"
     }
@@ -231,7 +255,7 @@ nn() {
                 echo "node-v$ver-linux-x64.tar.gz"`
             url="https://nodejs.org/dist/v$ver/$filename"
             mkdir -p $node_path
-            curl --progress-bar -L $url | tar -zx -C $node_path --strip-components=1
+            download $url | tar -zx -C $node_path --strip-components=1
             nn use $ver;;
         rm) rm -rf $node_path;;
         use) rm -f "$local_dir/bin/node" &&\
@@ -255,7 +279,7 @@ install_conda() {
     filename=`[ $ARCH = "Darwin" ] &&\
         echo "Miniforge3-MacOSX-arm64.sh" ||\
         echo "Miniforge3-Linux-x86_64.sh"`
-    curl --progress-bar -o "$tmp/conda.sh" $url -L
+    download > "$tmp/conda.sh" $url
     sh "$tmp/conda.sh" -b -f -s -p "$local_dir/conda"
 }
 
@@ -266,24 +290,19 @@ install_config() {
     link "$conf_dir/tmux.conf" "$HOME/.tmux.conf"
     rm -rf "$HOME/.ctags.d" && mkdir "$HOME/.ctags.d" && \
         link "$conf_dir/ctags" "$HOME/.ctags.d/default.ctags"
-
-    case $ARCH in Darwin)
-        link "$conf_dir/alacritty.yml" "$HOME/.alacritty.yml"
-        rm -rf "$HOME/.hammerspoon"
-        link "$HOME/.config/nq/hammerspoon" "$HOME/.hammerspoon"
-    esac
 }
 
 
 install_zplug() {
-    plugins="https://github.com/zsh-users/zsh-syntax-highlighting\
-        https://github.com/zsh-users/zsh-autosuggestions\
-        https://github.com/zsh-users/zsh-completions"
+    # url="https://github.com/timqi/nq/archive/main.tar.gz"
+    plugins="https://github.com/zsh-users/zsh-syntax-highlighting/archive/master.tar.gz\
+        https://github.com/zsh-users/zsh-autosuggestions/archive/master.tar.gz\
+        https://github.com/zsh-users/zsh-completions/archive/master.tar.gz"
     for item in $plugins; do
         name=`echo $item|cut -d "/" -f5`
-        [ -d "$local_dir/$name" ] && cd "$local_dir/$name" &&\
-            git pull --depth 1 --rebase --allow-unrelated-histories && cd - ||
-            git clone --depth=1 $item "$local_dir/$name"
+        [ -d "$local_dir/$name" ] && rm -rf "$local_dir/$name"
+        mkdir -p $local_dir/$name
+        download $item | tar -zx -C $local_dir/$name --strip-components=1
     done
     log "remember run in zsh later: rm -rf ~/.zcompdump && compinit"
 }
@@ -328,7 +347,7 @@ install_ctags() {
 }
 
 install_chtsh() {
-    curl --silent -L https://cht.sh/:cht.sh > "$bin_dir/chtsh"
+    download https://cht.sh/:cht.sh > "$bin_dir/chtsh"
     chmod +x "$bin_dir/chtsh"
 }
 
@@ -343,14 +362,16 @@ install_rust() {
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --no-modify-path -y
 }
 
-#set -x
+set -e
 all_items() {
     while read -r line; do
         case $line in
-            "install_"*) item=`echo ${line#install_} | cut -d ' ' -f1`;
+            "install_"*) item=`echo ${line#install_} | cut -d '(' -f1`;
                 funcs="$funcs$item,";;
         esac
-    done <<< "`declare -f | grep ' ()'`"
+    done <<EOF
+`egrep '^install_' $0`
+EOF
     echo "${funcs%,}"
 }
 
@@ -362,14 +383,15 @@ handle_item_install() {
     rm -rf "$tmp"
 }
 
-if [ "`type -t install_$1`" = "function" ]; then
+if ! test -z "$1" && egrep -q "^install_$1" $0; then
     handle_item_install $1
 elif [ "$1" = "all" ]; then
     items=`all_items`
     for item in ${items//,/ }; do
+        [ "$item" = "brew" ] && continue
         handle_item_install $item
     done
-elif [[ "$1" == *,* ]]; then
+elif echo "$1" | grep -q ','; then
     for item in ${1//,/ }; do
         handle_item_install $item
     done
