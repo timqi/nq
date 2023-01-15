@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 local_dir="$HOME/.local"
-bin_dir="$HOME/.local/bin"
+[ -d $HOME/nq/bin ] && bin_dir="$HOME/nq/bin" ||\
+    bin_dir="$HOME/.local/bin"
 tmp_dir="/tmp/nq"
 [ ! -d $bin_dir ] && mkdir -p $bin_dir
 [ ! -d $tmp_dir ] && mkdir -p $tmp_dir
