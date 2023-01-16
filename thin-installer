@@ -1,3 +1,4 @@
+#!/bin/sh
 #
 # install script:
 # FORCE_DOWNLOAD_BIN=0; url=https://raw.githubusercontent.com/timqi/nq/main/thin-installer; if command -v curl 2>&1 >/dev/null; then curl -s --progress-bar -L $url | sh -s $FORCE_DOWNLOAD_BIN; elif command -v wget 2>&1 >/dev/null; then wget -O- $url | sh -s $FORCE_DOWNLOAD_BIN; fi; [ -d $HOME/nq ] && source $HOME/nq/shprofile

@@ -61,7 +61,9 @@ RUN curl --progress-bar -o "/root/.vim/autoload/plug.vim" --create-dirs \
 RUN VIMRUNTIME=./runtime ./vim +PlugInstall +qall
 RUN mv /root/.vim/autoload . && mkdir plugged
 RUN for d in ${VIMPLUGINS//,/ }; do mv "$HOME/.vim/plugged/$d" plugged/; done
-RUN find -type d | egrep '(doc|\.git)$' |xargs rm -rf
+RUN find -type d | egrep '(doc|\.git|test|\.github)$' |xargs rm -rf
+RUN find plugged runtime -type f ! -name '*.vim' -delete
+RUN find plugged runtime -type d -empty -delete
 
 # Tarballing
 WORKDIR /nqthin

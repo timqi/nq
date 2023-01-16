@@ -20,7 +20,7 @@ link_dir_bin() {
 }
 
 download() {
-    log "Downloading: $1" 1>&2
+    log "_dling: $1" 1>&2
     if command -v curl 2>&1 >/dev/null; then
         curl -L -s --progress-bar "$1"
     elif command -v wget 2>&1 >/dev/null; then
