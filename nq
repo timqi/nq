@@ -136,11 +136,11 @@ install_fzf() {
     fzf_install() {
         ar=`[ $ARCH = "Darwin" ] && echo "darwin_arm64.zip" || echo "linux_amd64.tar.gz"`
         url=`download_url $repo $1 "fzf-${1}-$ar"`
-        download $url -o "$tmp/$app.dl"
         if [ $ARCH = "Darwin" ]; then
+            download $url > "$tmp/$app.dl"
             unzip "$tmp/$app.dl" -d "$tmp"
         else
-            tar -zx -C $tmp -f "$tmp/$app.dl"
+            download $url | tar -zx -C $tmp
         fi
         mv "$tmp/$app" "$bin_dir"
     }
