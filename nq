@@ -88,7 +88,7 @@ install_lazygit() {
     }
     lazygit_install() {
         ar=`[ $ARCH = "Darwin" ] && echo "Darwin_arm64" || echo "Linux_x86_64"`
-        url=`download_url $repo $1 "${app}_${1:1:100}_$ar.tar.gz"`
+        url=`download_url $repo $1 "${app}_$(echo $1|cut -c2-100)_$ar.tar.gz"`
         download $url | tar -zx -C $tmp
         mv "$tmp/$app" "$bin_dir"
     }
@@ -119,7 +119,7 @@ install_zoxide() {
     }
     zoxide_install() {
         ar=`[ $ARCH = "Darwin" ] && echo "aarch64-apple-darwin" || echo "x86_64-unknown-linux-musl"`
-        url=`download_url $repo $1 "zoxide-${1:1:100}-$ar.tar.gz"`
+        url=`download_url $repo $1 "zoxide-$(echo $1|cut -c2-100)-$ar.tar.gz"`
         log "url: $url"
         download $url | tar -zx -C $tmp
         mv "$tmp/$app" "$bin_dir"
@@ -170,8 +170,8 @@ install_watchexec() {
     }
     watchexec_install() {
         ar=`[ $ARCH = "Darwin" ] && echo "aarch64-apple-darwin" || echo "x86_64-unknown-linux-musl"`
-        url=`download_url $repo $1 "watchexec-${1:1:100}-$ar.tar.xz"`
-        download $url | tar -zx -C $tmp --strip-components=1
+        url=`download_url $repo $1 "watchexec-$(echo $1|cut -c2-100)-$ar.tar.xz"`
+        download $url | tar -xJ -C $tmp --strip-components=1
         mv "$tmp/$app" "$bin_dir"
     }
     github_install_logic $app ${app}_version $repo ${app}_install
@@ -387,12 +387,15 @@ if ! test -z "$1" && egrep -q "^install_$1" $0; then
     handle_item_install $1
 elif [ "$1" = "all" ]; then
     items=`all_items`
-    for item in ${items//,/ }; do
-        [ "$item" = "brew" ] && continue
+    for item in $(echo $items | sed 's/,/ /g'); do
+        ignore_apps='brew,ctags,rust,' 
+        if echo $ignore_apps | grep -q "$item,"; then
+            continue
+        fi
         handle_item_install $item
     done
 elif echo "$1" | grep -q ','; then
-    for item in ${1//,/ }; do
+    for item in $(echo $1 | sed 's/,/ /g'); do
         handle_item_install $item
     done
 else
