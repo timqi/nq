@@ -27,7 +27,7 @@ alias zdd='zoxide add `pwd`'
 alias zl='zoxide query -l -s'
 
 # fzf
-export FZF_DEFAULT_COMMAND='fd --type file --follow --color=never'
+export FZF_DEFAULT_COMMAND="fd --type file --follow --color=never --hidden --exclude '.git'"
 export FZF_DEFAULT_OPTS='--ansi -m --color dark --bind=ctrl-l:toggle-all --bind=ctrl-d:preview-half-page-down --bind=ctrl-u:preview-half-page-up --bind=ctrl-/:toggle-preview --inline-info --preview-window wrap --height=10'
 
 
