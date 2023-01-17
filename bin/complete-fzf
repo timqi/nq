@@ -97,8 +97,14 @@ def _run(cmd, stdin=None):
         if cmd.startswith("fzf "):
             cmd = cmd.replace("fzf ", fzf + "")
         cmd = cmd.replace(" fzf ", " " + fzf + " ").replace("|fzf ", "|" + fzf + " ")
+    start_new_session = not _is_macos()
     p = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stdin=subprocess.PIPE, shell=True, env=os.environ
+        cmd,
+        stdout=subprocess.PIPE,
+        stdin=subprocess.PIPE,
+        shell=True,
+        env=os.environ,
+        start_new_session=start_new_session,
     )
     if isinstance(stdin, str):
         stdin = stdin.encode("utf8")
@@ -414,8 +420,9 @@ def handle_section(section):
                 error(idf_fun_name + " is not callable")
             val = g[idf_fun_name]()
         else:
-            argv = [arg.replace("\n", "\\\n") for arg in sys.argv]
-            cmd = "sudo " + " ".join(argv) + " --run-identifier=" + idf_fun_name
+            # argv = [arg.replace("\n", "\\\n") for arg in sys.argv]
+            # cmd = "sudo " + " ".join(argv) + " --run-identifier=" + idf_fun_name
+            cmd = "sudo " + sys.argv[0] + " --run-identifier=" + idf_fun_name
             stdout, stderr = _run(cmd)
             if stderr:
                 error(stderr)
@@ -457,7 +464,7 @@ def main(args):
         section_query = command
         if command.startswith("sudo"):
             section_query = section_query.replace("sudo", "")
-        section_query = section_query.split(" ")[0]
+        section_query = section_query.split(" ")[0].strip()
 
     if args.run_identifier:
         if args.run_identifier not in globals():
