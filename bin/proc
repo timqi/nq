@@ -1,0 +1,41 @@
+#!/bin/sh
+
+# Reset
+Color_Off='\033[0m'       # Text Reset
+
+# Regular Colors
+Black='\033[0;30m'        # Black
+Red='\033[0;31m'          # Red
+Green='\033[0;32m'        # Green
+Yellow='\033[0;33m'       # Yellow
+Blue='\033[0;34m'         # Blue
+Purple='\033[0;35m'       # Purple
+Cyan='\033[0;36m'         # Cyan
+White='\033[0;37m'        # White
+
+[ "$#" -ne 1 ] &&\
+    echo "${Red}procs \$pid${Color_Off}: only one pid must be specified" &&\
+    exit 1
+
+pid=$1
+
+if [ "`uname -s`" = "Darwin" ] || [ ! -d "/proc/$pid" ]; then
+    echo "${Green}Process:${Color_Off}"
+    ps -f -p $pid
+    echo "${Green}Threads:${Color_Off}"
+    ps -M -p $pid -o "%cpu,%mem"
+    echo "${Green}Static:${Color_Off}"
+    ps -p $pid -o 'user,%cpu,cpu,%mem,rss,state'
+
+    exit 0
+else
+    ps -T -f -p $pid
+fi
+
+echo "\n${Green}Executable Infos:${Color_Off}"
+ls -alh "/proc/$pid/cwd"
+ls -alh "/proc/$pid/exe"
+
+# http://hutaow.com/blog/2014/08/28/display-process-memory-in-linux/
+echo "\n${Green}Memory Infos:${Color_Off}"
+cat /proc/$pid/status | egrep 'VmPeak|VmSize|VmHWM|VmRSS|VmExe|VmSwap'
