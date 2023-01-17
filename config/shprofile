@@ -34,11 +34,11 @@ export FZF_DEFAULT_OPTS='--ansi -m --color dark --bind=ctrl-l:toggle-all --bind=
 case $SHELL in
   *bash*)
     __fzf_complete__() {
-      output=$(complete-fzf --alias="`alias`" --section="$READLINE_LINE")
+      output=$(complete-fzf --alias="`alias`" --command="$READLINE_LINE")
       READLINE_LINE="$output"
       READLINE_POINT=0x7fffffff
     }
-    bind -x '"\C-j": __fzf_complete__'
+    bind -x '"\C-g": __fzf_complete__'
 
     __fzf_history__() {
       local output opts script
@@ -68,7 +68,7 @@ _confirm_run() {
 }
 
 f() {
-    cmd=$(complete-fzf --alias="`alias`" --section="$*")
+    cmd=$(complete-fzf --alias="`alias`" --command="$*")
     _confirm_run "$cmd"
 }
 

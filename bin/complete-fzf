@@ -15,32 +15,48 @@ command=cd ${zoxide}
 [cd-to-custom-directory]
 command=cd ${sub_directory_of_input}
 
-[ps-from-netstat-port]
-command=ps -Tf -p ${pid_form_netstat}
+[ps-from-lsof-port]
+command=ps -Tf -p ${pid_form_lsof}
+perm=sudo
+
+[docker-ps-all-list]
+command=docker ps -a
+perm=docker
+
+[docker-image-list]
+command=docker images
+perm=docker
 
 [docker-run-image]
 command=docker run --rm -it ${docker_image} sh
+perm=docker
 
 [docker-container-log]
 command=docker logs -f ${docker_container} --tail=10
+perm=docker
 
 [docker-container-execute]
 command=docker exec -it ${docker_container_with_shell}
+perm=docker
 
 [docker-remove-images]
 command=docker rmi ${space_docker_images}
+perm=docker
 
 [docker-remove-containers]
 command=${docker_remove_command}
+perm=docker
 
 [docker-inspect-item]
 command=docker inspect ${docker_element}
+perm=docker
 
 [git-check-ref]
 command=git checkout ${git_ref}
 
 [supervisort-logs]
-command=sudo supervisorctl tail -f ${sv_proc}
+command=supervisorctl tail -f ${sv_proc}
+perm=supervisor
 
 [golang-function-test]
 command=go test ${go_test_pkg} -v -run ${go_test_func}$$
@@ -63,6 +79,16 @@ global_cache_map = {}
 
 
 def _run(cmd, stdin=None):
+    sudo_user = os.environ.get("SUDO_USER", "")
+    if sudo_user:
+        home = os.path.expanduser("~" + sudo_user)
+        fzf = home + "/nq/bin/fzf"
+        fzf = fzf if exists(fzf) else home + "/.local/bin/fzf"
+        if not exists(fzf):
+            error("fzf not exist, in sudo. SUDO_USER: " + sudo_user)
+        if cmd.startswith("fzf "):
+            cmd = cmd.replace("fzf ", fzf + "")
+        cmd = cmd.replace(" fzf ", " " + fzf + " ").replace("|fzf ", "|" + fzf + " ")
     p = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stdin=subprocess.PIPE, shell=True, env=os.environ
     )
@@ -75,27 +101,35 @@ def _run(cmd, stdin=None):
     )
 
 
-def sudo_wrapper(func):
-    def wrap(*args, **kwargs):
-        if os.getuid() == 0:
-            return func(*args, **kwargs)
+def check_permission(perm):
+    if not perm:
+        error("perm(item of PERM class) must specified")
+    mode = os.F_OK | os.W_OK | os.R_OK
+    sock_files = []
+    if perm == "docker":
+        sock_files += ["/var/run/docker.sock"]
+        return any([os.access(f, mode) for f in sock_files])
+    elif perm == "supervisor":
+        sock_files += [
+            "/var/run/supervisor.sock",
+            "/opt/homebrew/var/run/supervisor.sock",
+        ]
+        return any([os.access(f, mode) for f in sock_files])
+    elif perm == "sudo":
+        return os.getuid() == 0
 
-        argv = [arg.replace("\n", "\\\n") for arg in sys.argv]
-        cmd = "sudo " + " ".join(argv) + " --run-identifier " + func.__name__
-        stdout, stderr = _run(cmd)
-        if stderr:
-            error(stderr)
-        return stdout
 
-    return wrap
+def section_has_permissions(section):
+    perms = section.get("perm", "")
+    return (
+        True
+        if not perms
+        else all([check_permission(item) for item in perms.split(",")])
+    )
 
 
 def _is_macos():
     return platform.system() == "Darwin"
-
-
-def _add_sudo(cmd):
-    return cmd if _is_macos() else "sudo " + cmd
 
 
 def _idf_pids():
@@ -123,8 +157,7 @@ def idf_docker_container_with_shell():
     if not containers:
         return
     container = containers[0]
-    cmd = f"docker exec {container} cat /etc/os-release"
-    os_info, _ = _run(_add_sudo(cmd))
+    os_info, _ = _run(f"docker exec {container} cat /etc/os-release")
     os_info = os_info.splitlines()[0]
     sh = "sh" if "alpine" in os_info.lower() else "bash"
     return container + " " + sh
@@ -137,8 +170,6 @@ def idf_docker_element():
         "docker network ls --format 'table net {{.ID}}\t{{.Name}}\t{{.Driver}}\t{{.Scope}}'",
         "docker ps -a --format 'table ps  {{.ID}}\t{{.State}}\t{{.Names}}\t{{.Image}}'",
     ]
-    if not _is_macos():
-        cmds = ["sudo " + cmd for cmd in cmds]
     r = [_run(cmd)[0].split("\n", 1) for cmd in cmds]
     r = [x[1] if len(x) > 1 else "" for x in r]
     stdout, _ = _run(f"fzf -e --prompt='Inspect> '", stdin="\n".join(r))
@@ -189,14 +220,12 @@ def idf_docker_image():
 def _idf_docker_containers(only_running=False):
     format = "--format 'table {{.ID}}\t{{.State}}\t{{.Names}}\t{{.Image}}'"
     cmd = "docker ps -a " + format
-    cmd = _add_sudo(cmd)
     containers, _ = _run(cmd)
     containers = containers.splitlines()[1:]
     if only_running:
         containers = [c for c in containers if c.split()[1] == "running"]
     if exists("./docker-compose.yml") or exists("./docker-compose.yaml"):
         cmd = "docker-compose ps"
-        cmd = _add_sudo(cmd)
         compose, _ = _run(cmd)
         compose_container_names = set(
             [line.split()[0] for line in compose.splitlines()[1:]]
@@ -225,7 +254,6 @@ def idf_docker_remove_command():
         return
     format = "--format 'table {{.Names}}\t{{.State}}'"
     cmd = "docker ps -a " + format
-    cmd = _add_sudo(cmd)
     containers, _ = _run(cmd)
     stop, rm = [], []
     for line in containers.splitlines()[1:]:
@@ -254,13 +282,14 @@ def idf_git_ref():
     return ref if ref else None
 
 
-def idf_pid_form_netstat():
-    if _is_macos():
-        error("netstat not supported in macOS")
-    stdout, _ = _run("sudo netstat -tunlp | fzf -e")
-    print(f"\nnetstat: {stdout}", file=sys.stderr)
-    pid = stdout.split()[-1].split("/")[0]
-    return pid if pid else ""
+def idf_pid_form_lsof():
+    stdout, _ = _run("lsof -iTCP -sTCP:LISTEN | fzf -e")
+    if not stdout:
+        return
+    splited = stdout.splitlines()[0].split()
+    if len(splited) < 2:
+        return
+    return splited[1]
 
 
 def idf_zoxide():
@@ -281,9 +310,8 @@ def idf_sub_directory_of_input():
     return stdout.splitlines()[0] if stdout else ""
 
 
-@sudo_wrapper
 def idf_sv_proc():
-    stdout, _ = _run(f"sudo supervisorctl status| fzf -e --prompt='Supervisor Procs> '")
+    stdout, _ = _run(f"supervisorctl status| fzf -e --prompt='Supervisor Procs> '")
     return stdout.split()[0] if stdout else None
 
 
@@ -321,12 +349,18 @@ def error(*args, **kwargs):
     sys.exit(1)
 
 
-def parse_alias(alias, command):
+def parse_alias(alias, command, section):
     for line in alias.splitlines():
         short, long = line.split("=", 1)
         long = long.strip("'").strip('"').strip()
+        if long.startswith("sudo"):
+            long = long.replace("sudo ", "")
+        if short.startswith("alias"):
+            short = short.replace("alias ", "")
         if command.startswith(long + " "):
             return command.replace(long + " ", short + " ")
+    if not section_has_permissions(section):
+        return "sudo " + command
     return command
 
 
@@ -346,16 +380,26 @@ def idf_host():
 def handle_section(section):
     var_map, g = {}, globals()
     command = section["command"]
+    has_permission = section_has_permissions(section)
     for identifier in string.Formatter().parse(command):
         if not identifier[1]:
             continue
         identifier = identifier[1]
         idf_fun_name = "idf_" + identifier
-        if idf_fun_name not in g:
-            error("Can't get identifier ${%s}" % identifier)
-        if not callable(g[idf_fun_name]):
-            error(idf_fun_name + " is not callable")
-        val = g[idf_fun_name]()
+
+        if has_permission:
+            if idf_fun_name not in g:
+                error("Can't get identifier ${%s}" % identifier)
+            if not callable(g[idf_fun_name]):
+                error(idf_fun_name + " is not callable")
+            val = g[idf_fun_name]()
+        else:
+            argv = [arg.replace("\n", "\\\n") for arg in sys.argv]
+            cmd = "sudo " + " ".join(argv) + " --run-identifier=" + idf_fun_name
+            stdout, stderr = _run(cmd)
+            if stderr:
+                error(stderr)
+            val = stdout
         var_map[identifier] = val if val else ""
     # print(var_map)
     command = string.Template(command).substitute(var_map)
@@ -376,18 +420,6 @@ def select_section(query):
     return config[name]
 
 
-def handle_command(command, with_run):
-    if not with_run:
-        print(command + " ")
-        return
-    if not input(command + " [yYcr]"):
-        stdout, stderr = _run(command)
-        if stdout:
-            print(stdout)
-        if stderr:
-            print(stderr, file=sys.stderr)
-
-
 def main(args):
     if args.list_available_identifier:
         for item in globals().copy():
@@ -399,8 +431,10 @@ def main(args):
         os.environ.get("FZF_DEFAULT_OPTS", "") + " --layout=reverse"
     )
 
-    if args.section:
-        os.environ["ORIGINAL_COMMAND"] = args.section
+    command, section_query = args.command, None
+    if command:
+        os.environ["ORIGINAL_COMMAND"] = command
+        section_query = command.split(" ")[0]
 
     if args.run_identifier:
         if args.run_identifier not in globals():
@@ -408,7 +442,7 @@ def main(args):
         print(globals()[args.run_identifier]())
         sys.exit(0)
 
-    section = select_section(args.section)
+    section = select_section(section_query)
     if not section:
         error()
 
@@ -416,19 +450,19 @@ def main(args):
     if not command:
         error()
 
-    command = parse_alias(args.alias, command)
+    command = parse_alias(args.alias, command, section)
     if not command:
         error()
 
-    handle_command(command, args.with_run)
+    # output to stdout for complete or exec
+    print(command + " ")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--alias", default="", type=str)
-    parser.add_argument("--section", default="", type=str)
+    parser.add_argument("--command", default="", type=str)
     parser.add_argument("--run-identifier", default="", type=str)
-    parser.add_argument("--with-run", action="store_true", default=False)
     parser.add_argument("--list-available-identifier", action="store_true")
     args = parser.parse_args()
     main(args)

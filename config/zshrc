@@ -106,9 +106,9 @@ fzf-history-widget() {
 zle -N fzf-history-widget && bindkey '^R' fzf-history-widget
 
 fzf-complete-widget() {
-  BUFFER=$(complete-fzf --alias="`alias`" --section="$LBUFFER"); CURSOR=$#BUFFER; zle redisplay
+  BUFFER=$(complete-fzf --alias="`alias`" --command="$LBUFFER"); CURSOR=$#BUFFER; zle redisplay
 }
-zle -N fzf-complete-widget && bindkey '^J' fzf-complete-widget
+zle -N fzf-complete-widget && bindkey '^G' fzf-complete-widget
 
 # zoxide
 eval "$(zoxide init zsh --cmd z --hook none)"
