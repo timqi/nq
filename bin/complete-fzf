@@ -454,7 +454,10 @@ def main(args):
     command, section_query = args.command, None
     if command:
         os.environ["ORIGINAL_COMMAND"] = command
-        section_query = command.split(" ")[0]
+        section_query = command
+        if command.startswith("sudo"):
+            section_query = section_query.replace("sudo", "")
+        section_query = section_query.split(" ")[0]
 
     if args.run_identifier:
         if args.run_identifier not in globals():
