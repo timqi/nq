@@ -15,9 +15,17 @@ command=cd ${zoxide}
 [cd-to-custom-directory]
 command=cd ${sub_directory_of_input}
 
-[ps-from-lsof-port]
-command=ps -Tf -p ${pid_form_lsof}
-perm=sudo
+[proc-from-lsof-port]
+command=proc ${pid_from_lsof}
+perm=optional_sudo
+
+[proc-from-ps]
+command=proc ${space_pids}
+perm=optional_sudo
+
+[lsof-with-pids]
+command=lsof -p ${comma_pids}
+perm=optional_sudo
 
 [docker-ps-all-list]
 command=docker ps -a
@@ -115,8 +123,13 @@ def check_permission(perm):
             "/opt/homebrew/var/run/supervisor.sock",
         ]
         return any([os.access(f, mode) for f in sock_files])
-    elif perm == "sudo":
-        return os.getuid() == 0
+    elif perm == "optional_sudo":
+        if (
+            os.environ.get("ORIGINAL_COMMAND", "").startswith("sudo")
+            and os.getuid() != 0
+        ):
+            return False
+        return True
 
 
 def section_has_permissions(section):
@@ -148,7 +161,9 @@ def idf_space_pids():
 def idf_top_pids():
     pids = _idf_pids()
     if _is_macos():
-        return " ".join(["-pid " + pid for pid in pids])
+        cmd = "-stats command,cpu,mem,threads,user,pid,ppid,state,time,vsize"
+        cmd += " ".join([" -pid " + pid for pid in pids])
+        return cmd
     return "-p " + ",".join(pids)
 
 
@@ -282,7 +297,7 @@ def idf_git_ref():
     return ref if ref else None
 
 
-def idf_pid_form_lsof():
+def idf_pid_from_lsof():
     stdout, _ = _run("lsof -iTCP -sTCP:LISTEN | fzf -e")
     if not stdout:
         return
@@ -359,7 +374,12 @@ def parse_alias(alias, command, section):
             short = short.replace("alias ", "")
         if command.startswith(long + " "):
             return command.replace(long + " ", short + " ")
-    if not section_has_permissions(section):
+    if not section_has_permissions(section) and "sudo" not in command:
+        prefix = "proc "
+        if command.startswith(prefix):
+            d = os.path.dirname(os.path.abspath(__file__))
+            cmd = os.path.join(d, prefix)
+            command = command.replace(prefix, cmd)
         return "sudo " + command
     return command
 
