@@ -23,7 +23,7 @@ local_dir="$HOME/.local"
 # Handle PATH
 case $PATH in 
     *$local_dir/bin*) ;;
-    *) PATH="$HOME/go/bin:$local_dir/bin:$local_dir/bin/node:$HOME/.cargo/bin:$HOME/.config/nq/bin:$PATH:$local_dir/conda/bin"
+    *) PATH="$HOME/go/bin:$local_dir/bin:$local_dir/bin/node:$HOME/.cargo/bin:$HOME/.config/nq/bin:$local_dir/conda/bin:$PATH"
        export PATH;;
 esac
 
