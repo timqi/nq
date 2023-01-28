@@ -8,7 +8,7 @@ ARG VIMVERSION=v9.0.1153
 # https://github.com/mjakob-gh/build-static-tmux/releases
 ARG TMUXVERSION=v3.3a
 ARG NQTOOLS="rg,fzf,fd,chtsh,jq,zoxide"
-ARG VIMPLUGINS="fzf,fzf.vim,neoformat,auto-pairs,vim-auto-save,vim-surround"
+ARG VIMPLUGINS="fzf,fzf.vim,neoformat,delimitMate,vim-auto-save,vim-surround,splitjoin.vim,vim-commentary"
 
 
 RUN apk update && apk add gcc make musl-dev bash \

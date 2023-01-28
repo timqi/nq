@@ -1,7 +1,7 @@
 // vim: set filetype=jsonc
 {
   "suggest.noselect": true,
-  "suggest.maxCompleteItemCount": 10,
+  "suggest.maxCompleteItemCount": 100,
   "suggest.keepCompleteopt": false,
   "suggest.removeDuplicateItems": true,
 
