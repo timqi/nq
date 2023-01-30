@@ -8,13 +8,6 @@
   "snippets.ultisnips.enable": true,
   "snippets.extends": { "typescript": ["javascript"] },
 
-  "list.source.files.command": "fd",
-  "list.source.files.args": [
-      "--type=file",
-      "--follow",
-      "--color=never"
-  ],
-
   "pyright.inlayHints.functionReturnTypes": false,
   "pyright.inlayHints.variableTypes": false,
   "python.analysis.diagnosticSeverityOverrides": {

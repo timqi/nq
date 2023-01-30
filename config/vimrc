@@ -35,6 +35,7 @@ Plug 'junegunn/fzf.vim'
 Plug 'AndrewRadev/splitjoin.vim'
 Plug 'tpope/vim-commentary'
 Plug 'skywind3000/asyncrun.vim'
+Plug 'tomasiser/vim-code-dark'
 
 Plug 'neoclide/coc.nvim', {'branch': 'release', 'on': []}
 Plug 'antoinemadec/coc-fzf', {'on': []}
@@ -42,8 +43,8 @@ Plug 'honza/vim-snippets', {'on': []}
 Plug 'github/copilot.vim', {'on': []}
 silent! call plug#end()
 
+"let g:netrw_liststyle = 3
 let g:asyncrun_open = 8
-let g:netrw_liststyle = 3
 let g:delimitMate_expand_cr = 1
 let g:delimitMate_expand_space = 1
 
@@ -161,14 +162,16 @@ augroup vimrc
         \| exe "normal! g'\"" | endif
     au FileType python nnoremap <leader>b :AsyncRun python %<cr>
     au FileType go nnoremap <leader>b :AsyncRun go run %<cr>
+    au FileType json syntax match Comment +\/\/.\+$+
 augroup END
 
 
+try | colorscheme codedark | endtry
 for g in ['Normal', 'EndOfBuffer', 'LineNr', "Directory"]
     exe "hi ".g." ctermbg=NONE guibg=NONE" | endfor
 hi clear CursorLine
 hi CursorLine ctermbg=237 guibg=#386641
-hi LineNr ctermfg=4
+hi LineNr ctermfg=238
 hi SpellBad ctermbg=17
 hi StatusLine ctermbg=58 guibg=#6a994e
 hi StatusLineNC ctermbg=244 guibg=#6d6875
