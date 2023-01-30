@@ -166,7 +166,7 @@ augroup vimrc
 augroup END
 
 
-try | colorscheme codedark | endtry
+try | colorscheme codedark | catch /.*/ | endtry
 for g in ['Normal', 'EndOfBuffer', 'LineNr', "Directory"]
     exe "hi ".g." ctermbg=NONE guibg=NONE" | endfor
 hi clear CursorLine
