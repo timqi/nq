@@ -95,7 +95,7 @@ def _run(cmd, stdin=None):
         if not exists(fzf):
             error("fzf not exist, in sudo. SUDO_USER: " + sudo_user)
         if cmd.startswith("fzf "):
-            cmd = cmd.replace("fzf ", fzf + "")
+            cmd = cmd.replace("fzf ", fzf + " ")
         cmd = cmd.replace(" fzf ", " " + fzf + " ").replace("|fzf ", "|" + fzf + " ")
     start_new_session = not _is_macos()
     p = subprocess.Popen(
