@@ -24,10 +24,12 @@ for [k, v] in items({"<c-b>": "<left>", "<c-f>": "<right>",
     exe "inoremap ".k." ".v | exe "cnoremap ".k." ".v
 endfor
 
+
+" Plugins
 silent! call plug#begin('~/.vim/plugged')
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-fugitive'
-Plug 'Raimondi/delimitMate'
+Plug 'jiangmiao/auto-pairs'
 Plug '907th/vim-auto-save'
 Plug 'sbdchd/neoformat'
 Plug 'junegunn/fzf'
@@ -43,11 +45,9 @@ Plug 'honza/vim-snippets', {'on': []}
 Plug 'github/copilot.vim', {'on': []}
 silent! call plug#end()
 
-"let g:netrw_liststyle = 3
-let g:asyncrun_open = 8
-let g:delimitMate_expand_cr = 1
-let g:delimitMate_expand_space = 1
 
+" Basic config
+let g:asyncrun_open = 8
 nnoremap = :Neoformat<cr>
 let g:neoformat_basic_format_align = 1
 let g:neoformat_basic_format_trim = 1
@@ -81,6 +81,7 @@ let g:fzf_commits_log_options =  "-200 --color=always"
 let g:fzf_preview_window = ['up:80%', 'ctrl-/']
 
 
+" Lsp using coc
 function! LoadLsp()
     call plug#load('coc.nvim', 'coc-fzf', 'vim-snippets')
 
@@ -128,6 +129,8 @@ endfunction
 command! LoadLsp exe 'call LoadLsp()'
 command! LoadCopilot exe 'call plug#load("copilot.vim")'
 
+
+" Custom scripts
 function! CreatePlayGround(fileName)
     let l:directory = expand('~/.config/playground')
     if !isdirectory(l:directory)
@@ -156,6 +159,7 @@ command! Workspaces call fzf#run(fzf#wrap({
 command! Lg execute '!tmux popup -d "\#{pane_current_path}" -xC -yC -w99\% -h99\% -E "zsh -i -c lazygit"'
 
 
+" Auto cmd group
 augroup vimrc
     au FileType javascript,html,vue setlocal sw=2 ts=2 sts=2
     au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
@@ -166,6 +170,7 @@ augroup vimrc
 augroup END
 
 
+" Theme
 try | colorscheme codedark | catch /.*/ | endtry
 for g in ['Normal', 'EndOfBuffer', 'LineNr', "Directory"]
     exe "hi ".g." ctermbg=NONE guibg=NONE" | endfor
