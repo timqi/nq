@@ -37,6 +37,26 @@ Plug 'AndrewRadev/splitjoin.vim'
 Plug 'tpope/vim-commentary'
 Plug 'skywind3000/asyncrun.vim'
 Plug 'tomasiser/vim-code-dark'
+
+
+if has('nvim')
+    Plug 'nvim-lua/plenary.nvim'
+    Plug 'neovim/nvim-lspconfig'
+    Plug 'williamboman/mason.nvim'
+    Plug 'williamboman/mason-lspconfig.nvim'
+    Plug 'gfanto/fzf-lsp.nvim'
+    Plug 'github/copilot.vim'
+    Plug 'hrsh7th/cmp-nvim-lsp'
+    Plug 'hrsh7th/cmp-buffer'
+    Plug 'hrsh7th/cmp-path'
+    Plug 'hrsh7th/cmp-cmdline'
+    Plug 'rafamadriz/friendly-snippets'
+    Plug 'hrsh7th/cmp-vsnip'
+    Plug 'hrsh7th/vim-vsnip'
+    Plug 'hrsh7th/cmp-copilot'
+    Plug 'hrsh7th/nvim-cmp'
+endif
+
 silent! call plug#end()
 
 " Basic settings
@@ -132,57 +152,10 @@ hi PmenuSel ctermbg=22 guibg=#03045e ctermfg=255 guifg=#ffffff
 
 " Neovim Nvim
 if has('nvim')
-let g:coq_settings = { 'auto_start': v:true,
-        \ 'display.icons.mode': 'none',
-        \ 'display.ghost_text.enabled': v:false,
-        \ 'display.pum.x_truncate_len': 18,
-        \ 'clients.tags.enabled': v:false,
-        \ 'clients.tree_sitter.enabled': v:false,
-        \ 'clients.tmux.enabled': v:false,
-        \ 'clients.lsp.always_on_top': [],
-        \ 'keymap.jump_to_mark': '<c-l>',
-        \ }
-inoremap <silent><expr> <CR> pumvisible() ? (complete_info().selected == -1 ? "\<C-e>" : "\<C-y>") : "\<CR>"
-
 let g:fzf_lsp_command_prefix = "Lsp"
 nnoremap <leader>a   :<C-u>LspDiagnostics<CR>
 
 lua <<EOF
-local ensure_packer = function()
-    local install_path = vim.fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
-    if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
-        vim.fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_path})
-        vim.cmd [[packadd packer.nvim]]
-        return true
-    end
-    return false
-end
-local packer_bootstrap = ensure_packer()
-require('packer').startup(function(use)
-    use 'wbthomason/packer.nvim'
-    use 'nvim-lua/plenary.nvim'
-
-    use 'neovim/nvim-lspconfig'
-    use 'williamboman/mason.nvim'
-    use 'williamboman/mason-lspconfig.nvim'
-    use 'gfanto/fzf-lsp.nvim'
-
-    use 'github/copilot.vim'
-    use 'hrsh7th/cmp-nvim-lsp'
-    use 'hrsh7th/cmp-buffer'
-    use 'hrsh7th/cmp-path'
-    use 'hrsh7th/cmp-cmdline'
-    use 'rafamadriz/friendly-snippets'
-    use 'hrsh7th/cmp-vsnip'
-    use 'hrsh7th/vim-vsnip'
-    use 'hrsh7th/cmp-copilot'
-    use 'hrsh7th/nvim-cmp'
-
-    if packer_bootstrap then
-        require('packer').sync()
-    end
-end)
-
 -- https://github.com/neovim/nvim-lspconfig
 local lspconfig = require('lspconfig')
 local on_attach = function(client, bufnr)
