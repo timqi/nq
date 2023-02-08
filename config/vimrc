@@ -144,7 +144,7 @@ augroup END
 
 
 " Theme
-"try | colorscheme codedark | catch /.*/ | endtry
+try | colorscheme codedark | catch /.*/ | endtry
 for g in ['Normal', 'EndOfBuffer', 'LineNr', "Directory"]
     exe "hi ".g." ctermbg=NONE guibg=NONE" | endfor
 hi clear CursorLine
@@ -264,7 +264,7 @@ require("mason").setup({
         }}
 })
 require("mason-lspconfig").setup {
-    ensure_installed = {"pyright", "gopls"},
+    ensure_installed = {"cspell", "pyright", "gopls"},
 }
 -- https://github.com/gfanto/fzf-lsp.nvim
 require('fzf_lsp').setup({
