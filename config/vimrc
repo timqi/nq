@@ -5,7 +5,7 @@ let mapleader = "\<space>"
 set nocompatible hidden wrap
 set hlsearch incsearch ignorecase smartcase
 set backspace=indent,eol,start
-set completeopt=menu,preview
+set completeopt=menu,menuone,noselect
 set noswapfile nobackup nowritebackup
 set cindent autoindent smartindent expandtab smarttab
 set nu signcolumn=number laststatus=1 mouse=v cursorline
@@ -24,30 +24,49 @@ for [k, v] in items({"<c-b>": "<left>", "<c-f>": "<right>",
     exe "inoremap ".k." ".v | exe "cnoremap ".k." ".v
 endfor
 
+inoremap jj <Esc>
+nnoremap ; :
+nnoremap H ^
+nnoremap L $
+nnoremap [q :cnext<cr>
+nnoremap ]q :cprevious<cr>
+nnoremap \q :cclose<cr>
+nnoremap =q :copen<cr>
 
 " Plugins
 silent! call plug#begin('~/.vim/plugged')
+Plug 'junegunn/fzf'
+Plug 'junegunn/fzf.vim'
+Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-surround'
+Plug 'tpope/vim-fugitive'
+Plug 'jiangmiao/auto-pairs'
+Plug '907th/vim-auto-save'
 Plug 'sbdchd/neoformat'
 Plug 'AndrewRadev/splitjoin.vim'
+Plug 'skywind3000/asyncrun.vim'
+Plug 'tomasiser/vim-code-dark'
 
-if !exists("g:vscode")
-    Plug 'tpope/vim-fugitive'
-    Plug 'jiangmiao/auto-pairs'
-    Plug '907th/vim-auto-save'
-    Plug 'junegunn/fzf'
-    Plug 'junegunn/fzf.vim'
-    Plug 'tpope/vim-commentary'
-    Plug 'skywind3000/asyncrun.vim'
-    Plug 'tomasiser/vim-code-dark'
 
-    Plug 'neoclide/coc.nvim', {'branch': 'release', 'on': []}
-    Plug 'antoinemadec/coc-fzf', {'on': []}
-    Plug 'honza/vim-snippets', {'on': []}
-    Plug 'github/copilot.vim', {'on': []}
+if has('nvim')
+    Plug 'nvim-lua/plenary.nvim'
+    Plug 'neovim/nvim-lspconfig'
+    Plug 'williamboman/mason.nvim'
+    Plug 'williamboman/mason-lspconfig.nvim'
+    Plug 'gfanto/fzf-lsp.nvim'
+    Plug 'github/copilot.vim'
+    Plug 'hrsh7th/cmp-nvim-lsp'
+    Plug 'hrsh7th/cmp-buffer'
+    Plug 'hrsh7th/cmp-path'
+    Plug 'hrsh7th/cmp-cmdline'
+    Plug 'rafamadriz/friendly-snippets'
+    Plug 'hrsh7th/cmp-vsnip'
+    Plug 'hrsh7th/vim-vsnip'
+    Plug 'hrsh7th/cmp-copilot'
+    Plug 'hrsh7th/nvim-cmp'
 endif
-silent! call plug#end()
 
+silent! call plug#end()
 
 " Basic config
 let g:asyncrun_open = 8
@@ -68,9 +87,6 @@ let g:neoformat_rust_rustfmt = {
 let g:auto_save = 1
 let g:netrw_dirhistmax = 0
 
-" vscode-neovim
-if exists("g:vscode") | finish | endif
-
 noremap  <c-j>      :<C-U>call fzf#vim#files('')<CR>
 noremap  <c-h>      :<C-U>call fzf#vim#history()<CR>
 nnoremap <leader>m  :<C-U>call fzf#vim#marks()<CR>
@@ -86,57 +102,7 @@ let g:fzf_layout = { 'window': 'enew' }
 let g:fzf_commits_log_options =  "-200 --color=always"
 let g:fzf_preview_window = ['up:80%', 'ctrl-/']
 
-
-" Lsp using coc
-function! LoadLsp()
-    call plug#load('coc.nvim', 'coc-fzf', 'vim-snippets')
-
-    let g:coc_global_extensions = [
-        \ "coc-typos",
-        \ "coc-snippets",
-        \ "coc-go",
-        \ "coc-pyright",
-        \]
-    let g:coc_fzf_preview = 'up:80%'
-    let g:coc_fzf_opts = ['--layout=default']
-    imap <C-l> <Plug>(coc-snippets-expand-jump)
-
-    " typos
-    nmap ]s <Plug>(coc-typos-next)
-    nmap [s <Plug>(coc-typos-prev)
-    nmap z= <Plug>(coc-typos-fix)
-
-    nnoremap gh :<C-u>call CocActionAsync('doHover')<CR>
-    nnoremap gd :<C-u>call CocActionAsync('jumpDefinition')<CR>
-    nnoremap gt :<C-u>call CocActionAsync('jumpTypeDefinition')<CR>
-    nnoremap gi :<C-u>call CocActionAsync('jumpImplementation')<CR>
-    nnoremap gr :<C-u>call CocActionAsync('jumpReferences')<CR>
-    nnoremap gs :<C-u>call CocActionAsync('showSignatureHelp')<CR>
-
-    nnoremap ge :<C-u>call CocActionAsync('codeAction', 'cursor')<CR>
-    nnoremap ga :<C-u>call CocActionAsync('refactor')<CR>
-    nnoremap gf :<C-u>call CocActionAsync('doQuickfix')<CR>
-
-    nnoremap <leader>a   :<C-u>CocFzfList diagnostics --current-buf<CR>
-    nnoremap <leader>c   :<C-u>CocFzfList commands<CR>
-    nnoremap <leader>l   :<C-u>CocFzfList<CR>
-
-    noremap <nowait><expr> <C-d> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
-    noremap <nowait><expr> <C-u> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
-
-    inoremap <expr> <c-n> coc#pum#visible() ? coc#pum#next(1): coc#refresh()
-    inoremap <expr> <c-p> coc#pum#visible() ? coc#pum#prev(1): "\<c-p>"
-    inoremap <expr> <cr>  coc#pum#visible() ? coc#_select_confirm() : "\<CR>"
-    inoremap <expr> <c-space> coc#refresh()
-
-    echo "Lsp Loaded"
-endfunction
-
-command! LoadLsp exe 'call LoadLsp()'
-command! LoadCopilot exe 'call plug#load("copilot.vim")'
-
-
-" Custom scripts
+" Custom Scripts
 function! CreatePlayGround(fileName)
     let l:directory = expand('~/.config/playground')
     if !isdirectory(l:directory)
@@ -163,6 +129,7 @@ command! Workspaces call fzf#run(fzf#wrap({
       \ }))
 
 command! Lg execute '!tmux popup -d "\#{pane_current_path}" -xC -yC -w99\% -h99\% -E "zsh -i -c lazygit"'
+command! LoadCopilot exe 'call plug#load("copilot.vim")'
 
 
 " Auto cmd group
@@ -177,7 +144,7 @@ augroup END
 
 
 " Theme
-try | colorscheme codedark | catch /.*/ | endtry
+"try | colorscheme codedark | catch /.*/ | endtry
 for g in ['Normal', 'EndOfBuffer', 'LineNr', "Directory"]
     exe "hi ".g." ctermbg=NONE guibg=NONE" | endfor
 hi clear CursorLine
@@ -191,3 +158,116 @@ hi Visual ctermbg=240 guibg=#03045e
 hi VisualNOS ctermbg=240 guibg=#03045e
 hi PmenuSel ctermbg=22 guibg=#03045e ctermfg=255 guifg=#ffffff
 
+
+" Neovim Nvim
+if !has('nvim') | finish | endif
+
+let g:fzf_lsp_command_prefix = "Lsp"
+nnoremap <leader>a   :<C-u>LspDiagnostics<CR>
+
+lua <<EOF
+-- https://github.com/neovim/nvim-lspconfig
+local lspconfig = require('lspconfig')
+local on_attach = function(client, bufnr)
+    vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+    local bufopts = { noremap=true, silent=false, buffer=bufnr }
+    vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, bufopts)
+    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, bufopts)
+    vim.keymap.set('n', 'gk', vim.lsp.buf.hover, bufopts)
+    vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, bufopts)
+    vim.keymap.set('n', 'gs', vim.lsp.buf.signature_help, bufopts)
+    vim.keymap.set('n', 'gt', vim.lsp.buf.type_definition, bufopts)
+    vim.keymap.set('n', 'ga', vim.lsp.buf.rename, bufopts)
+    vim.keymap.set('n', 'ge', vim.lsp.buf.code_action, bufopts)
+    vim.keymap.set('n', 'gr', vim.lsp.buf.references, bufopts)
+end
+
+local lsp_flags = { debounce_text_changes = 150, }
+local cmp_capabilities = require('cmp_nvim_lsp').default_capabilities()
+lspconfig['gopls'].setup({
+    on_attach = on_attach,
+    flags = lsp_flags,
+    capabilities = cmp_capabilities,
+})
+lspconfig['pyright'].setup({
+    on_attach = on_attach,
+    flags = lsp_flags,
+    capabilities = cmp_capabilities,
+    settings = {python = {analysis = {
+        reportOptionalSubscript = 'none',
+        reportGeneralTypeIssues = 'none',
+        reportOptionalOperand = 'warning',
+        reportOptionalMemberAccess = 'none'
+    }}}
+})
+
+-- https://github.com/hrsh7th/nvim-cmp
+local has_words_before = function()
+    unpack = unpack or table.unpack
+    local line, col = unpack(vim.api.nvim_win_get_cursor(0))
+    return col ~= 0 and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match("%s") == nil
+end
+
+local feedkey = function(key, mode)
+  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(key, true, true, true), mode, true)
+end
+
+local cmp = require('cmp')
+cmp.setup({
+    snippet = {
+        expand = function(args)
+            vim.fn["vsnip#anonymous"](args.body)
+        end,
+    },
+    mapping = cmp.mapping.preset.insert({
+        ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+        ['<C-f>'] = cmp.mapping.scroll_docs(4),
+        ['<C-Space>'] = cmp.mapping.complete(),
+        ['<C-e>'] = cmp.mapping.abort(),
+        ['<CR>'] = cmp.mapping.confirm({ select = true }),
+        ["<Tab>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+                cmp.select_next_item()
+            elseif vim.fn["vsnip#available"](1) == 1 then
+                feedkey("<Plug>(vsnip-expand-or-jump)", "")
+            elseif has_words_before() then
+                cmp.complete()
+            else
+                fallback() -- The fallback function sends a already mapped key. In this case, it's probably `<Tab>`.
+            end
+        end, { "i", "s" }),
+        ["<S-Tab>"] = cmp.mapping(function()
+            if cmp.visible() then
+                cmp.select_prev_item()
+            elseif vim.fn["vsnip#jumpable"](-1) == 1 then
+                feedkey("<Plug>(vsnip-jump-prev)", "")
+            end
+        end, { "i", "s" }),
+    }),
+    sources = cmp.config.sources({
+      {name = 'nvim_lsp'}, {name = 'vsnip'}, {name = 'copilot'},
+    },
+    {{ name = 'buffer'}, })
+})
+cmp.setup.cmdline({ '/', '?' }, {
+  mapping = cmp.mapping.preset.cmdline(),
+  sources = {{ name = 'buffer' }}
+})
+
+-- https://github.com/williamboman/mason.nvim
+-- https://github.com/williamboman/mason-lspconfig.nvim
+require("mason").setup({
+    ui = {icons = {
+            package_installed = "✓",
+            package_pending = "➜",
+            package_uninstalled = "✗"
+        }}
+})
+require("mason-lspconfig").setup {
+    ensure_installed = {"pyright", "gopls"},
+}
+-- https://github.com/gfanto/fzf-lsp.nvim
+require('fzf_lsp').setup({
+    override_ui_select = true,
+})
+EOF
