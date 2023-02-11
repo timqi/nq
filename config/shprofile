@@ -76,3 +76,9 @@ r() {
     cmd=`history | sed 's/\s\+[0-9]\+\s\+//g' | sort -rn | awk '!x[$0]++' | fzf --layout=reverse --prompt='Cmd> '`
     _confirm_run "$cmd"
 }
+
+if command -v tmux &> /dev/null; then
+    if [[ $- =~ i ]] && [[ -z "$TMUX" ]] && [[ -n "$SSH_TTY" ]]; then
+        tmux a -t0 || tmux
+    fi
+fi
