@@ -25,7 +25,6 @@ for [k, v] in items({"<c-b>": "<left>", "<c-f>": "<right>",
 endfor
 
 inoremap jj <Esc>
-nnoremap ; : | vnoremap ; :
 nnoremap H ^ | vnoremap H ^
 nnoremap L $ | vnoremap L $
 
@@ -158,6 +157,9 @@ local plugins = {
 	{ "skywind3000/asyncrun.vim", cmd = "AsyncRun" },
 	{
 		"gfanto/fzf-lsp.nvim",
+        dependencies = {
+		    "neovim/nvim-lspconfig",
+        },
 		config = function()
 			vim.g.fzf_lsp_command_prefix = "Lsp"
 			vim.cmd("nnoremap <leader>a :<C-u>LspDiagnostics<CR>")
@@ -174,7 +176,6 @@ local plugins = {
 			"hrsh7th/cmp-nvim-lsp",
 			"hrsh7th/cmp-buffer",
 			"hrsh7th/cmp-path",
-			"hrsh7th/cmp-cmdline",
 			"rafamadriz/friendly-snippets",
 			"hrsh7th/cmp-vsnip",
 			"hrsh7th/vim-vsnip",
@@ -200,8 +201,8 @@ local plugins = {
 					end,
 				},
 				mapping = cmp.mapping.preset.insert({
-					["<C-b>"] = cmp.mapping.scroll_docs(-4),
-					["<C-f>"] = cmp.mapping.scroll_docs(4),
+					["<C-u>"] = cmp.mapping.scroll_docs(-4),
+					["<C-d>"] = cmp.mapping.scroll_docs(4),
 					["<C-Space>"] = cmp.mapping.complete(),
 					["<C-e>"] = cmp.mapping.abort(),
 					["<CR>"] = cmp.mapping.confirm({ select = true }),
@@ -229,10 +230,6 @@ local plugins = {
 					{ name = "vsnip" },
 					{ name = "copilot" },
 				}, { { name = "buffer" } }),
-			})
-			cmp.setup.cmdline({ "/", "?" }, {
-				mapping = cmp.mapping.preset.cmdline(),
-				sources = { { name = "buffer" } },
 			})
 		end,
 	},
