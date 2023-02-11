@@ -145,8 +145,8 @@ local plugins = {
 			vim.api.nvim_call_function("ApplyTheme", {})
 		end,
 	},
-	{ "junegunn/fzf" },
-	{ "junegunn/fzf.vim" },
+	-- { "junegunn/fzf" },
+	-- { "junegunn/fzf.vim" },
 	{ "tpope/vim-commentary" },
 	{ "tpope/vim-surround" },
 	{ "tpope/vim-fugitive" },
@@ -155,19 +155,6 @@ local plugins = {
 	{ "AndrewRadev/splitjoin.vim" },
 	{ "sbdchd/neoformat", cmd = "Neoformat" },
 	{ "skywind3000/asyncrun.vim", cmd = "AsyncRun" },
-	{
-		"gfanto/fzf-lsp.nvim",
-        dependencies = {
-		    "neovim/nvim-lspconfig",
-        },
-		config = function()
-			vim.g.fzf_lsp_command_prefix = "Lsp"
-			vim.cmd("nnoremap <leader>a :<C-u>LspDiagnostics<CR>")
-			require("fzf_lsp").setup({
-				override_ui_select = true,
-			})
-		end,
-	},
 	{ "nvim-lua/plenary.nvim", lazy = true },
 	{
 		"hrsh7th/nvim-cmp",
@@ -308,9 +295,92 @@ local plugins = {
 			})
 		end,
 	},
+	{
+		"nvim-telescope/telescope.nvim",
+		branch = "0.1.x",
+		dependencies = {
+			"nvim-telescope/telescope-ui-select.nvim",
+			{
+				"nvim-telescope/telescope-frecency.nvim",
+				dependencies = { "kkharji/sqlite.lua" },
+			},
+			{
+				"nvim-telescope/telescope-fzf-native.nvim",
+				lazy = true,
+				build = "cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build",
+			},
+		},
+		config = function()
+			local builtin = require("telescope.builtin")
+			local telescope = require("telescope")
+			local previewers = require("telescope.previewers")
+			local actions = require("telescope.actions")
+
+			local bufopts = { noremap = true, silent = false, buffer = bufnr }
+			vim.keymap.set({ "n", "i" }, "<c-j>", builtin.find_files, bufopts)
+			vim.keymap.set({ "n", "i" }, "<c-h>", telescope.extensions.frecency.frecency, bufopts)
+			vim.keymap.set("n", "<leader>s", builtin.live_grep, bufopts)
+			vim.keymap.set("n", "<leader>w", builtin.grep_string, bufopts)
+			vim.keymap.set("n", "<leader>b", builtin.buffers, bufopts)
+			vim.keymap.set("n", "<leader>h", builtin.help_tags, bufopts)
+			vim.keymap.set("n", "<leader>j", builtin.command_history, bufopts)
+
+			telescope.setup({
+				defaults = {
+					layout_strategy = "vertical",
+					layout_config = { height = 0.99, width = 0.99 },
+					mappings = {
+						i = {
+							["<c-[>"] = actions.close,
+							["<C-u>"] = false,
+						},
+					},
+					vimgrep_arguments = {
+						"rg",
+						"--no-heading",
+						"--with-filename",
+						"--line-number",
+						"--column",
+						"--smart-case",
+						"--trim",
+					},
+					buffer_previewer_maker = function(filepath, bufnr, opts)
+						opts = opts or {}
+						filepath = vim.fn.expand(filepath)
+
+						vim.loop.fs_stat(filepath, function(_, stat)
+							if not stat then
+								return
+							end
+							if stat.size > 100000 then
+								return
+							else
+								previewers.buffer_previewer_maker(filepath, bufnr, opts)
+							end
+						end)
+					end,
+				},
+				pickers = {
+					find_files = {
+						find_command = { "fd", "--type", "f", "--strip-cwd-prefix" },
+					},
+				},
+				extensions = {
+					fzf = {
+						fuzzy = false,
+						override_generic_sorter = true,
+						override_file_sorter = true,
+						case_mode = "smart_case",
+					},
+				},
+			})
+			telescope.load_extension("fzf")
+			telescope.load_extension("frecency")
+			telescope.load_extension("ui-select")
+		end,
+	},
 }
 local lazy_opts = {
 	lockfile = vim.fn.stdpath("state") .. "/lazy-lock.json",
 }
 require("lazy").setup(plugins, lazy_opts)
-
