@@ -1,130 +1,20 @@
-vim.cmd([[
-set encoding=utf-8 fileencodings=utf-8,ucs-bom,gbk,gb18030,big5,euc-jp,latin1
-let mapleader = "\<space>"
-
-set nocompatible hidden wrap
-set hlsearch incsearch ignorecase smartcase
-set backspace=indent,eol,start
-set completeopt=menu,menuone,noselect
-set noswapfile nobackup nowritebackup
-set cindent autoindent smartindent expandtab smarttab
-set nu signcolumn=number laststatus=1 mouse=v cursorline
-set wildignore+=.bak,*.swp,*.class,*.pyc,*DS_Store*,*.swp,
-set updatetime=1000
-set autoread autowrite
-set ts=4 sw=4 sts=4 scrolloff=3
-set statusline=%F\ %h%w%m%r%=%-14.(%l,%c%V%)\ %P
-
-syntax on
-filetype plugin indent on
-nnoremap <c-c> :q<cr>
-nnoremap - :Explore<cr>
-for [k, v] in items({"<c-b>": "<left>", "<c-f>": "<right>",
-\"<c-a>": "<home>","<c-e>": "<end>", "<c-d>": "<del>"})
-    exe "inoremap ".k." ".v | exe "cnoremap ".k." ".v
-endfor
-
-inoremap jj <Esc>
-nnoremap H ^ | vnoremap H ^
-nnoremap L $ | vnoremap L $
-
-nnoremap [q :cnext<cr>
-nnoremap ]q :cprevious<cr>
-nnoremap \q :cclose<cr>
-nnoremap =q :copen<cr>
-
-" Autocmd group
-augroup vimrc
-    au!
-    au FileType javascript,html,vue setlocal sw=2 ts=2 sts=2
-    au FileType python nnoremap <leader>b :AsyncRun python %<cr>
-    au FileType go nnoremap <leader>b :AsyncRun go run %<cr>
-    au FileType json syntax match Comment +\/\/.\+$+
-    au FileType qf setlocal nonu
-    au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
-        \| exe "normal! g'\"" | endif
-augroup END
-
-" Basic config
-let g:asyncrun_open = 8
-nnoremap = :Neoformat<cr>
-let g:neoformat_basic_format_align = 1
-let g:neoformat_basic_format_trim = 1
-let g:neoformat_python_iosrt = {
-    \ 'exe': 'isort',
-    \ 'args': ['--profile=black'],
-    \ }
-let g:neoformat_enabled_python = ['isort', 'black']
-au FileType python let b:neoformat_run_all_formatters = 1
-let g:neoformat_rust_rustfmt = {
-    \ 'exe': 'rustfmt',
-    \ 'args': ['--emit=stdout', '--edition=2021'],
-    \ }
-
-let g:auto_save = 1
-let g:netrw_dirhistmax = 0
-
-noremap  <c-j>      :<C-U>call fzf#vim#files('')<CR>
-noremap  <c-h>      :<C-U>call fzf#vim#history()<CR>
-nnoremap <leader>m  :<C-U>call fzf#vim#marks()<CR>
-nnoremap <leader>n  :<C-U>Commands<CR>
-nnoremap <leader>t  :<C-U>BTags<CR>
-nnoremap <leader>y  :<C-U>Tags<CR>
-nnoremap <leader>h  :<C-U>Helptags<CR>
-nnoremap <leader>r  y:<C-U><C-R>=printf("Tags %s", expand("<cword>"))<CR>
-nnoremap <leader>w  y:<C-U><C-R>=printf("Rg %s", expand("<cword>"))<CR>
-nnoremap <leader>s  :<C-U><C-R>=printf("Rg ")<CR>
-nnoremap <leader>j  :History:<CR>
-let g:fzf_layout = { 'window': 'enew' }
-let g:fzf_commits_log_options =  "-200 --color=always"
-let g:fzf_preview_window = ['up:80%', 'ctrl-/']
-
-" Custom Scripts
-function! CreatePlayGround(fileName)
-    let l:directory = expand('~/.config/playground')
-    if !isdirectory(l:directory)
-        call mkdir(l:directory)
-    endif
-    let l:ext = fnamemodify(a:fileName, ':e')
-    if index(["go", "py"], l:ext) < 0
-        echo "Only go,py supported. You typed: ".l:ext
-        return
-    endif
-    exe 'edit '.l:directory.'/'.a:fileName
-endfunction
-command! -nargs=1 CreatePlayGround call CreatePlayGround(<f-args>)
-
-function! s:GoToWorkspace(directory)
-    execute 'cd '.a:directory
-    execute 'Files'
-    if exists(":CocRestart") | execute 'CocRestart' | endif
-endfunction
-command! Workspaces call fzf#run(fzf#wrap({
-      \ 'source': 'zoxide query -l',
-      \ 'sink': function('s:GoToWorkspace'),
-      \ 'options': '--prompt "Workspace> " '
-      \ }))
-
-command! Lg execute '!tmux popup -d "\#{pane_current_path}" -xC -yC -w99\% -h99\% -E "zsh -i -c lazygit"'
-
-
-function! ApplyTheme()
-    try | colorscheme codedark | catch /.*/ | endtry
-    for g in ['Normal', 'EndOfBuffer', 'LineNr', "Directory"]
-        exe "hi ".g." ctermbg=NONE guibg=NONE" | endfor
-    hi clear CursorLine
-    hi CursorLine ctermbg=237 guibg=#386641
-    hi LineNr ctermfg=238
-    hi SpellBad ctermbg=17
-    hi StatusLine ctermbg=58 guibg=#6a994e
-    hi StatusLineNC ctermbg=244 guibg=#6d6875
-    hi Search ctermbg=240 guibg=#03045e
-    hi Visual ctermbg=240 guibg=#03045e
-    hi VisualNOS ctermbg=240 guibg=#03045e
-    hi PmenuSel ctermbg=22 guibg=#03045e ctermfg=255 guifg=#ffffff
-endfunction 
-call ApplyTheme()
-]])
+vim.g.mapleader = " "
+vim.o.ignorecase = true
+vim.o.smartcase = true
+vim.o.swapfile = false
+vim.o.writebackup = false
+vim.o.nu = true
+vim.o.signcolumn = "number"
+vim.o.laststatus = 1
+vim.o.mouse = "v"
+vim.o.cursorline = true
+vim.o.smartindent = true
+vim.o.tabstop = 4
+vim.o.shiftwidth = 4
+vim.o.softtabstop = 4
+vim.o.scrolloff = 3
+vim.o.statusline = "%F %h%w%m%r%=%-14.(%l,%c%V%) %P"
+vim.opt.completeopt = { "menu", "preview", "menuone", "noselect" }
 
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
@@ -138,37 +28,160 @@ if not vim.loop.fs_stat(lazypath) then
 	})
 end
 vim.opt.rtp:prepend(lazypath)
+
+function general_theme()
+	vim.cmd("colorscheme desert")
+	local hl = vim.api.nvim_set_hl
+	hl(0, "Normal", { ctermbg = "NONE", bg = "NONE" })
+	hl(0, "EndOfBuffer", { ctermbg = "NONE", bg = "NONE" })
+	hl(0, "Directory", { ctermbg = "NONE", bg = "NONE" })
+	hl(0, "CursorLine", { ctermbg = 237, bg = "#386641" })
+	hl(0, "LineNr", { ctermfg = 237, ctermbg = "NONE", fg = "#386641" })
+	hl(0, "SpellBad", { ctermbg = 17, bg = "#959595" })
+	hl(0, "StatusLine", { ctermbg = 58, bg = "#6a994e" })
+	hl(0, "StatusLineNC", { ctermbg = 244, bg = "#6d6875" })
+	hl(0, "Search", { ctermbg = 240, bg = "#03045e" })
+	hl(0, "Visual", { ctermbg = 240, bg = "#03045e" })
+	hl(0, "VisualNOS", { ctermbg = 240, bg = "#03045e" })
+	hl(0, "PmenuSel", { ctermbg = 22, ctermfg = 255, bg = "#03045e", fg = "#ffffff" })
+end
+general_theme()
 local plugins = {
-	{
-		"tomasiser/vim-code-dark",
-		config = function()
-			vim.api.nvim_call_function("ApplyTheme", {})
-		end,
-	},
-	{ "junegunn/fzf" },
-	{ "junegunn/fzf.vim" },
-	{ "tpope/vim-commentary" },
-	{ "tpope/vim-surround" },
-	{ "tpope/vim-fugitive" },
-	{ "jiangmiao/auto-pairs" },
-	{ "907th/vim-auto-save" },
-	{ "AndrewRadev/splitjoin.vim" },
-	{ "sbdchd/neoformat", cmd = "Neoformat" },
-	{ "skywind3000/asyncrun.vim", cmd = "AsyncRun" },
-	{
-		"gfanto/fzf-lsp.nvim",
-        dependencies = {
-		    "neovim/nvim-lspconfig",
-        },
-		config = function()
-			vim.g.fzf_lsp_command_prefix = "Lsp"
-			vim.cmd("nnoremap <leader>a :<C-u>LspDiagnostics<CR>")
-			require("fzf_lsp").setup({
-				override_ui_select = true,
-			})
-		end,
-	},
 	{ "nvim-lua/plenary.nvim", lazy = true },
+	{
+		"Mofiqul/vscode.nvim",
+		config = function()
+			require("vscode").setup({})
+			general_theme()
+		end,
+	},
+	{
+		"numToStr/Comment.nvim",
+		event = "VeryLazy",
+		config = function()
+			require("Comment").setup()
+		end,
+	},
+	{
+		"kylechui/nvim-surround",
+		event = "VeryLazy",
+		config = function()
+			require("nvim-surround").setup({})
+		end,
+	},
+	{
+		"windwp/nvim-autopairs",
+		event = "VeryLazy",
+		config = function()
+			require("nvim-autopairs").setup({})
+		end,
+	},
+	{
+		"Pocco81/auto-save.nvim",
+		event = "VeryLazy",
+		config = function()
+			require("auto-save").setup({ trigger_events = { "InsertLeave" } })
+		end,
+	},
+	{ "AndrewRadev/splitjoin.vim", event = "VeryLazy" },
+	{
+		"skywind3000/asyncrun.vim",
+		cmd = "AsyncRun",
+		config = function()
+			vim.g.asyncrun_open = 8
+		end,
+	},
+	{
+		"ibhagwan/fzf-lua",
+		event = "VeryLazy",
+		config = function()
+			local fzf = require("fzf-lua")
+			fzf.register_ui_select()
+			local bufopts = { noremap = true, silent = false, buffer = bufnr }
+			vim.keymap.set({ "n", "i" }, "<c-j>", fzf.files, bufopts)
+			vim.keymap.set({ "n", "i" }, "<c-h>", fzf.oldfiles, bufopts)
+			vim.keymap.set("n", "<leader>s", fzf.grep, bufopts)
+			vim.keymap.set("n", "<leader>w", fzf.grep_cword, bufopts)
+			vim.keymap.set("v", "<leader>w", fzf.grep_visual, bufopts)
+			vim.keymap.set("n", "<leader>h", fzf.help_tags, bufopts)
+			vim.keymap.set("n", "<leader>p", fzf.resume, bufopts)
+			vim.keymap.set("n", "<leader>/", fzf.search_history, bufopts)
+			vim.keymap.set("n", "<leader>m", fzf.marks, bufopts)
+			vim.keymap.set("n", "<leader>t", fzf.btags, bufopts)
+			vim.keymap.set("n", "<leader>r", fzf.tags_grep_cword, bufopts)
+
+			fzf.setup({
+				winopts = {
+					fullscreen = true,
+					border = false,
+					preview = {
+						default = "bat",
+						border = "border",
+						wrap = "wrap",
+						vertical = "up:80%",
+						layout = "vertical",
+						winopts = { number = false },
+					},
+					hl = {
+						FzfLuaNormal = "Normal",
+						FzfLuaNormal = "Normal",
+					},
+				},
+				fzf_opts = {
+					["--layout"] = "default",
+				},
+				previewers = {
+					bat = { args = "-p --color always" },
+				},
+				files = {
+					previewer = false,
+				},
+				oldfiles = {
+					previewer = false,
+				},
+			})
+
+			vim.api.nvim_create_user_command("Workspace", function()
+				fzf.fzf_exec("zoxide query -l", {
+					prompt = "Workspace> ",
+					actions = {
+						["default"] = function(selected)
+							vim.cmd("cd " .. selected[1])
+							fzf.files()
+						end,
+					},
+				})
+			end, {})
+
+			vim.api.nvim_create_user_command("Playground", function()
+				local CREATE_NEW = "::CREATE NEW GROUP"
+				local d = vim.fn.expand("~/.config/playground")
+				if not vim.fn.isdirectory(d) then
+					vim.fn.mkdir(d)
+				end
+				fzf.fzf_exec(function(fzf_ob)
+					fzf_ob(fzf.utils.ansi_codes.magenta(CREATE_NEW))
+					local dd = vim.fn.glob(d .. "/*")
+					for s in dd:gmatch("[^\r\n]+") do
+						fzf_ob(vim.fn.fnamemodify(s, ":t"))
+					end
+				end, {
+					actions = {
+						["default"] = function(selected)
+							if CREATE_NEW ~= selected[1] then
+								vim.cmd("e " .. d .. "/" .. selected[1])
+								return
+							end
+							local ok, res = pcall(vim.fn.input, "New playground name: ", "")
+							if ok then
+								vim.cmd("e " .. d .. "/" .. res)
+							end
+						end,
+					},
+				})
+			end, {})
+		end,
+	},
 	{
 		"hrsh7th/nvim-cmp",
 		event = "InsertEnter",
@@ -233,13 +246,13 @@ local plugins = {
 			})
 		end,
 	},
-
 	{
 		"neovim/nvim-lspconfig",
 		dependencies = {
 			"williamboman/mason.nvim",
 			"hrsh7th/nvim-cmp",
 		},
+		event = "VeryLazy",
 		ft = { "python", "go" },
 		config = function()
 			local lspconfig = require("lspconfig")
@@ -250,11 +263,11 @@ local plugins = {
 				vim.keymap.set("n", "gd", vim.lsp.buf.definition, bufopts)
 				vim.keymap.set("n", "gk", vim.lsp.buf.hover, bufopts)
 				vim.keymap.set("n", "gi", vim.lsp.buf.implementation, bufopts)
-				vim.keymap.set("n", "gs", vim.lsp.buf.signature_help, bufopts)
 				vim.keymap.set("n", "gt", vim.lsp.buf.type_definition, bufopts)
 				vim.keymap.set("n", "ga", vim.lsp.buf.rename, bufopts)
 				vim.keymap.set("n", "ge", vim.lsp.buf.code_action, bufopts)
 				vim.keymap.set("n", "gr", vim.lsp.buf.references, bufopts)
+				vim.keymap.set({ "i", "n" }, "<c-p>", vim.lsp.buf.signature_help, bufopts)
 			end
 
 			local lsp_flags = { debounce_text_changes = 150 }
@@ -282,12 +295,22 @@ local plugins = {
 		end,
 	},
 	{
+		"sbdchd/neoformat",
+		cmd = "Neoformat",
+		config = function()
+			vim.g.neoformat_basic_format_align = 1
+			vim.g.neoformat_basic_format_trim = 1
+			vim.g.neoformat_python_iosrt = { exe = "isort", args = { "--profile=black" } }
+			vim.g.neoformat_enabled_python = { "isort", "black" }
+			vim.g.neoformat_rust_rustfmt = { exe = "rustfmt", args = { "--emit=stdout", "--edition=2021" } }
+			vim.keymap.set("n", "=", ":Neoformat<CR>", { noremap = true, silent = false })
+		end,
+	},
+	{
 		"williamboman/mason.nvim",
-		lazy = true,
+		event = "VeryLazy",
 		dependencies = {
 			"williamboman/mason-lspconfig.nvim",
-			"jose-elias-alvarez/null-ls.nvim",
-			"jay-babu/mason-null-ls.nvim",
 		},
 		cmd = "Mason",
 		config = function()
@@ -303,14 +326,78 @@ local plugins = {
 			require("mason-lspconfig").setup({
 				ensure_installed = { "pyright", "gopls" },
 			})
-			require("mason-null-ls").setup({
-				ensure_installed = { "cspell" },
-			})
 		end,
 	},
 }
 local lazy_opts = {
 	lockfile = vim.fn.stdpath("state") .. "/lazy-lock.json",
+	concurrency = 20,
+	install = { missing = false },
+	performance = {
+		rtp = {
+			disabled_plugins = {
+				"gzip",
+				"tarPlugin",
+				"tutor",
+				"zipPlugin",
+			},
+		},
+	},
 }
 require("lazy").setup(plugins, lazy_opts)
 
+for from, to in pairs({
+	["<C-c>"] = ":q<CR>",
+	["-"] = ":Explore<CR>",
+	["[q"] = ":cnext<CR>",
+	["]q"] = ":cprevious<CR>",
+	["\\q"] = ":cclose<CR>",
+	["=q"] = ":copen<CR>",
+}) do
+	vim.keymap.set("n", from, to, {})
+end
+
+for from, to in pairs({
+	["<C-b>"] = "<left>",
+	["<C-f>"] = "<right>",
+	["<C-a>"] = "<home>",
+	["<C-e>"] = "<end>",
+	["<C-d>"] = "<del>",
+}) do
+	vim.keymap.set({ "i", "c" }, from, to, {})
+end
+
+vim.api.nvim_create_user_command(
+	"Lg",
+	[[execute '!tmux popup -d "\#{pane_current_path}" -xC -yC -w99\% -h99\% -E "zsh -i -c lazygit"']],
+	{}
+)
+
+local augroup = vim.api.nvim_create_augroup("nvimlua", {})
+vim.api.nvim_create_autocmd("FileType", {
+	group = augroup,
+	pattern = { "python" },
+	command = [[
+		nnoremap <leader>b :AsyncRun python % 
+		let b:neoformat_run_all_formatters = 1
+	]],
+})
+vim.api.nvim_create_autocmd("FileType", {
+	group = augroup,
+	pattern = { "go" },
+	command = "nnoremap <leader>b :AsyncRun go run % ",
+})
+vim.api.nvim_create_autocmd("FileType", {
+	group = augroup,
+	pattern = { "javascript", "html", "vue" },
+	command = "setlocal sw=2 ts=2 sts=2",
+})
+vim.api.nvim_create_autocmd("FileType", {
+	group = augroup,
+	pattern = { "qf" },
+	command = "set nonu",
+})
+vim.api.nvim_create_autocmd("BufReadPost", {
+	group = augroup,
+	command = [[if line("'\"") > 0 && line("'\"") <= line("$") | exe "normal! g'\"" | endif]],
+})
