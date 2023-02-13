@@ -30,9 +30,10 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 function general_theme()
-	vim.cmd("colorscheme desert")
+	vim.cmd("colorscheme habamax")
 	local hl = vim.api.nvim_set_hl
 	hl(0, "Normal", { ctermbg = "NONE", bg = "NONE" })
+	hl(0, "NormalFloat", { ctermbg = "NONE", bg = "NONE" })
 	hl(0, "EndOfBuffer", { ctermbg = "NONE", bg = "NONE" })
 	hl(0, "Directory", { ctermbg = "NONE", bg = "NONE" })
 	hl(0, "CursorLine", { ctermbg = 237, bg = "#386641" })
@@ -47,14 +48,14 @@ function general_theme()
 end
 general_theme()
 local plugins = {
-	{ "nvim-lua/plenary.nvim", lazy = true },
-	{
-		"Mofiqul/vscode.nvim",
-		config = function()
-			require("vscode").setup({})
-			general_theme()
-		end,
-	},
+	{ "AndrewRadev/splitjoin.vim", event = "VeryLazy" },
+	-- {
+	-- 	"Mofiqul/vscode.nvim",
+	-- 	config = function()
+	-- 		require("vscode").setup({})
+	-- 		general_theme()
+	-- 	end,
+	-- },
 	{
 		"numToStr/Comment.nvim",
 		event = "VeryLazy",
@@ -76,14 +77,6 @@ local plugins = {
 			require("nvim-autopairs").setup({})
 		end,
 	},
-	{
-		"Pocco81/auto-save.nvim",
-		event = "VeryLazy",
-		config = function()
-			require("auto-save").setup({ trigger_events = { "InsertLeave" } })
-		end,
-	},
-	{ "AndrewRadev/splitjoin.vim", event = "VeryLazy" },
 	{
 		"skywind3000/asyncrun.vim",
 		cmd = "AsyncRun",
@@ -188,10 +181,6 @@ local plugins = {
 		dependencies = {
 			"hrsh7th/cmp-nvim-lsp",
 			"hrsh7th/cmp-buffer",
-			"hrsh7th/cmp-path",
-			"rafamadriz/friendly-snippets",
-			"hrsh7th/cmp-vsnip",
-			"hrsh7th/vim-vsnip",
 			-- "hrsh7th/cmp-copilot",
 		},
 		config = function()
@@ -214,33 +203,28 @@ local plugins = {
 					end,
 				},
 				mapping = cmp.mapping.preset.insert({
-					["<C-u>"] = cmp.mapping.scroll_docs(-4),
-					["<C-d>"] = cmp.mapping.scroll_docs(4),
+					["<S-up>"] = cmp.mapping.scroll_docs(-4),
+					["<S-down>"] = cmp.mapping.scroll_docs(4),
 					["<C-Space>"] = cmp.mapping.complete(),
 					["<C-e>"] = cmp.mapping.abort(),
 					["<CR>"] = cmp.mapping.confirm({ select = true }),
 					["<Tab>"] = cmp.mapping(function(fallback)
 						if cmp.visible() then
 							cmp.select_next_item()
-						elseif vim.fn["vsnip#available"](1) == 1 then
-							feedkey("<Plug>(vsnip-expand-or-jump)", "")
 						elseif has_words_before() then
 							cmp.complete()
 						else
-							fallback() -- The fallback function sends a already mapped key. In this case, it's probably `<Tab>`.
+							fallback()
 						end
 					end, { "i", "s" }),
 					["<S-Tab>"] = cmp.mapping(function()
 						if cmp.visible() then
 							cmp.select_prev_item()
-						elseif vim.fn["vsnip#jumpable"](-1) == 1 then
-							feedkey("<Plug>(vsnip-jump-prev)", "")
 						end
 					end, { "i", "s" }),
 				}),
 				sources = cmp.config.sources({
 					{ name = "nvim_lsp" },
-					{ name = "vsnip" },
 					{ name = "copilot" },
 				}, { { name = "buffer" } }),
 			})
@@ -295,15 +279,22 @@ local plugins = {
 		end,
 	},
 	{
-		"sbdchd/neoformat",
-		cmd = "Neoformat",
+		"mhartington/formatter.nvim",
+		event = "VeryLazy",
 		config = function()
-			vim.g.neoformat_basic_format_align = 1
-			vim.g.neoformat_basic_format_trim = 1
-			vim.g.neoformat_python_iosrt = { exe = "isort", args = { "--profile=black" } }
-			vim.g.neoformat_enabled_python = { "isort", "black" }
-			vim.g.neoformat_rust_rustfmt = { exe = "rustfmt", args = { "--emit=stdout", "--edition=2021" } }
-			vim.keymap.set("n", "=", ":Neoformat<CR>", { noremap = true, silent = false })
+			require("formatter").setup({
+				filetype = {
+					python = {
+						{ exe = "isort", args = { "-q", "--profile=black", "-" }, stdin = true },
+						require("formatter.filetypes.python").black,
+					},
+					rust = { { exe = "rustfmt", args = { "--emit=stdout", "--edition=2021" }, stdin = true } },
+					go = { require("formatter.filetypes.go").gofmt },
+					lua = { require("formatter.filetypes.lua").stylua },
+					["*"] = { require("formatter.filetypes.any").remove_trailing_whitespace },
+				},
+			})
+			vim.keymap.set("n", "=", ":FormatWrite<CR>", { noremap = true, silent = false })
 		end,
 	},
 	{
@@ -312,7 +303,6 @@ local plugins = {
 		dependencies = {
 			"williamboman/mason-lspconfig.nvim",
 		},
-		cmd = "Mason",
 		config = function()
 			require("mason").setup({
 				ui = {
@@ -321,6 +311,7 @@ local plugins = {
 						package_pending = "➜",
 						package_uninstalled = "✗",
 					},
+					border = "rounded",
 				},
 			})
 			require("mason-lspconfig").setup({
@@ -343,6 +334,7 @@ local lazy_opts = {
 			},
 		},
 	},
+	ui = { border = "rounded" },
 }
 require("lazy").setup(plugins, lazy_opts)
 
@@ -351,8 +343,6 @@ for from, to in pairs({
 	["-"] = ":Explore<CR>",
 	["[q"] = ":cnext<CR>",
 	["]q"] = ":cprevious<CR>",
-	["\\q"] = ":cclose<CR>",
-	["=q"] = ":copen<CR>",
 }) do
 	vim.keymap.set("n", from, to, {})
 end
@@ -378,7 +368,7 @@ vim.api.nvim_create_autocmd("FileType", {
 	group = augroup,
 	pattern = { "python" },
 	command = [[
-		nnoremap <leader>b :AsyncRun python % 
+		nnoremap <leader>b :AsyncRun python %
 		let b:neoformat_run_all_formatters = 1
 	]],
 })
@@ -396,6 +386,14 @@ vim.api.nvim_create_autocmd("FileType", {
 	group = augroup,
 	pattern = { "qf" },
 	command = "set nonu",
+})
+vim.api.nvim_create_autocmd({ "InsertLeave", "TextChanged" }, {
+	group = augroup,
+	command = [[
+		if (bufname() != "" && &buftype == "" && &filetype != "" && &readonly == 0)
+			write
+		endif
+	]],
 })
 vim.api.nvim_create_autocmd("BufReadPost", {
 	group = augroup,
