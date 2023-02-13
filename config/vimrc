@@ -1,0 +1,123 @@
+set encoding=utf-8
+let mapleader = "\<space>"
+
+set nocompatible hidden wrap
+set hlsearch incsearch ignorecase smartcase
+set backspace=indent,eol,start
+set completeopt=menu,menuone,noselect
+set noswapfile nobackup nowritebackup
+set cindent autoindent smartindent expandtab smarttab
+set nu signcolumn=number laststatus=1 mouse=v cursorline
+set wildignore+=.bak,*.swp,*.class,*.pyc,*DS_Store*,*.swp,
+set updatetime=1000
+set autoread autowrite
+set ts=4 sw=4 sts=4 scrolloff=3
+set statusline=%F\ %h%w%m%r%=%-14.(%l,%c%V%)\ %P
+
+syntax on
+filetype plugin indent on
+nnoremap <c-c> :q<cr>
+nnoremap -     :Explore<cr>
+nnoremap [q    :cnext<cr>
+nnoremap ]q    :cprevious<cr>
+for [k, v] in items({"<c-b>": "<left>", "<c-f>": "<right>",
+\"<c-a>": "<home>","<c-e>": "<end>", "<c-d>": "<del>"})
+    exe "inoremap ".k." ".v | exe "cnoremap ".k." ".v
+endfor
+
+" Plugins
+silent! call plug#begin('~/.vim/plugged')
+Plug 'junegunn/fzf'
+Plug 'junegunn/fzf.vim'
+Plug 'tpope/vim-commentary'
+Plug 'tpope/vim-surround'
+Plug 'tpope/vim-fugitive'
+Plug 'jiangmiao/auto-pairs'
+Plug '907th/vim-auto-save'
+Plug 'sbdchd/neoformat'
+Plug 'AndrewRadev/splitjoin.vim'
+silent! call plug#end()
+
+nnoremap = :Neoformat<cr>
+let g:neoformat_basic_format_align = 1
+let g:neoformat_basic_format_trim = 1
+let g:neoformat_python_iosrt = {
+    \ 'exe': 'isort',
+    \ 'args': ['--profile=black'],
+    \ }
+let g:neoformat_enabled_python = ['isort', 'black']
+au FileType python let b:neoformat_run_all_formatters = 1
+let g:neoformat_rust_rustfmt = {
+    \ 'exe': 'rustfmt',
+    \ 'args': ['--emit=stdout', '--edition=2021'],
+    \ }
+
+let g:auto_save = 1
+let g:netrw_dirhistmax = 0
+
+noremap  <c-j>      :<C-U>call fzf#vim#files('')<CR>
+noremap  <c-h>      :<C-U>call fzf#vim#history()<CR>
+nnoremap <leader>m  :<C-U>call fzf#vim#marks()<CR>
+nnoremap <leader>n  :<C-U>Commands<CR>
+nnoremap <leader>t  :<C-U>BTags<CR>
+nnoremap <leader>y  :<C-U>Tags<CR>
+nnoremap <leader>h  :<C-U>Helptags<CR>
+nnoremap <leader>r  y:<C-U><C-R>=printf("Tags %s", expand("<cword>"))<CR>
+nnoremap <leader>w  y:<C-U><C-R>=printf("Rg %s", expand("<cword>"))<CR>
+nnoremap <leader>s  :<C-U><C-R>=printf("Rg ")<CR>
+nnoremap <leader>j  :History:<CR>
+let g:fzf_layout = { 'window': 'enew' }
+let g:fzf_commits_log_options =  "-200 --color=always"
+let g:fzf_preview_window = ['up:80%', 'ctrl-/']
+
+" Custom Scripts
+function! CreatePlayGround(fileName)
+    let l:directory = expand('~/.config/playground')
+    if !isdirectory(l:directory)
+        call mkdir(l:directory)
+    endif
+    let l:ext = fnamemodify(a:fileName, ':e')
+    if index(["go", "py"], l:ext) < 0
+        echo "Only go,py supported. You typed: ".l:ext
+        return
+    endif
+    exe 'edit '.l:directory.'/'.a:fileName
+endfunction
+command! -nargs=1 CreatePlayGround call CreatePlayGround(<f-args>)
+
+function! s:GoToWorkspace(directory)
+    execute 'cd '.a:directory
+    execute 'Files'
+    if exists(":CocRestart") | execute 'CocRestart' | endif
+endfunction
+command! Workspaces call fzf#run(fzf#wrap({
+      \ 'source': 'zoxide query -l',
+      \ 'sink': function('s:GoToWorkspace'),
+      \ 'options': '--prompt "Workspace> " '
+      \ }))
+
+command! Lg execute '!tmux popup -d "\#{pane_current_path}" -xC -yC -w99\% -h99\% -E "zsh -i -c lazygit"'
+
+
+" Auto cmd group
+augroup vimrc
+    au FileType javascript,html,vue setlocal sw=2 ts=2 sts=2
+    au FileType json syntax match Comment +\/\/.\+$+
+    au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
+        \| exe "normal! g'\"" | endif
+augroup END
+
+
+" Theme
+for g in ['Normal', 'EndOfBuffer', 'LineNr', "Directory"]
+    exe "hi ".g." ctermbg=NONE guibg=NONE" | endfor
+hi clear CursorLine
+hi CursorLine ctermbg=237
+hi LineNr ctermfg=238
+hi SpellBad ctermbg=17
+hi StatusLine ctermbg=58
+hi StatusLineNC ctermbg=244
+hi Search ctermbg=240
+hi Visual ctermbg=240
+hi VisualNOS ctermbg=240
+hi PmenuSel ctermbg=22 ctermfg=255
