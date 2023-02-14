@@ -36,6 +36,7 @@ function general_theme()
 	hl(0, "NormalFloat", { ctermbg = "NONE", bg = "NONE" })
 	hl(0, "EndOfBuffer", { ctermbg = "NONE", bg = "NONE" })
 	hl(0, "Directory", { ctermbg = "NONE", bg = "NONE" })
+
 	hl(0, "CursorLine", { ctermbg = 237, bg = "#386641" })
 	hl(0, "LineNr", { ctermfg = 237, ctermbg = "NONE", fg = "#386641" })
 	hl(0, "SpellBad", { ctermbg = 17, bg = "#959595" })
@@ -181,7 +182,9 @@ local plugins = {
 		dependencies = {
 			"hrsh7th/cmp-nvim-lsp",
 			"hrsh7th/cmp-buffer",
-			-- "hrsh7th/cmp-copilot",
+			"hrsh7th/cmp-copilot",
+			"github/copilot.vim",
+			"windwp/nvim-autopairs",
 		},
 		config = function()
 			local has_words_before = function()
@@ -228,6 +231,9 @@ local plugins = {
 					{ name = "copilot" },
 				}, { { name = "buffer" } }),
 			})
+
+			local cmp_autopairs = require("nvim-autopairs.completion.cmp")
+			cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
 		end,
 	},
 	{
@@ -282,10 +288,11 @@ local plugins = {
 		"mhartington/formatter.nvim",
 		event = "VeryLazy",
 		config = function()
+			vim.keymap.set("n", "=", ":FormatWrite<CR>", { noremap = true, silent = false })
 			require("formatter").setup({
 				filetype = {
 					python = {
-						{ exe = "isort", args = { "-q", "--profile=black", "-" }, stdin = true },
+						-- { exe = "isort", args = { "-q", "--profile=black", "-" }, stdin = true },
 						require("formatter.filetypes.python").black,
 					},
 					rust = { { exe = "rustfmt", args = { "--emit=stdout", "--edition=2021" }, stdin = true } },
@@ -294,7 +301,6 @@ local plugins = {
 					["*"] = { require("formatter.filetypes.any").remove_trailing_whitespace },
 				},
 			})
-			vim.keymap.set("n", "=", ":FormatWrite<CR>", { noremap = true, silent = false })
 		end,
 	},
 	{
@@ -323,7 +329,7 @@ local plugins = {
 local lazy_opts = {
 	lockfile = vim.fn.stdpath("state") .. "/lazy-lock.json",
 	concurrency = 20,
-	install = { missing = false },
+	install = { missing = true },
 	performance = {
 		rtp = {
 			disabled_plugins = {
