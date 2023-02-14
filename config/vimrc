@@ -8,35 +8,21 @@ set completeopt=menu,menuone,noselect
 set noswapfile nobackup nowritebackup
 set cindent autoindent smartindent expandtab smarttab
 set nu signcolumn=number laststatus=1 mouse=v cursorline
-set wildignore+=.bak,*.swp,*.class,*.pyc,*DS_Store*,*.swp,
-set updatetime=1000
 set autoread autowrite
 set ts=4 sw=4 sts=4 scrolloff=3
 set statusline=%F\ %h%w%m%r%=%-14.(%l,%c%V%)\ %P
+"set wildignore+=.bak,*.swp,*.class,*.pyc,*DS_Store*,*.swp,
 
-syntax on
-filetype plugin indent on
-nnoremap <c-c> :q<cr>
-nnoremap -     :Explore<cr>
-nnoremap [q    :cnext<cr>
-nnoremap ]q    :cprevious<cr>
+for [k, v] in items({"<C-c>": ":q<CR>", "-": ":Explore<CR>",
+  \"[q": ":cprevious<CR>", "]q": ":cnext<CR>"})
+    exe "nnoremap ".k." ".v
+endfor
+
 for [k, v] in items({"<c-b>": "<left>", "<c-f>": "<right>",
-\"<c-a>": "<home>","<c-e>": "<end>", "<c-d>": "<del>"})
+  \"<c-a>": "<home>","<c-e>": "<end>", "<c-d>": "<del>"})
     exe "inoremap ".k." ".v | exe "cnoremap ".k." ".v
 endfor
 
-" Plugins
-silent! call plug#begin('~/.vim/plugged')
-Plug 'junegunn/fzf'
-Plug 'junegunn/fzf.vim'
-Plug 'tpope/vim-commentary'
-Plug 'tpope/vim-surround'
-Plug 'tpope/vim-fugitive'
-Plug 'jiangmiao/auto-pairs'
-Plug '907th/vim-auto-save'
-Plug 'sbdchd/neoformat'
-Plug 'AndrewRadev/splitjoin.vim'
-silent! call plug#end()
 
 nnoremap = :Neoformat<cr>
 let g:neoformat_basic_format_align = 1
@@ -70,21 +56,6 @@ let g:fzf_layout = { 'window': 'enew' }
 let g:fzf_commits_log_options =  "-200 --color=always"
 let g:fzf_preview_window = ['up:80%', 'ctrl-/']
 
-" Custom Scripts
-function! CreatePlayGround(fileName)
-    let l:directory = expand('~/.config/playground')
-    if !isdirectory(l:directory)
-        call mkdir(l:directory)
-    endif
-    let l:ext = fnamemodify(a:fileName, ':e')
-    if index(["go", "py"], l:ext) < 0
-        echo "Only go,py supported. You typed: ".l:ext
-        return
-    endif
-    exe 'edit '.l:directory.'/'.a:fileName
-endfunction
-command! -nargs=1 CreatePlayGround call CreatePlayGround(<f-args>)
-
 function! s:GoToWorkspace(directory)
     execute 'cd '.a:directory
     execute 'Files'
@@ -98,26 +69,159 @@ command! Workspaces call fzf#run(fzf#wrap({
 
 command! Lg execute '!tmux popup -d "\#{pane_current_path}" -xC -yC -w99\% -h99\% -E "zsh -i -c lazygit"'
 
-
 " Auto cmd group
 augroup vimrc
     au FileType javascript,html,vue setlocal sw=2 ts=2 sts=2
     au FileType json syntax match Comment +\/\/.\+$+
+    au FileType qf set nonu
+    au FileType go nnoremap <leader>b :AsyncRun go run %
+    au FileType python let b:neoformat_run_all_formatters = 1
     au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
         \| exe "normal! g'\"" | endif
 augroup END
 
 
 " Theme
-for g in ['Normal', 'EndOfBuffer', 'LineNr', "Directory"]
-    exe "hi ".g." ctermbg=NONE guibg=NONE" | endfor
-hi clear CursorLine
-hi CursorLine ctermbg=237
-hi LineNr ctermfg=238
-hi SpellBad ctermbg=17
-hi StatusLine ctermbg=58
-hi StatusLineNC ctermbg=244
-hi Search ctermbg=240
-hi Visual ctermbg=240
-hi VisualNOS ctermbg=240
-hi PmenuSel ctermbg=22 ctermfg=255
+function! ApplyTheme()
+    for g in ['Normal', 'EndOfBuffer', 'LineNr', "Directory"]
+        exe "hi ".g." ctermbg=NONE guibg=NONE" | endfor
+    hi clear CursorLine
+    hi CursorLine ctermbg=237 guibg=#386641
+    hi LineNr ctermfg=238 ctermbg=None guifg=#386641 guibg=None
+    hi SpellBad ctermbg=17 guibg=#959595
+    hi StatusLine ctermbg=58 guibg=#6a994e
+    hi StatusLineNC ctermbg=244 guibg=#6d6875
+    hi Search ctermbg=240 guibg=#03045e
+    hi Visual ctermbg=240 guibg=#03045e
+    hi VisualNOS ctermbg=240 guibg=#03045e
+    hi PmenuSel ctermbg=22 ctermfg=255 guibg=#03045e guifg=#ffffff
+endfunction
+
+let g:basic_plugins = [
+      \'junegunn/fzf',
+      \'junegunn/fzf.vim',
+      \'tpope/vim-commentary',
+      \'tpope/vim-surround',
+      \'tpope/vim-fugitive',
+      \'jiangmiao/auto-pairs',
+      \'907th/vim-auto-save',
+      \'sbdchd/neoformat',
+      \'AndrewRadev/splitjoin.vim',
+      \'skywind3000/asyncrun.vim'
+      \]
+
+" Plugins
+if !has("nvim")
+    call plug#begin('~/.vim/plugged')
+    for plugin in g:basic_plugins
+        Plug plugin
+    endfor
+    call plug#end()
+    call ApplyTheme()
+    finish
+endif
+
+lua <<EOF
+local home_path = os.getenv("HOME")
+vim.env.XDG_CONFIG_HOME = home_path.."/.vim/config"
+vim.env.XDG_DATA_HOME = home_path.."/.vim/data"
+vim.env.XDG_STATE_HOME = home_path.."/.vim/state"
+
+local lazypath = home_path.."/.vim/plugged/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+    vim.fn.system({
+        "git", "clone", "--filter=blob:none",
+        "https://github.com/folke/lazy.nvim.git",
+        "--branch=stable", lazypath,
+    }) end
+vim.opt.rtp:prepend(lazypath)
+
+local plugins = {}
+table.foreach(vim.g.basic_plugins, function(_, plugin)
+    table.insert(plugins, {plugin, event="VeryLazy"})
+end)
+
+function setup()
+    require("lazy").setup(plugins, {
+        root = home_path.."/.vim/plugged",
+        performance = {rtp = {disabled_plugins = {
+            "tutor", "gzip", "tarPlugin", "zipPlugin", "tohtml"
+        }}}
+    })
+end
+
+if vim.g.vscode then setup() end
+
+table.insert(plugins, { "Mofiqul/vscode.nvim", event = "VeryLazy",
+    config = function() require("vscode").setup{}; vim.fn.ApplyTheme()
+end})
+
+local has_words_before = function()
+    unpack = unpack or table.unpack
+    local line, col = unpack(vim.api.nvim_win_get_cursor(0))
+    return col ~= 0 and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match("%s") == nil
+end
+local feedkey = function(key, mode)
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(key, true, true, true), mode, true)
+end
+table.insert(plugins, { "hrsh7th/nvim-cmp", event = "InsertEnter",
+    dependencies = { "hrsh7th/cmp-nvim-lsp", "hrsh7th/cmp-buffer"}, config = function()
+    local cmp = require("cmp")
+        cmp.setup({
+            snippet = { expand = function(args) end, },
+            mapping = cmp.mapping.preset.insert({
+                ["<S-up>"] = cmp.mapping.scroll_docs(-4),
+                ["<S-down>"] = cmp.mapping.scroll_docs(4),
+                ["<C-Space>"] = cmp.mapping.complete(),
+                ["<C-e>"] = cmp.mapping.abort(),
+                ["<CR>"] = cmp.mapping.confirm({ select = true }),
+            }),
+            sources = cmp.config.sources({
+                { name = "nvim_lsp" }, { name = "copilot" },
+            }, { { name = "buffer" } }),
+        })
+end})
+
+table.insert(plugins, {"neovim/nvim-lspconfig", event = "VeryLazy",
+    ft = { "python", "go" },
+    dependencies = { "williamboman/mason.nvim", "hrsh7th/nvim-cmp",
+        "williamboman/mason-lspconfig.nvim", "nvim-lua/plenary.nvim", "gfanto/fzf-lsp.nvim",
+    }, config = function()
+    require("mason").setup{}
+    require("mason-lspconfig").setup({
+        ensure_installed = { "pyright", "gopls" },
+    })
+    local lspconfig = require("lspconfig")
+    local on_attach = function(client, bufnr)
+        vim.api.nvim_buf_set_option(bufnr, "omnifunc", "v:lua.vim.lsp.omnifunc")
+        local bufopts = { noremap = true, silent = false, buffer = bufnr }
+        vim.keymap.set("n", "gD", vim.lsp.buf.declaration, bufopts)
+        vim.keymap.set("n", "gd", vim.lsp.buf.definition, bufopts)
+        vim.keymap.set("n", "gk", vim.lsp.buf.hover, bufopts)
+        vim.keymap.set("n", "gi", vim.lsp.buf.implementation, bufopts)
+        vim.keymap.set("n", "gt", vim.lsp.buf.type_definition, bufopts)
+        vim.keymap.set("n", "ga", vim.lsp.buf.rename, bufopts)
+        vim.keymap.set("n", "ge", vim.lsp.buf.code_action, bufopts)
+        vim.keymap.set("n", "gr", vim.lsp.buf.references, bufopts)
+        vim.keymap.set({ "i", "n" }, "<c-p>", vim.lsp.buf.signature_help, bufopts)
+    end
+    local lsp_flags = { debounce_text_changes = 150 }
+    local cmp_capabilities = require("cmp_nvim_lsp").default_capabilities()
+    lspconfig["gopls"].setup({on_attach = on_attach, flags = lsp_flags, capabilities = cmp_capabilities})
+    lspconfig["pyright"].setup({on_attach = on_attach, flags = lsp_flags, capabilities = cmp_capabilities,
+        settings = {python = {
+            analysis = {
+                reportOptionalSubscript = "none",
+                reportGeneralTypeIssues = "none",
+                reportOptionalOperand = "warning",
+                reportOptionalMemberAccess = "none",
+            },
+        }},
+    })
+    -- fzf-lsp
+    vim.g.fzf_command_prefix = "Lsp"
+    require'fzf_lsp'.setup({override_ui_select = true})
+end})
+
+setup()
+EOF
