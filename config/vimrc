@@ -174,7 +174,11 @@ local feedkey = function(key, mode)
     vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(key, true, true, true), mode, true)
 end
 table.insert(plugins, { "hrsh7th/nvim-cmp", event = "InsertEnter",
-    dependencies = { "hrsh7th/cmp-nvim-lsp", "hrsh7th/cmp-buffer"}, config = function()
+    dependencies = { "hrsh7th/cmp-nvim-lsp", "hrsh7th/cmp-buffer",
+        "zbirenbaum/copilot-cmp", "zbirenbaum/copilot.lua"
+    }, config = function()
+    require("copilot").setup({suggestion = { enabled = false }, panel = { enabled = false }})
+    require("copilot_cmp").setup()
     local cmp = require("cmp")
         cmp.setup({
             snippet = { expand = function(args) end, },
@@ -182,7 +186,10 @@ table.insert(plugins, { "hrsh7th/nvim-cmp", event = "InsertEnter",
                 ["<S-up>"] = cmp.mapping.scroll_docs(-4),
                 ["<S-down>"] = cmp.mapping.scroll_docs(4),
                 ["<C-Space>"] = cmp.mapping.complete(),
-                ["<CR>"] = cmp.mapping.confirm({ select = false }),
+                ["<CR>"] = cmp.mapping.confirm({ 
+                    behavior = cmp.ConfirmBehavior.Replace,
+                    select = false,
+                }),
             }),
             sources = cmp.config.sources({
                 { name = "nvim_lsp" }, { name = "copilot" },
