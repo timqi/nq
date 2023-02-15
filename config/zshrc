@@ -54,9 +54,6 @@ alias sv="sudo supervisorctl"
 
 alias vim='nvim'
 alias vih='nvim +History'
-alias vio='nvim +LoadLsp +History'
-alias vij='nvim +Files'
-alias vip='nvim +LoadLsp +Files'
 
 alias bat='bat -p'
 alias m='bat --language=man --color=always'
