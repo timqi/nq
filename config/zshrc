@@ -121,6 +121,12 @@ _zoxide_zsh_tab_completion() {
 # zoxide auto add
 alias zdd='zoxide add `pwd`'; alias zl='zoxide query -l -s'
 chpwd() { [ -e ".git" ] && zdd }
+# zoxide zshell shortcut
+zoxide_widget() {
+  selected="cd $(zoxide query -l | fzf --layout=reverse)"
+  BUFFER=$selected; CURSOR=$#BUFFER; zle redisplay
+}
+zle -N zoxide_widget && bindkey '^J' zoxide_widget
 
 
 # PROMPT

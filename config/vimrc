@@ -125,6 +125,7 @@ if !has("nvim")
     call ApplyTheme()
     finish
 endif
+let g:fzf_lsp_command_prefix = 'Lsp'
 
 lua <<EOF
 local home_path = os.getenv("HOME")
@@ -202,18 +203,17 @@ table.insert(plugins, {"neovim/nvim-lspconfig", event = "VeryLazy",
     dependencies = { "williamboman/mason.nvim", "hrsh7th/nvim-cmp",
         "williamboman/mason-lspconfig.nvim", "nvim-lua/plenary.nvim", "gfanto/fzf-lsp.nvim",
     }, config = function()
+    local bufopts = { noremap = true, silent = false, buffer = bufnr }
+    require'fzf_lsp'.setup({override_ui_select = true})
+    vim.keymap.set("n", "<leader>a", ":LspDiagnostics<CR>", bufopts)
     require("mason").setup{}
     require("mason-lspconfig").setup({
         ensure_installed = { "pyright", "gopls" },
     })
 
-    vim.g.fzf_command_prefix = "Lsp"
-    require'fzf_lsp'.setup({override_ui_select = true})
-
     local lspconfig = require("lspconfig")
     local on_attach = function(client, bufnr)
         vim.api.nvim_buf_set_option(bufnr, "omnifunc", "v:lua.vim.lsp.omnifunc")
-        local bufopts = { noremap = true, silent = false, buffer = bufnr }
         vim.keymap.set("n", "gD", vim.lsp.buf.declaration, bufopts)
         vim.keymap.set("n", "gd", vim.lsp.buf.definition, bufopts)
         vim.keymap.set("n", "gk", vim.lsp.buf.hover, bufopts)
