@@ -87,7 +87,7 @@ function! ApplyTheme()
         exe "hi ".g." ctermbg=NONE guibg=NONE" | endfor
     hi clear CursorLine
     hi CursorLine ctermbg=237 guibg=#386641
-    hi LineNr ctermfg=238 ctermbg=None guifg=#386641 guibg=None
+    hi LineNr ctermfg=238 ctermbg=NONE guifg=#386641 guibg=NONE
     hi SpellBad ctermbg=17 guibg=#959595
     hi StatusLine ctermbg=58 guibg=#6a994e
     hi StatusLineNC ctermbg=244 guibg=#6d6875
