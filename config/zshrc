@@ -52,8 +52,8 @@ alias d='docker'
 alias dc='docker-compose'
 alias sv="sudo supervisorctl"
 
-alias vim='nvim'
-alias vih='nvim +History'
+alias vim='vim'
+alias vih='vim +History'
 
 alias bat='bat -p'
 alias m='bat --language=man --color=always'
