@@ -273,8 +273,8 @@ nn() {
             download $url | tar -zx -C $node_path --strip-components=1
             nn use $ver;;
         rm) rm -rf $node_path;;
-        use) rm -f "$local_dir/bin/node" &&\
-            link "$local_dir/node/$ver/bin" "$local_dir/bin/node";;
+        use) rm -f "$bin_dir/node" &&\
+            link "$local_dir/node/$ver/bin" "$bin_dir/node";;
         *) echo "  nn list"
            echo "  nn use [ver default:$default_ver]"
            echo "  nn install [ver default:$default_ver]"
