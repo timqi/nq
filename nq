@@ -294,7 +294,7 @@ install_conda() {
     filename=`[ $ARCH = "Darwin" ] &&\
         echo "Miniforge3-MacOSX-arm64.sh" ||\
         echo "Miniforge3-Linux-x86_64.sh"`
-    download > "$tmp/conda.sh" $url
+    download "$base_url/$filename" > "$tmp/conda.sh"
     sh "$tmp/conda.sh" -b -f -s -p "$local_dir/conda"
 }
 

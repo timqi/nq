@@ -29,7 +29,7 @@ if empty(glob('~/.vim/autoload/plug.vim'))
     execute '!curl --silent -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
     autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
 endif
-call plug#begin('~/.vim/plugged')
+silent! call plug#begin('~/.vim/plugged')
 Plug 'junegunn/fzf',
 Plug 'junegunn/fzf.vim',
 Plug 'tpope/vim-commentary',
@@ -40,7 +40,7 @@ Plug '907th/vim-auto-save',
 Plug 'sbdchd/neoformat',
 Plug 'AndrewRadev/splitjoin.vim',
 Plug 'skywind3000/asyncrun.vim'
-call plug#end()
+silent! call plug#end()
 
 nnoremap = :Neoformat<CR>
 let g:neoformat_basic_format_align = 1
