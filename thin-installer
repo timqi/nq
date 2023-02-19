@@ -35,7 +35,7 @@ download_and_decompress $url $nq_dir
 
 mv "$nq_script_dir/bin/"* "$nq_dir/bin/"
 mv "$nq_script_dir/nq" "$nq_dir/bin/"
-mv "$nq_script_dir/config/profile" $nq_dir/shprofile
+mv "$nq_script_dir/config/profile" $nq_dir/profile
 mv "$nq_script_dir/config/tmux.conf" $nq_dir/tmux.conf
 ln -sv $nq_dir/tmux.conf $HOME/.tmux.conf
 
@@ -59,9 +59,10 @@ if [ ! -d /etc/terminfo ]; then
    mv "$nq_dir/vim/terminfo" /etc
 fi
 
-# Add source shprofile
+# Add source profile
 profile="$HOME/.profile"
 source_cmd="source $nq_dir/profile"
+sed -i "s|source $nq_dir/shprofile|$source_cmd|g" $profile
 if [ ! -f "$profile" ]; then
     echo "$source_cmd" > $profile
 else

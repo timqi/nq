@@ -150,7 +150,9 @@ if command -v zle &> /dev/null; then
         compdef _zoxide_zsh_tab_completion z 2> /dev/null
     # zoxide auto add
     alias zdd='zoxide add `pwd`'; alias zl='zoxide query -l -s'
-    chpwd() { [ -e ".git" ] && zdd }
+    chpwd() { 
+        [ -e ".git" ] && zdd
+    }
     # zoxide zshell shortcut
     zoxide_widget() {
       selected="cd $(zoxide query -l | fzf --layout=reverse)"
@@ -169,6 +171,7 @@ if command -v zle &> /dev/null; then
     alias ls='lsd --icon=never'
     alias ll='lsd --icon=never -alh'
 
+    # end zsh
 elif command -v bind &> /dev/null; then
     # bash
     __zoxide_to_directory__() {
@@ -208,8 +211,8 @@ elif command -v bind &> /dev/null; then
             tmux a -t0 || tmux
         fi
     fi
+    # end bash
 fi
 
 # Auto source ~/.platformrc
 [ -f "$HOME/.platformrc" ] && . "$HOME/.platformrc"
-
