@@ -27,15 +27,6 @@ brew_path="/opt/homebrew/bin/brew"
 [ -f $brew_path ] && [ -z $HOMEBREW_PREFIX ] &&\
     eval "$($brew_path shellenv)"
 
-printcolors() {
-    for i in {0..255} ; do
-        printf "\x1b[48;5;%sm%3d\e[0m " "$i" "$i"
-        if (( i == 15 )) || (( i > 15 )) && (( (i-15) % 6 == 0 )); then
-            printf "\n";
-        fi
-    done
-}
-
 iploc() {
     for ip in "$@"; do
         curl --silent "http://a8ae7a319bf8a4c53aac54e335fe1cf2-882779430.ap-east-1.elb.amazonaws.com/get_area_from_ip?ip=$ip"|\
@@ -117,6 +108,7 @@ if command -v zle &> /dev/null; then
     zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
     bindkey -e && bindkey -M menuselect '/' history-incremental-search-forward
 
+    # zsh syntax begin
     . "$local_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
     . "$local_dir/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
     fpath=($local_dir/zsh-autosuggestions/src $fpath)
@@ -149,9 +141,10 @@ if command -v zle &> /dev/null; then
     [ "${+functions[compdef]}" -ne 0 ] && compdef -d z &&\
         compdef _zoxide_zsh_tab_completion z 2> /dev/null
     # zoxide auto add
-    alias zdd='zoxide add `pwd`'; alias zl='zoxide query -l -s'
+    alias zdd='zoxide add "`pwd`"'
+    alias zl='zoxide query -l -s'
     chpwd() { 
-        [ -e ".git" ] && zdd
+        [ -e ".git" ] && zoxide add "`pwd`"
     }
     # zoxide zshell shortcut
     zoxide_widget() {
@@ -159,6 +152,16 @@ if command -v zle &> /dev/null; then
       BUFFER=$selected; CURSOR=$#BUFFER; zle redisplay
     }
     zle -N zoxide_widget && bindkey '^J' zoxide_widget
+
+    printcolors() {
+        for i in {0..255} ; do
+            printf "\x1b[48;5;%sm%3d\e[0m " "$i" "$i"
+            if (( i == 15 )) || (( i > 15 )) && (( (i-15) % 6 == 0 )); then
+                printf "\n";
+            fi
+        done
+    }
+    # zsh syntax end
    
     # PROMPT
     precmd() {
@@ -172,6 +175,7 @@ if command -v zle &> /dev/null; then
     alias ll='lsd --icon=never -alh'
 
     # end zsh
+
 elif command -v bind &> /dev/null; then
     # bash
     __zoxide_to_directory__() {
@@ -214,5 +218,4 @@ elif command -v bind &> /dev/null; then
     # end bash
 fi
 
-# Auto source ~/.platformrc
 [ -f "$HOME/.platformrc" ] && . "$HOME/.platformrc"

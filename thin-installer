@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # install script:
-# FORCE_DOWNLOAD_BIN=0; url=https://raw.githubusercontent.com/timqi/nq/main/thin-installer; if command -v curl 2>&1 >/dev/null; then curl -s --progress-bar -L $url | sh -s $FORCE_DOWNLOAD_BIN; elif command -v wget 2>&1 >/dev/null; then wget -O- $url | sh -s $FORCE_DOWNLOAD_BIN; fi; [ -d $HOME/nq ] && source $HOME/nq/shprofile
+# FORCE_DOWNLOAD_BIN=0; url=https://raw.githubusercontent.com/timqi/nq/main/thin-installer; if command -v curl 2>&1 >/dev/null; then curl -s --progress-bar -L $url | sh -s $FORCE_DOWNLOAD_BIN; elif command -v wget 2>&1 >/dev/null; then wget -O- $url | sh -s $FORCE_DOWNLOAD_BIN; fi; [ -d $HOME/nq ] && source $HOME/nq/profile
 #
 # $1: FORCE_DOWNLOAD_BIN
 #
@@ -36,6 +36,7 @@ download_and_decompress $url $nq_dir
 mv "$nq_script_dir/bin/"* "$nq_dir/bin/"
 mv "$nq_script_dir/nq" "$nq_dir/bin/"
 mv "$nq_script_dir/config/profile" $nq_dir/profile
+sed -i '/# zsh syntax begin/,/# zsh syntax end/g' "$nq_dir/profile"
 mv "$nq_script_dir/config/tmux.conf" $nq_dir/tmux.conf
 ln -sv $nq_dir/tmux.conf $HOME/.tmux.conf
 
@@ -62,10 +63,10 @@ fi
 # Add source profile
 profile="$HOME/.profile"
 source_cmd="source $nq_dir/profile"
-sed -i "s|source $nq_dir/shprofile|$source_cmd|g" $profile
 if [ ! -f "$profile" ]; then
     echo "$source_cmd" > $profile
 else
+    sed -i "s|source $nq_dir/shprofile|$source_cmd|g" $profile
     if ! grep -q "$source_cmd" $profile; then
         echo "$source_cmd" >> $profile
     fi
