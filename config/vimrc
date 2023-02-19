@@ -40,6 +40,12 @@ Plug '907th/vim-auto-save',
 Plug 'sbdchd/neoformat',
 Plug 'AndrewRadev/splitjoin.vim',
 Plug 'skywind3000/asyncrun.vim'
+
+Plug 'easymotion/vim-easymotion'
+Plug 'mg979/vim-visual-multi'
+Plug 'vim-scripts/ReplaceWithRegister'
+Plug 'wellle/targets.vim'
+Plug 'michaeljsmith/vim-indent-object'
 silent! call plug#end()
 
 nnoremap = :Neoformat<CR>
