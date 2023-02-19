@@ -35,7 +35,7 @@ download_and_decompress $url $nq_dir
 
 mv "$nq_script_dir/bin/"* "$nq_dir/bin/"
 mv "$nq_script_dir/nq" "$nq_dir/bin/"
-mv "$nq_script_dir/config/shprofile" $nq_dir/shprofile
+mv "$nq_script_dir/config/profile" $nq_dir/shprofile
 mv "$nq_script_dir/config/tmux.conf" $nq_dir/tmux.conf
 ln -sv $nq_dir/tmux.conf $HOME/.tmux.conf
 
@@ -46,7 +46,10 @@ ln -sv $vim_dir $HOME/.vim
 cat <<EOF > "$nq_dir/bin/vim"
 VIMRUNTIME="$vim_dir/runtime" "$vim_dir/vim" \$@
 EOF
-chmod +x "$nq_dir/bin/vim"
+cat <<EOF > "$nq_dir/bin/suvim"
+VIMRUNTIME="$vim_dir/runtime" sudo -E "$vim_dir/vim" \$@
+EOF
+chmod +x "$nq_dir/bin/vim" "$nq_dir/bin/suvim"
 
 # Delete nq scripts
 rm -rf $nq_script_dir
@@ -58,7 +61,7 @@ fi
 
 # Add source shprofile
 profile="$HOME/.profile"
-source_cmd="source $nq_dir/shprofile"
+source_cmd="source $nq_dir/profile"
 if [ ! -f "$profile" ]; then
     echo "$source_cmd" > $profile
 else
