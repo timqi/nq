@@ -74,8 +74,7 @@ alias d='docker'
 alias dc='docker-compose'
 alias sv="sudo supervisorctl"
 
-alias vim='vim'
-alias vih='vim +History'
+alias vih='suvim +History'
 
 alias bat='bat -p'
 alias m='bat --language=man --color=always'
@@ -173,6 +172,7 @@ if command -v zle &> /dev/null; then
 
     alias ls='lsd --icon=never'
     alias ll='lsd --icon=never -alh'
+    alias vih='vim +History'
 
     # end zsh
 
