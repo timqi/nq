@@ -8,7 +8,7 @@ ARG VIMVERSION=v9.0.1153
 # https://github.com/mjakob-gh/build-static-tmux/releases
 ARG TMUXVERSION=v3.3a
 ARG NQTOOLS="rg,fzf,fd,chtsh,jq,zoxide"
-ARG VIMPLUGINS="fzf,fzf.vim,neoformat,auto-pairs,vim-auto-save,vim-surround,splitjoin.vim,vim-commentary"
+ARG VIMPLUGINS="fzf,fzf.vim,vim-commentary,vim-surround,auto-pairs,vim-auto-save,vim-easymotion,vim-visual-multi,ReplaceWithRegister,targets.vim,vim-indent-object"
 
 
 RUN apk update && apk add gcc make musl-dev bash \
@@ -32,6 +32,8 @@ RUN make -j`nproc` && make install
 
 WORKDIR /usr/local/vim/share/vim/vim90
 RUN rm -rf doc/ tutor/ spell/ compiler/ lang/ bugreport.vim
+RUN rm -rf vimrc_example.vim gvimrc_example.vim keymap mswin.vim
+
 RUN mkdir -p /nqthin/vim && cp -r . /nqthin/vim/runtime
 RUN cp -r /etc/terminfo /nqthin/vim/terminfo
 RUN cp /usr/local/vim/bin/vim /nqthin/vim/
