@@ -13,15 +13,19 @@ set ts=4 sw=4 sts=4 scrolloff=3
 set statusline=%F\ %h%w%m%r%=%-14.(%l,%c%V%)\ %P
 set wildignore+=.bak,*.swp,*.class,*.pyc,*DS_Store*,*.swp,
 
-for [k, v] in items({"<C-c>": ":q<CR>", "-": ":Explore<CR>",
-  \"[q": ":cprevious<CR>", "]q": ":cnext<CR>"})
-    exe "nnoremap ".k." ".v
-endfor
+nnoremap <C-c> :q<CR>
+nnoremap -     :Explore<CR>
+nnoremap [q    :cprevious<CR>
+nnoremap ]q    :cnext<CR>
 
-for [k, v] in items({"<c-b>": "<left>", "<c-f>": "<right>",
-  \"<c-a>": "<home>","<c-e>": "<end>", "<c-d>": "<del>"})
-    exe "inoremap ".k." ".v | exe "cnoremap ".k." ".v
-endfor
+inoremap <C-b> <left>
+cnoremap <C-b> <left>
+inoremap <C-f> <right>
+cnoremap <C-f> <right>
+inoremap <C-a> <home>
+cnoremap <C-a> <home>
+inoremap <C-e> <end>
+cnoremap <C-e> <end>
 
 " Plugins
 set rtp+=~/.vim
