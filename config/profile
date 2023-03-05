@@ -74,18 +74,21 @@ alias d='docker'
 alias dc='docker-compose'
 alias sv="sudo supervisorctl"
 
+alias zdd='zoxide add "`pwd`"'
+alias zl='zoxide query -l -s'
+
 alias vih='suvim +History'
 
 alias bat='bat -p'
 alias m='bat --language=man --color=always'
 export BAT_THEME="Solarized (dark)"
-man() {
-    if /usr/bin/man $@ 2>&1 >/dev/null; then
-        /usr/bin/man $@ | col -bx | bat --language=man --color=always
-    elif $1 --help 2>&1 >/dev/null; then
-        $1 --help | bat --language=man --color=always
-    fi
-}
+# man() {
+#     if /usr/bin/man $@ 2>&1 >/dev/null; then
+#         /usr/bin/man $@ | col -bx | bat --language=man --color=always
+#     elif $1 --help 2>&1 >/dev/null; then
+#         $1 --help | bat --language=man --color=always
+#     fi
+# }
 
 
 # For different shells
@@ -140,8 +143,6 @@ if command -v zle &> /dev/null; then
     [ "${+functions[compdef]}" -ne 0 ] && compdef -d z &&\
         compdef _zoxide_zsh_tab_completion z 2> /dev/null
     # zoxide auto add
-    alias zdd='zoxide add "`pwd`"'
-    alias zl='zoxide query -l -s'
     chpwd() { 
         [ -e ".git" ] && zoxide add "`pwd`"
     }

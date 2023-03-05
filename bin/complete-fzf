@@ -391,14 +391,21 @@ def parse_alias(alias, command, section):
 
 
 def idf_host():
+    hosts = []
     with open(os.path.expanduser("~/.ssh/config")) as f:
-        hosts = []
         for line in f:
             if not line.startswith("Host "):
                 continue
             if line.startswith("Host *"):
                 continue
             hosts += [host.strip() for host in line.split()[1:]]
+    with open(os.path.expanduser("~/.ssh/fish.hosts")) as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            host = line if "." in line else f"{line}.i.internal.fish"
+            hosts.append(f"{host} -p 1022")
     stdout, _ = _run(f"fzf -e --prompt='Host> '", stdin="\n".join(hosts))
     return stdout.strip()
 
