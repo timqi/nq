@@ -229,7 +229,7 @@ install_dust() {
         echo "v`dust -V|cut -d" " -f2`"
     }
     dust_install() {
-        ar=`[ $ARCH = "Darwin" ] && echo "x86_64-apple-darwin" || echo "i686-unknown-linux-musl"`
+        ar=`[ $ARCH = "Darwin" ] && echo "x86_64-apple-darwin" || echo "x86_64-unknown-linux-musl"`
         url=`download_url $repo $1 "dust-${1}-$ar.tar.gz"`
         download $url | tar -zx -C $tmp --strip-components=1
         mv "$tmp/$app" "$bin_dir"
