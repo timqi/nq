@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+
+[ -f "tags" ] && rm -f tags
+
+fd -t f -e rs | xargs -I{} ctags --fields=+nKz -a {}
+
+[ ! -d ".vscode" ] && mkdir .vscode
+[ -f "tags" ] && mv tags .vscode/.tags || echo "no tags generated"
+ls -alh .vscode
