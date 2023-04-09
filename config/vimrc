@@ -27,6 +27,12 @@ cnoremap <C-a> <home>
 inoremap <C-e> <end>
 cnoremap <C-e> <end>
 
+
+nnoremap j gj
+nnoremap k gk
+vnoremap < <gv
+vnoremap > >gv
+
 " Plugins
 set rtp+=~/.vim
 if empty(glob('~/.vim/autoload/plug.vim'))
