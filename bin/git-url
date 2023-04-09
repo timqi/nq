@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
+import argparse
 import os
 import re
 import subprocess
 import sys
 from shutil import which
+from urllib.parse import urlparse
 
 
 class bcolors:
@@ -27,6 +29,22 @@ def _run(cmd):
     )
 
 
+def parse_remote(remote_url):
+    if remote_url.startswith("git@"):
+        ptn = "git@(?P<host>.+):(?P<username>[\w\d]+)/(?P<repo>[\w\d]+)"
+        r = re.match(ptn, remote_url).groupdict()
+        remote_url = f"https://{r['host']}/{r['username']}/{r['repo']}"
+    elif remote_url.startswith("ssh://"):
+        # ssh://git@gitlab.fish:1022/f2pool/node_images/kas.git
+        remote_url = (
+            remote_url.replace("ssh://git@", "https://")
+            .replace(":1022/", "/")
+            .replace(".git", "")
+        )
+    remote_url = remote_url.strip("/")
+    return remote_url
+
+
 def get_url(path, remotes):
     base_dir = path
     while len(base_dir) > 2:
@@ -46,17 +64,7 @@ def get_url(path, remotes):
     for remote in remotes:
         stdout, _ = _run(f"git config --get remote.{remote}.url")
         remote_url = stdout[:-4] if stdout.endswith(".git") else stdout
-        if remote_url.startswith("git@"):
-            ptn = "git@(?P<host>.+):(?P<username>[\w\d]+)/(?P<repo>[\w\d]+)"
-            r = re.match(ptn, remote_url).groupdict()
-            remote_url = f"https://{r['host']}/{r['username']}/{r['repo']}"
-        elif remote_url.startswith("ssh://"):
-            # ssh://git@gitlab.fish:1022/f2pool/node_images/kas.git
-            remote_url = (
-                remote_url.replace("ssh://git@", "https://")
-                .replace(":1022/", "/")
-                .replace(".git", "")
-            )
+        remote_url = parse_remote(remote_url)
         urls[remote] = f"{remote_url}/tree/{branch}{related_path}"
 
     for obj in urls:
@@ -76,9 +84,47 @@ def get_url(path, remotes):
 
 
 if __name__ == "__main__":
-    cwd = os.getcwd()
-    path = (
-        cwd if len(sys.argv) < 2 else os.path.join(cwd, os.path.expanduser(sys.argv[1]))
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--download", "-d", default="", type=str, help="Specify URL to download"
     )
-    remotes, _ = _run("git remote")
-    get_url(path, remotes.splitlines())
+    parser.add_argument(
+        "--research",
+        "-r",
+        nargs="*",
+        help="Clone in repo in ~/go/src/research folder",
+    )
+    args = parser.parse_args()
+    if args.download:
+        remote_url = parse_remote(args.download)
+        uri = urlparse(remote_url)
+        print("Remote url:", uri)
+        if isinstance(args.research, list):
+            base = (
+                ["research"]
+                if len(args.research) == 0
+                else ["research", args.research[0]]
+            )
+            base.append(uri.path.replace(".git", "").strip("/").split("/")[-1])
+            dest = os.path.join(*base)
+        else:
+            path = uri.path.replace(".git", "").strip("/")
+            dest = os.path.join(uri.netloc.strip("/"), path)
+        dest = os.path.join(os.environ.get("HOME", ""), "go/src", dest)
+        print("Will clone into:", dest)
+        if os.path.exists(dest):
+            print("Destination already exists")
+            sys.exit(0)
+        d = os.path.dirname(dest)
+        if not os.path.exists(d):
+            os.makedirs(d)
+        _run(f"git clone {remote_url} {dest}")
+    else:
+        cwd = os.getcwd()
+        path = (
+            cwd
+            if len(sys.argv) < 2
+            else os.path.join(cwd, os.path.expanduser(sys.argv[1]))
+        )
+        remotes, _ = _run("git remote")
+        get_url(path, remotes.splitlines())

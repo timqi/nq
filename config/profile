@@ -151,7 +151,7 @@ if command -v zle &> /dev/null; then
       selected="cd $(zoxide query -l | fzf --layout=reverse)"
       BUFFER=$selected; CURSOR=$#BUFFER; zle redisplay
     }
-    zle -N zoxide_widget && bindkey '^J' zoxide_widget
+    zle -N zoxide_widget && bindkey '^H' zoxide_widget
 
     printcolors() {
         for i in {0..255} ; do
@@ -184,7 +184,7 @@ elif command -v bind &> /dev/null; then
       READLINE_LINE="$output"
       READLINE_POINT=0x7fffffff
     }
-    bind -x '"\C-j": __zoxide_to_directory__'
+    bind -x '"\C-h": __zoxide_to_directory__'
 
     __fzf_complete__() {
       output=$(complete-fzf --alias="`alias`" --command="$READLINE_LINE")
