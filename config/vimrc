@@ -45,6 +45,7 @@ endif
 silent! call plug#begin('~/.vim/plugged')
 Plug 'junegunn/fzf',
 Plug 'junegunn/fzf.vim',
+Plug 'ludovicchabant/vim-gutentags'
 Plug 'tpope/vim-commentary',
 Plug 'tpope/vim-surround',
 Plug 'tpope/vim-fugitive',
@@ -56,6 +57,16 @@ Plug 'vim-scripts/ReplaceWithRegister'
 Plug 'wellle/targets.vim'
 Plug 'michaeljsmith/vim-indent-object'
 silent! call plug#end()
+
+let g:gutentags_project_root = ['.root', '.git']
+let g:gutentags_ctags_tagfile = '.tags'
+let s:vim_tags = expand('~/.vim/tags')
+let g:gutentags_cache_dir = s:vim_tags
+let g:gutentags_enabled = 0
+let g:gutentags_exclude_filetypes = ['markdown']
+if !isdirectory(s:vim_tags)
+   silent! call mkdir(s:vim_tags, 'p')
+endif
 
 nnoremap = :Neoformat<CR>
 let g:neoformat_basic_format_align = 1
