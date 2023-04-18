@@ -42,7 +42,7 @@ endif
 if !empty(glob($HOME..'/nq/bin'))
     let $PATH = $HOME..'/nq/bin:'..$PATH
 endif
-silent! call plug#begin('~/.vim/plugged')
+call plug#begin('~/.vim/plugged')
 Plug 'junegunn/fzf',
 Plug 'junegunn/fzf.vim',
 Plug 'ludovicchabant/vim-gutentags'
@@ -52,17 +52,23 @@ Plug 'tpope/vim-fugitive',
 Plug 'jiangmiao/auto-pairs',
 Plug '907th/vim-auto-save',
 Plug 'sbdchd/neoformat',
-Plug 'AndrewRadev/splitjoin.vim',
 Plug 'vim-scripts/ReplaceWithRegister'
 Plug 'wellle/targets.vim'
 Plug 'michaeljsmith/vim-indent-object'
-silent! call plug#end()
+Plug 'skywind3000/asyncrun.vim'
+
+Plug 'neoclide/coc.nvim', {'branch': 'release', 'on': []}
+Plug 'antoinemadec/coc-fzf', {'on': []}
+Plug 'honza/vim-snippets', {'on': []}
+Plug 'github/copilot.vim', {'on': []}
+call plug#end()
 
 let g:gutentags_project_root = ['.root', '.git']
 let g:gutentags_ctags_tagfile = '.tags'
 let s:vim_tags = expand('~/.vim/tags')
 let g:gutentags_cache_dir = s:vim_tags
 let g:gutentags_enabled = 0
+let g:gutentags_modules = ['ctags']
 let g:gutentags_exclude_filetypes = ['markdown']
 if !isdirectory(s:vim_tags)
    silent! call mkdir(s:vim_tags, 'p')
@@ -114,6 +120,22 @@ command! Workspaces call fzf#run(fzf#wrap({
 command! Lg execute '!tmux popup -d "\#{pane_current_path}" -xC -yC -w99\% -h99\% -E "zsh -i -c lazygit"'
 
 
+" Custom scripts
+function! CreatePlayGround(fileName)
+    let l:directory = expand('~/.config/playground')
+    if !isdirectory(l:directory)
+        call mkdir(l:directory)
+    endif
+    let l:ext = fnamemodify(a:fileName, ':e')
+    if index(["go", "py"], l:ext) < 0
+        echo "Only go,py supported. You typed: ".l:ext
+        return
+    endif
+    exe 'edit '.l:directory.'/'.a:fileName
+endfunction
+command! -nargs=1 CreatePlayGround call CreatePlayGround(<f-args>)
+
+
 " Auto cmd group
 augroup vimrc
     au FileType javascript,html,vue setlocal sw=2 ts=2 sts=2
@@ -138,3 +160,55 @@ hi Search ctermbg=240 guibg=#03045e
 hi Visual ctermbg=240 guibg=#03045e
 hi VisualNOS ctermbg=240 guibg=#03045e
 hi PmenuSel ctermbg=22 ctermfg=255 guibg=#03045e guifg=#ffffff
+
+"
+" Lsp using coc
+function! LoadLsp()
+    call plug#load('coc.nvim', 'coc-fzf', 'vim-snippets')
+
+    let g:coc_global_extensions = [
+        \ "coc-typos",
+        \ "coc-snippets",
+        \ "coc-go",
+        \ "coc-pyright",
+        \]
+    let g:coc_fzf_preview = 'up:80%'
+    let g:coc_fzf_opts = ['--layout=default']
+    imap <C-l> <Plug>(coc-snippets-expand-jump)
+    inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
+        \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+
+    " typos
+    nmap ]s <Plug>(coc-typos-next)
+    nmap [s <Plug>(coc-typos-prev)
+    nmap z= <Plug>(coc-typos-fix)
+
+    nnoremap gk :<C-u>call CocActionAsync('doHover')<CR>
+    nnoremap gd :<C-u>call CocActionAsync('jumpDefinition')<CR>
+    nnoremap gt :<C-u>call CocActionAsync('jumpTypeDefinition')<CR>
+    nnoremap gi :<C-u>call CocActionAsync('jumpImplementation')<CR>
+    nnoremap gr :<C-u>call CocActionAsync('jumpReferences')<CR>
+    nnoremap gs :<C-u>call CocActionAsync('showSignatureHelp')<CR>
+
+    nnoremap ge :<C-u>call CocActionAsync('codeAction', 'cursor')<CR>
+    nnoremap ga :<C-u>call CocActionAsync('refactor')<CR>
+    nnoremap gf :<C-u>call CocActionAsync('doQuickfix')<CR>
+
+    nnoremap <leader>a   :<C-u>CocFzfList diagnostics --current-buf<CR>
+    nnoremap <leader>c   :<C-u>CocFzfList commands<CR>
+    nnoremap <leader>l   :<C-u>CocFzfList<CR>
+
+    noremap <nowait><expr> <C-d> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
+    noremap <nowait><expr> <C-u> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
+
+    inoremap <expr> <c-n> coc#pum#visible() ? coc#pum#next(1): coc#refresh()
+    inoremap <expr> <c-p> coc#pum#visible() ? coc#pum#prev(1): "\<c-p>"
+    inoremap <expr> <cr>  coc#pum#visible() ? coc#_select_confirm() : "\<CR>"
+    inoremap <expr> <c-space> coc#refresh()
+
+    echo "Lsp Loaded"
+endfunction
+
+command! LoadLsp exe 'call LoadLsp()'
+command! LoadCopilot exe 'call plug#load("copilot.vim")'
+
