@@ -78,6 +78,7 @@ alias zdd='zoxide add "`pwd`"'
 alias zl='zoxide query -l -s'
 
 alias vih='suvim +History'
+alias vij='nvim +Files +LoadLsp'
 
 alias bat='bat -p'
 alias m='bat --language=man --color=always'
@@ -211,11 +212,11 @@ elif command -v bind &> /dev/null; then
     }
     bind -x '"\C-r": __fzf_history__'
 
-    if command -v tmux &> /dev/null; then
-        if [[ $- =~ i ]] && [[ -z "$TMUX" ]] && [[ -n "$SSH_TTY" ]]; then
-            tmux a -t0 || tmux
-        fi
-    fi
+    # if command -v tmux &> /dev/null; then
+    #     if [[ $- =~ i ]] && [[ -z "$TMUX" ]] && [[ -n "$SSH_TTY" ]]; then
+    #         tmux a -t0 || tmux
+    #     fi
+    # fi
     # end bash
 fi
 
