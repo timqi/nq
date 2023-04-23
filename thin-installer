@@ -36,7 +36,7 @@ download_and_decompress $url $nq_dir
 mv "$nq_script_dir/bin/"* "$nq_dir/bin/"
 mv "$nq_script_dir/nq" "$nq_dir/bin/"
 mv "$nq_script_dir/config/profile" $nq_dir/profile
-if ! command zle &>/dev/null; then
+if ! command -v zle >/dev/null 2>&1; then
     sed -i '/# zsh syntax begin/,/# zsh syntax end/g' "$nq_dir/profile"
 fi
 mv "$nq_script_dir/config/tmux.conf" $nq_dir/tmux.conf
