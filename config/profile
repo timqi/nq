@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/bin/sh
 [ -z "$PS1" ] && return
 
 # basic config
@@ -51,6 +51,10 @@ cr() {
     _confirm_run "$cmd"
 }
 
+chpwd() {
+    command -v zoxide >/dev/null 2>&1 && zoxide add `pwd`
+}
+
 # fzf
 export FZF_DEFAULT_COMMAND="fd --type file --follow --color=never --hidden --exclude '.git'"
 export FZF_DEFAULT_OPTS="--ansi -m --color dark --bind=ctrl-l:toggle-all --bind=ctrl-d:preview-half-page-down --bind=ctrl-u:preview-half-page-up --bind=ctrl-/:toggle-preview --inline-info --preview-window wrap --height=10"
@@ -83,13 +87,6 @@ alias vij='nvim +Files +LoadLsp'
 alias bat='bat -p'
 alias m='bat --language=man --color=always'
 export BAT_THEME="Solarized (dark)"
-# man() {
-#     if /usr/bin/man $@ 2>&1 >/dev/null; then
-#         /usr/bin/man $@ | col -bx | bat --language=man --color=always
-#     elif $1 --help 2>&1 >/dev/null; then
-#         $1 --help | bat --language=man --color=always
-#     fi
-# }
 
 
 # For different shells
@@ -112,15 +109,7 @@ if command -v zle &> /dev/null; then
     bindkey -e && bindkey -M menuselect '/' history-incremental-search-forward
 
     # zsh syntax begin
-    . "$local_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
     . "$local_dir/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
-    fpath=($local_dir/zsh-autosuggestions/src $fpath)
-
-    dump_completions() {
-        fpath=($HOME/.local/zsh-completions/src $fpath)
-        rm -f ~/.zcompdump
-        compinit
-    }
 
     fzf-history-widget() {
       selected=`history -n 0 |awk '!x[$0]++' |FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS -e +s +m --tac --query ${(qqq)LBUFFER} --layout=reverse" fzf`
@@ -133,27 +122,13 @@ if command -v zle &> /dev/null; then
     }
     zle -N fzf-complete-widget && bindkey '^G' fzf-complete-widget
 
-    # zoxide
-    eval "$(zoxide init zsh --cmd z --hook none)"
-    _zoxide_zsh_tab_completion() {
-        (( $+compstate )) && compstate[insert]=menu
-        local keyword="${words:2}"
-        local completions=(${(@f)"$(zoxide query -l "$keyword")"})
-        compadd -U -V z "${(@)completions}"
-    }
-    [ "${+functions[compdef]}" -ne 0 ] && compdef -d z &&\
-        compdef _zoxide_zsh_tab_completion z 2> /dev/null
-    # zoxide auto add
-    chpwd() { 
-        [ -e ".git" ] && zoxide add "`pwd`"
-    }
     # zoxide zshell shortcut
     zoxide_widget() {
-      selected="cd $(zoxide query -l | fzf --layout=reverse)"
-      BUFFER=$selected; CURSOR=$#BUFFER; zle redisplay
+        directory="$(zoxide query -l | fzf --layout=reverse)"
+        BUFFER="cd $directory"; CURSOR=$#BUFFER; zle redisplay
     }
     zle -N zoxide_widget && bindkey '^H' zoxide_widget
-
+    
     printcolors() {
         for i in {0..255} ; do
             printf "\x1b[48;5;%sm%3d\e[0m " "$i" "$i"

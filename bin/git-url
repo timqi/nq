@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import os
+import shutil
 import re
 import subprocess
 import sys
@@ -119,6 +120,8 @@ if __name__ == "__main__":
         if not os.path.exists(d):
             os.makedirs(d)
         _run(f"git clone {remote_url} {dest}")
+        if shutil.which("zoxide"):
+            _run(f"zoxide add {dest}")
     else:
         cwd = os.getcwd()
         path = (
