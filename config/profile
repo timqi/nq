@@ -113,7 +113,7 @@ if command -v zle &> /dev/null; then
     . "$local_dir/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 
     fzf-history-widget() {
-      selected=`history -n 0 |awk '!x[$0]++' |FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS -e +s +m --tac --query ${(qqq)LBUFFER} --layout=reverse" fzf`
+      selected=`history -n 0 |awk '!x[$0]++' |FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS -e +s +m --tac --query ${(qqq)LBUFFER} --layout=reverse" fzf --prompt="History Commands: > "`
       BUFFER=$selected; CURSOR=$#BUFFER; zle redisplay
     }
     zle -N fzf-history-widget && bindkey '^R' fzf-history-widget
@@ -125,7 +125,7 @@ if command -v zle &> /dev/null; then
 
     # zoxide zshell shortcut
     zoxide_widget() {
-        directory="$(zoxide query -l | fzf --layout=reverse)"
+        directory="$(zoxide query -l | fzf --layout=reverse --prompt='Directory: > ')"
         [ -n "$directory" ] && directory="cd $directory"
         BUFFER="$directory"; CURSOR=$#BUFFER; zle redisplay
     }
@@ -158,7 +158,7 @@ if command -v zle &> /dev/null; then
 elif command -v bind &> /dev/null; then
     # bash
     __zoxide_to_directory__() {
-        directory="cd $(zoxide query -l | fzf --layout=reverse)"
+        directory="cd $(zoxide query -l | fzf --layout=reverse --prompt='Directory: > ')"
         [ -n "$directory" ] && directory="cd $directory"
         READLINE_LINE="$directory"
         READLINE_POINT=0x7fffffff
@@ -179,7 +179,7 @@ elif command -v bind &> /dev/null; then
       output=$(
         builtin fc -lnr -2147483648 |
           last_hist=$(HISTTIMEFORMAT='' builtin history 1) perl -n -l0 -e "$script" |
-          FZF_DEFAULT_OPTS="$opts" fzf --query "$READLINE_LINE"
+          FZF_DEFAULT_OPTS="$opts" fzf --query "$READLINE_LINE" --prompt="History Commands: > "
       ) || return
       READLINE_LINE=${output#*$'\t'}
       if [[ -z "$READLINE_POINT" ]]; then
