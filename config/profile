@@ -4,6 +4,11 @@
 # basic config
 local_dir="$HOME/.local"
 
+# Homebrew
+brew_path="/opt/homebrew/bin/brew"
+[ -f $brew_path ] && [ -z $HOMEBREW_PREFIX ] &&\
+    eval "$($brew_path shellenv)"
+
 # Handle PATH
 case $PATH in 
     *conda*) ;;
@@ -22,10 +27,6 @@ esac
 CONDA_INIT_SCRIPT="$local_dir/conda/etc/profile.d/conda.sh" 
 [ -f $CONDA_INIT_SCRIPT ] && . $CONDA_INIT_SCRIPT
 
-# Homebrew
-brew_path="/opt/homebrew/bin/brew"
-[ -f $brew_path ] && [ -z $HOMEBREW_PREFIX ] &&\
-    eval "$($brew_path shellenv)"
 
 iploc() {
     for ip in "$@"; do
@@ -125,7 +126,8 @@ if command -v zle &> /dev/null; then
     # zoxide zshell shortcut
     zoxide_widget() {
         directory="$(zoxide query -l | fzf --layout=reverse)"
-        BUFFER="cd $directory"; CURSOR=$#BUFFER; zle redisplay
+        [ -n "$directory" ] && directory="cd $directory"
+        BUFFER="$directory"; CURSOR=$#BUFFER; zle redisplay
     }
     zle -N zoxide_widget && bindkey '^H' zoxide_widget
     
@@ -156,9 +158,10 @@ if command -v zle &> /dev/null; then
 elif command -v bind &> /dev/null; then
     # bash
     __zoxide_to_directory__() {
-      output="cd $(zoxide query -l | fzf --layout=reverse)"
-      READLINE_LINE="$output"
-      READLINE_POINT=0x7fffffff
+        directory="cd $(zoxide query -l | fzf --layout=reverse)"
+        [ -n "$directory" ] && directory="cd $directory"
+        READLINE_LINE="$directory"
+        READLINE_POINT=0x7fffffff
     }
     bind -x '"\C-h": __zoxide_to_directory__'
 

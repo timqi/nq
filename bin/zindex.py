@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import argparse
 import os
 import shutil
@@ -28,9 +28,11 @@ def _run(cmd, stdin=None):
 
 def handle_path(path):
     global zoxide_bin, zoxide_exist_path
+    path = path.rstrip("/")
     if path in zoxide_exist_path:
         return
     _run(f"{zoxide_bin} add '{path}'")
+    print(f"Add: {path}")
 
 
 def handle_path_and_depth(path, depth):
@@ -43,16 +45,20 @@ def handle_path_and_depth(path, depth):
         if not os.path.exists(subfull):
             continue
         handle_path(subfull)
-        for dir in os.listdir(subfull):
+        try:
+            subdirectories = os.listdir(subfull)
+        except Exception as e:
+            print(e)
+            continue
+        for dir in subdirectories:
             path = os.path.join(subfull, dir)
             if not os.path.isdir(path):
                 continue
-            for flag in [".git", ".root"]:
-                if os.path.exists(os.path.join(path, flag)):
-                    handle_path(path)
-                    break
-            if curr_depth < depth:
-                queue.append((os.path.join(subdir, dir), curr_depth + 1))
+            flags = [".git", ".root"]
+            if any([os.path.exists(os.path.join(path, flag)) for flag in flags]):
+                handle_path(path)
+            elif curr_depth < depth:
+                queue.append((path, curr_depth + 1))
 
 
 def verify_zoxide():
@@ -90,22 +96,28 @@ if __name__ == "__main__":
         default=0,
         help="Level depths will be scanned under directory",
     )
+    parser.add_argument(
+        "--config",
+        action="store_true",
+        help="Index direcoties using alfred-vscode config",
+    )
     args = parser.parse_args()
-    if not args.directory:
+
+    if args.config:
         import yaml
 
-        with open(
-            os.path.join(
-                "/Users/qiqi/Documents/Backups/alfred/Alfred.alfredpreferences",
-                "workflows/alfred_py/vscode.gen.config.yaml",
-            ),
-            "r",
-        ) as f:
+        default_config_path = os.path.join(
+            "/Users/qiqi/Documents/Backups/alfred/Alfred.alfredpreferences",
+            "workflows/alfred_py/vscode.gen.config.yaml",
+        )
+        with open(default_config_path, "r") as f:
             cfg = yaml.load(f, Loader=yaml.FullLoader)
         cfg = cfg.get("local", {})
         for item in cfg.get("scan_folders", []):
             handle_path_and_depth(item.get("path"), item.get("depth"))
         for item in cfg.get("manual", []):
             handle_path(item.get("path"))
-    else:
+    elif args.directory:
         handle_path_and_depth(args.directory, args.depth)
+    else:
+        parser.print_help()
