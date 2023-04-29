@@ -110,6 +110,7 @@ if command -v zle &> /dev/null; then
     bindkey -e && bindkey -M menuselect '/' history-incremental-search-forward
 
     # zsh syntax begin
+    . "$local_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
     . "$local_dir/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 
     fzf-history-widget() {
@@ -159,7 +160,6 @@ elif command -v bind &> /dev/null; then
     # bash
     __zoxide_to_directory__() {
         directory="cd $(zoxide query -l | fzf --layout=reverse --prompt='Directory: > ')"
-        [ -n "$directory" ] && directory="cd $directory"
         READLINE_LINE="$directory"
         READLINE_POINT=0x7fffffff
     }

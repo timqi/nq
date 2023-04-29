@@ -7,10 +7,11 @@ set backspace=indent,eol,start
 set completeopt=menu,menuone,noselect
 set noswapfile nobackup nowritebackup
 set cindent autoindent smartindent expandtab smarttab
-set nu signcolumn=number laststatus=1 mouse=v cursorline
+set nu rnu signcolumn=number laststatus=1 mouse=a cursorline
 set autoread autowrite
 set ts=4 sw=4 sts=4 scrolloff=3
 set statusline=%F\ %h%w%m%r%=%-14.(%l,%c%V%)\ %P
+set laststatus=2
 set wildignore+=.bak,*.swp,*.class,*.pyc,*DS_Store*,*.swp,
 
 nnoremap <C-c> :q<CR>
@@ -26,7 +27,6 @@ inoremap <C-a> <home>
 cnoremap <C-a> <home>
 inoremap <C-e> <end>
 cnoremap <C-e> <end>
-
 
 nnoremap j gj
 nnoremap k gk
@@ -82,7 +82,6 @@ let g:neoformat_python_iosrt = {
     \ 'args': ['--profile=black'],
     \ }
 let g:neoformat_enabled_python = ['isort', 'black']
-au FileType python let b:neoformat_run_all_formatters = 1
 let g:neoformat_rust_rustfmt = {
     \ 'exe': 'rustfmt',
     \ 'args': ['--emit=stdout', '--edition=2021'],
@@ -90,6 +89,16 @@ let g:neoformat_rust_rustfmt = {
 
 let g:auto_save = 1
 let g:netrw_dirhistmax = 0
+
+command! -bang -nargs=* FRg
+  \ call fzf#vim#grep(
+  \   'rg --column --line-number --no-heading --color=always --smart-case --fixed-strings -- '.shellescape(<q-args>), 1,
+  \   fzf#vim#with_preview(), <bang>0)
+
+command! -bang -nargs=* BRg
+  \ call fzf#vim#grep(
+  \   'rg --column --line-number --no-heading --color=always --smart-case --fixed-strings -g '.shellescape(expand('%')).' -- '.shellescape(<q-args>), 1,
+  \   fzf#vim#with_preview(), <bang>0)
 
 noremap  <c-j>      :<C-U>call fzf#vim#files('')<CR>
 noremap  <c-h>      :<C-U>call fzf#vim#history()<CR>
@@ -99,8 +108,8 @@ nnoremap <leader>t  :<C-U>BTags<CR>
 nnoremap <leader>y  :<C-U>Tags<CR>
 nnoremap <leader>h  :<C-U>Helptags<CR>
 nnoremap <leader>r  y:<C-U><C-R>=printf("Tags %s", expand("<cword>"))<CR>
-nnoremap <leader>w  y:<C-U><C-R>=printf("Rg %s", expand("<cword>"))<CR>
-nnoremap <leader>s  :<C-U><C-R>=printf("Rg ")<CR>
+nnoremap <leader>w  y:<C-U><C-R>=printf("FRg %s", expand("<cword>"))<CR>
+nnoremap <leader>s  :<C-U><C-R>=printf("FRg ")<CR>
 nnoremap <leader>j  :History:<CR>
 let g:fzf_layout = { 'window': 'enew' }
 let g:fzf_commits_log_options =  "-200 --color=always"
@@ -139,8 +148,10 @@ command! -nargs=1 CreatePlayGround call CreatePlayGround(<f-args>)
 " Auto cmd group
 augroup vimrc
     au FileType javascript,html,vue setlocal sw=2 ts=2 sts=2
-    au FileType qf set nonu
+    au FileType qf,git,term,fzf setlocal nonu nornu
     au FileType python let b:neoformat_run_all_formatters = 1
+    au FileType fzf set laststatus=0 noshowmode noruler
+        \| au BufLeave <buffer> set laststatus=2 showmode ruler
     au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
         \| exe "normal! g'\"" | endif
 augroup END
@@ -194,17 +205,24 @@ function! LoadLsp()
     nnoremap ga :<C-u>call CocActionAsync('refactor')<CR>
     nnoremap gf :<C-u>call CocActionAsync('doQuickfix')<CR>
 
-    nnoremap <leader>a   :<C-u>CocFzfList diagnostics --current-buf<CR>
-    nnoremap <leader>c   :<C-u>CocFzfList commands<CR>
-    nnoremap <leader>l   :<C-u>CocFzfList<CR>
-
-    noremap <nowait><expr> <C-d> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
-    noremap <nowait><expr> <C-u> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
+    nnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
+    nnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
+    inoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(1)\<cr>" : "\<Right>"
+    inoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(0)\<cr>" : "\<Left>"
+    vnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
+    vnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
 
     inoremap <expr> <c-n> coc#pum#visible() ? coc#pum#next(1): coc#refresh()
     inoremap <expr> <c-p> coc#pum#visible() ? coc#pum#prev(1): "\<c-p>"
     inoremap <expr> <cr>  coc#pum#visible() ? coc#_select_confirm() : "\<CR>"
     inoremap <expr> <c-space> coc#refresh()
+
+    nnoremap <leader>a   :<C-u>CocFzfList diagnostics --current-buf<CR>
+    nnoremap <leader>c   :<C-u>CocFzfList commands<CR>
+    nnoremap <leader>l   :<C-u>CocFzfList<CR>
+
+    nnoremap <leader>t  :<C-u>CocFzfList outline<CR>
+    nnoremap <leader>y  :<C-u>CocFzfList symbols<CR>
 
     echo "Lsp Loaded"
 endfunction
