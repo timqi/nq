@@ -307,19 +307,15 @@ install_config() {
         link "$conf_dir/ctags" "$HOME/.ctags.d/default.ctags"
 }
 
-
 install_zplug() {
-    # url="https://github.com/timqi/nq/archive/main.tar.gz"
     plugins="https://github.com/zsh-users/zsh-syntax-highlighting/archive/master.tar.gz\
-        https://github.com/zsh-users/zsh-autosuggestions/archive/master.tar.gz\
-        https://github.com/zsh-users/zsh-completions/archive/master.tar.gz"
+        https://github.com/zsh-users/zsh-autosuggestions/archive/master.tar.gz"
     for item in $plugins; do
         name=`echo $item|cut -d "/" -f5`
         [ -d "$local_dir/$name" ] && rm -rf "$local_dir/$name"
         mkdir -p $local_dir/$name
         download $item | tar -zx -C $local_dir/$name --strip-components=1
     done
-    log "remember run in zsh later: rm -rf ~/.zcompdump && compinit"
 }
 
 install_vimrc() {
