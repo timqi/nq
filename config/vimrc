@@ -7,10 +7,10 @@ set backspace=indent,eol,start
 set completeopt=menu,menuone,noselect
 set noswapfile nobackup nowritebackup
 set cindent autoindent smartindent expandtab smarttab
-set nu rnu signcolumn=number laststatus=1 mouse=a cursorline
+set nu rnu signcolumn=number laststatus=1 mouse=a cursorline ruler
 set autoread autowrite
 set ts=4 sw=4 sts=4 scrolloff=3
-set statusline=%F\ %h%w%m%r%=%-14.(%l,%c%V%)\ %P
+set statusline=%F\ %h%w%m%r%=%-14.(%l/%L,%c%V%)\ %P
 set laststatus=2
 set wildignore+=.bak,*.swp,*.class,*.pyc,*DS_Store*,*.swp,
 

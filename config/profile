@@ -83,16 +83,13 @@ alias zdd='zoxide add "`pwd`"'
 alias zl='zoxide query -l -s'
 
 alias vih='suvim +History'
-alias vij='nvim +Files +LoadLsp'
 
 alias bat='bat -p'
 alias m='bat --language=man --color=always'
 export BAT_THEME="Solarized (dark)"
 
-
-# For different shells
-if command -v zle &> /dev/null; then
-    # zsh
+#### Advanced shells start ####
+zsh_cfg() {
     setopt SHARE_HISTORY
     setopt INC_APPEND_HISTORY
     setopt HIST_IGNORE_DUPS
@@ -152,12 +149,11 @@ if command -v zle &> /dev/null; then
 
     alias ls='lsd --icon=never'
     alias ll='lsd --icon=never -alh'
-    alias vih='vim +History'
+    alias vih='nvim +History'
+    alias vij='nvim +Files +LoadLsp'
+}
 
-    # end zsh
-
-elif command -v bind &> /dev/null; then
-    # bash
+bash_cfg() {
     __zoxide_to_directory__() {
         directory="cd $(zoxide query -l | fzf --layout=reverse --prompt='Directory: > ')"
         READLINE_LINE="$directory"
@@ -196,6 +192,14 @@ elif command -v bind &> /dev/null; then
     #     fi
     # fi
     # end bash
+}
+
+if command -v zle &> /dev/null; then
+    zsh_cfg
+elif command -v bind &> /dev/null; then
+    bash_cfg
 fi
+#### Advanced shells end ####
 
 [ -f "$HOME/.platformrc" ] && . "$HOME/.platformrc"
+
