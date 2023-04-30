@@ -201,5 +201,11 @@ elif command -v bind &> /dev/null; then
 fi
 #### Advanced shells end ####
 
+if ! command -v zle &>/dev/null; then
+    echo "#"
+    echo "# nq version: 2023.04.30; bin: 2023.03.05"
+    echo "#"
+fi
+
 [ -f "$HOME/.platformrc" ] && . "$HOME/.platformrc"
 
