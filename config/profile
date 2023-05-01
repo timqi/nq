@@ -88,6 +88,13 @@ alias bat='bat -p'
 alias m='bat --language=man --color=always'
 export BAT_THEME="Solarized (dark)"
 
+
+[ -f "$HOME/nq/version" ] && \
+    export NQ_VERSION=`cat $HOME/nq/version` && \
+    echo -e "#\n# nq version: $NQ_VERSION\n#"
+
+[ -f "$HOME/.platformrc" ] && . "$HOME/.platformrc"
+
 #### Advanced shells start ####
 zsh_cfg() {
     setopt SHARE_HISTORY
@@ -200,12 +207,4 @@ elif command -v bind &> /dev/null; then
     bash_cfg
 fi
 #### Advanced shells end ####
-
-if ! command -v zle &>/dev/null; then
-    echo "#"
-    echo "# nq version: 2023.04.30; bin: 2023.03.05"
-    echo "#"
-fi
-
-[ -f "$HOME/.platformrc" ] && . "$HOME/.platformrc"
 

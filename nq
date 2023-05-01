@@ -177,6 +177,21 @@ install_rg() {
     github_install_logic $app ${app}_version $repo ${app}_install
 }
 
+install_alist() {
+    app=alist
+    repo="alist-org/alist"
+    alist_version() {
+        echo `alist version|grep -e '^Version: '|cut -d " " -f2`
+    }
+    alist_install() {
+        ar=`[ $ARCH = "Darwin" ] && echo "darwin-arm64" || echo "linux-amd64"`
+        url=`download_url $repo $1 "alist-$ar.tar.gz"`
+        download $url | tar -zx -C $tmp
+        mv "$tmp/$app" "$bin_dir"
+    }
+    github_install_logic $app ${app}_version $repo ${app}_install
+}
+
 install_watchexec() {
     app=watchexec
     repo=watchexec/watchexec

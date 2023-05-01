@@ -1,12 +1,14 @@
 #!/bin/sh
 #
 # install script:
-# FORCE_DOWNLOAD_BIN=0; url=https://raw.githubusercontent.com/timqi/nq/main/thin-installer; if command -v curl 2>&1 >/dev/null; then curl -s --progress-bar -L $url | sh -s $FORCE_DOWNLOAD_BIN; elif command -v wget 2>&1 >/dev/null; then wget -O- $url | sh -s $FORCE_DOWNLOAD_BIN; fi; [ -d $HOME/nq ] && source $HOME/nq/profile
+# url=https://raw.githubusercontent.com/timqi/nq/main/thin-installer; nq=/tmp/nq.thin.sh; curl -# $url -sL -o $nq || wget -O $nq $url; sh $nq 0 0; source $HOME/nq/profile; rm -f $nq
 #
 # $1: FORCE_DOWNLOAD_BIN
+# $2: REMOVE_ADVANCED_SHELL
 #
 #
 FORCE_DOWNLOAD_BIN=$1
+REMOVE_ADVANCED_SHELL=$2
 echo "FORCE_DOWNLOAD_BIN: " $FORCE_DOWNLOAD_BIN
 
 download_and_decompress() {
@@ -33,17 +35,16 @@ nq_script_dir="$nq_dir/nq-main"
 url="https://github.com/timqi/nq/archive/main.tar.gz"
 download_and_decompress $url $nq_dir
 
-mv "$nq_script_dir/bin/"* "$nq_dir/bin/"
-mv "$nq_script_dir/nq" "$nq_dir/bin/"
-mv "$nq_script_dir/config/profile" $nq_dir/profile
-if ! command -v zle >/dev/null 2>&1; then
-    if ! command -v bind >/dev/null 2>&1; then
-        sed -i '/#### Advanced shells start ####/,/#### Advanced shells end ####/d' \
-            "$nq_dir/profile"
-    fi
-fi
 mv "$nq_script_dir/config/tmux.conf" $nq_dir/tmux.conf
 ln -sv $nq_dir/tmux.conf $HOME/.tmux.conf
+
+mv "$nq_script_dir/bin/"* "$nq_dir/bin/"
+mv "$nq_script_dir/nq" "$nq_dir/bin/"
+mv "$nq_script_dir/version" $nq_dir/version
+mv "$nq_script_dir/config/profile" $nq_dir/profile
+[ "$REMOVE_ADVANCED_SHELL" = "1" ] && \
+    sed -i '/#### Advanced shells start ####/,/#### Advanced shells end ####/d' \
+        "$nq_dir/profile"
 
 # Add vim executable
 vim_dir="$nq_dir/vim"
