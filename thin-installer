@@ -17,7 +17,7 @@ if [ -f "$HOME/nq/thin-installer" ]; then
     fi
 fi
 
-echo "Willl upgrade to: $NQ_THIN_VERSION"
+echo "Will upgrade to: $NQ_THIN_VERSION"
 
 FORCE_DOWNLOAD_BIN=${1:-0}
 REMOVE_ADVANCED_SHELL=${2:-0}
