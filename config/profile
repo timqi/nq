@@ -89,10 +89,6 @@ alias m='bat --language=man --color=always'
 export BAT_THEME="Solarized (dark)"
 
 
-[ -f "$HOME/nq/version" ] && \
-    export NQ_VERSION=`cat $HOME/nq/version` && \
-    echo -e "#\n# nq version: $NQ_VERSION\n#"
-
 [ -f "$HOME/.platformrc" ] && . "$HOME/.platformrc"
 
 #### Advanced shells start ####

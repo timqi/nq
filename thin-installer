@@ -6,10 +6,24 @@
 # $1: FORCE_DOWNLOAD_BIN
 # $2: REMOVE_ADVANCED_SHELL
 #
-#
-FORCE_DOWNLOAD_BIN=$1
-REMOVE_ADVANCED_SHELL=$2
+
+# Handle thin client upgrade
+NQ_THIN_VERSION=2023.05.01
+if [ -f "$HOME/nq/thin-installer" ]; then
+    local_version=`grep 'NQ_THIN_VERSION=' $HOME/nq/thin-installer | head -n 1 | cut -d "=" -f 2`
+    if [ "$local_version" = "$NQ_THIN_VERSION" ]; then
+        echo "Update to date: $local_version"
+        return
+    fi
+fi
+
+echo "Willl upgrade to: $NQ_THIN_VERSION"
+
+FORCE_DOWNLOAD_BIN=${1:-0}
+REMOVE_ADVANCED_SHELL=${2:-0}
+
 echo "FORCE_DOWNLOAD_BIN: " $FORCE_DOWNLOAD_BIN
+echo "REMOVE_ADVANCED_SHELL: " $REMOVE_ADVANCED_SHELL
 
 download_and_decompress() {
     echo "Download from $1"
@@ -40,7 +54,7 @@ ln -sv $nq_dir/tmux.conf $HOME/.tmux.conf
 
 mv "$nq_script_dir/bin/"* "$nq_dir/bin/"
 mv "$nq_script_dir/nq" "$nq_dir/bin/"
-mv "$nq_script_dir/version" $nq_dir/version
+mv "$nq_script_dir/thin-installer" $nq_dir/thin-installer
 mv "$nq_script_dir/config/profile" $nq_dir/profile
 [ "$REMOVE_ADVANCED_SHELL" = "1" ] && \
     sed -i '/#### Advanced shells start ####/,/#### Advanced shells end ####/d' \
