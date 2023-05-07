@@ -80,6 +80,7 @@ alias dc='docker-compose'
 alias sv="sudo supervisorctl"
 
 alias zdd='zoxide add "`pwd`"'
+alias zclear='zoxide query -l | xargs zoxide remove'
 alias zl='zoxide query -l -s'
 
 alias vih='suvim +History'
