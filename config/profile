@@ -158,7 +158,12 @@ zsh_cfg() {
 
 bash_cfg() {
     __zoxide_to_directory__() {
-        directory="cd $(zoxide query -l | fzf --layout=reverse --prompt='Directory: > ')"
+        if [ `zoxide query -l | wc -l` -lt 1 ]; then
+            zindex.py -c /home/ops -d 5 >/dev/null
+            echo "zoxide indexed: zindex.py -c /home/ops -d 5"
+        fi
+        directory="$(zoxide query -l | fzf --layout=reverse --prompt='Directory: > ')"
+        [ -n "$directory" ] && directory="cd $directory"
         READLINE_LINE="$directory"
         READLINE_POINT=0x7fffffff
     }
@@ -195,6 +200,9 @@ bash_cfg() {
     #     fi
     # fi
     # end bash
+    #
+    alias d='sudo docker'
+    alias dc='sudo docker-compose'
 }
 
 if command -v zle &> /dev/null; then
