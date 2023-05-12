@@ -12,5 +12,5 @@ fi
 
 for ip in "$@"
 do
-    tmux new-window mtr -T -n $ip
+    tmux new-window mtr -n $ip
 done
