@@ -13,13 +13,13 @@ brew_path="/opt/homebrew/bin/brew"
 case $PATH in 
     *conda*) ;;
     *) if [ -d "$HOME/nq/bin" ]; then
-        nqitembin="$HOME/nq/bin" nqbin="$HOME/nq/bin"
-    else
-        nqitembin="$local_dir/bin" nqbin="$HOME/.config/nq/bin"
-    fi
-    PATH="$nqbin:$local_dir/conda/bin:$HOME/.cargo/bin:$PATH"
-    PATH="$HOME/go/bin:$nqitembin:$nqitembin/node:$PATH"
-    export PATH;;
+            nqitembin="$HOME/nq/bin" nqbin="$HOME/nq/bin"
+        else
+            nqitembin="$local_dir/bin" nqbin="$HOME/.config/nq/bin"
+        fi
+        PATH="$nqbin:$local_dir/conda/bin:$HOME/.cargo/bin:$PATH"
+        PATH="$HOME/go/bin:$nqitembin:$nqitembin/node:$PATH"
+        export PATH;;
 esac
 
 
@@ -154,7 +154,7 @@ zsh_cfg() {
     alias ls='lsd --icon=never'
     alias ll='lsd --icon=never -alh'
     alias vih='nvim +History'
-    alias vij='nvim +Files +LoadLsp'
+    alias vij='nvim +Files +LoadLsp +LoadCopilot'
 }
 
 bash_cfg() {
@@ -204,6 +204,7 @@ bash_cfg() {
     #
     alias d='sudo docker'
     alias dc='sudo docker-compose'
+    tmux source-file ~/.tmux.conf
 }
 
 if command -v zle &> /dev/null; then

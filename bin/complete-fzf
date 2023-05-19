@@ -3,6 +3,9 @@ tasks = """
 [ssh-to-host]
 command=ssh ${host}
 
+[i2cssh-to-hosts]
+command=i2cssh ${host}
+
 [kill-with-pids]
 command=kill ${space_pids}
 
@@ -115,12 +118,18 @@ def _run(cmd, stdin=None):
     )
 
 
+def is_local_mac():
+    return os.environ.get("LOCAL_MACHINE_NAME").startswith("xy")
+
+
 def check_permission(perm):
     if not perm:
         error("perm(item of PERM class) must specified")
     mode = os.F_OK | os.W_OK | os.R_OK
     sock_files = []
     if perm == "docker":
+        if is_local_mac():
+            return True
         sock_files += ["/var/run/docker.sock"]
         return any([os.access(f, mode) for f in sock_files])
     elif perm == "supervisor":
@@ -406,7 +415,7 @@ def idf_host():
                 continue
             hosts.append(line)
     stdout, _ = _run(f"fzf -e --prompt='Host> '", stdin="\n".join(hosts))
-    return stdout.strip()
+    return stdout.strip().replace("\n", " ")
 
 
 def handle_section(section):

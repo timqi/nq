@@ -7,11 +7,10 @@ set backspace=indent,eol,start
 set completeopt=menu,menuone,noselect
 set noswapfile nobackup nowritebackup
 set cindent autoindent smartindent expandtab smarttab
-set nu rnu signcolumn=number laststatus=1 mouse=a cursorline ruler
-set autoread autowrite
+set nu rnu signcolumn=number laststatus=1 cursorline ruler
+set autoread autowrite mouse=a
 set ts=4 sw=4 sts=4 scrolloff=3
 set statusline=%F\ %h%w%m%r%=%-14.(%l/%L,%c%V%)\ %P
-set laststatus=2
 set wildignore+=.bak,*.swp,*.class,*.pyc,*DS_Store*,*.swp,
 
 nnoremap <C-c> :q<CR>
@@ -42,7 +41,7 @@ endif
 if !empty(glob($HOME..'/nq/bin'))
     let $PATH = $HOME..'/nq/bin:'..$PATH
 endif
-call plug#begin('~/.vim/plugged')
+silent! call plug#begin('~/.vim/plugged')
 Plug 'junegunn/fzf',
 Plug 'junegunn/fzf.vim',
 Plug 'ludovicchabant/vim-gutentags'
@@ -61,7 +60,7 @@ Plug 'neoclide/coc.nvim', {'branch': 'release', 'on': []}
 Plug 'antoinemadec/coc-fzf', {'on': []}
 Plug 'honza/vim-snippets', {'on': []}
 Plug 'github/copilot.vim', {'on': []}
-call plug#end()
+silent! call plug#end()
 
 let g:gutentags_project_root = ['.root', '.git']
 let g:gutentags_ctags_tagfile = '.tags'
@@ -151,7 +150,7 @@ augroup vimrc
     au FileType qf,git,term,fzf setlocal nonu nornu
     au FileType python let b:neoformat_run_all_formatters = 1
     au FileType fzf set laststatus=0 noshowmode noruler
-        \| au BufLeave <buffer> set laststatus=2 showmode ruler
+        \| au BufLeave <buffer> set laststatus=1 showmode ruler
     au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
         \| exe "normal! g'\"" | endif
 augroup END
@@ -165,8 +164,8 @@ hi clear CursorLine
 hi CursorLine ctermbg=237 guibg=#386641
 hi LineNr ctermfg=238 ctermbg=NONE guifg=#386641 guibg=NONE
 hi SpellBad ctermbg=17 guibg=#959595
-hi StatusLine ctermbg=58 guibg=#6a994e
-hi StatusLineNC ctermbg=244 guibg=#6d6875
+hi StatusLine ctermbg=208 guibg=#6a994e
+hi StatusLineNC ctermbg=94 guibg=#6d6875
 hi Search ctermbg=240 guibg=#03045e
 hi Visual ctermbg=240 guibg=#03045e
 hi VisualNOS ctermbg=240 guibg=#03045e
