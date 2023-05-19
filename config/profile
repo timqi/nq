@@ -35,6 +35,28 @@ iploc() {
     done
 }
 
+tssh() {
+    if [ $# -eq 0 ]; then
+        echo "no host specified"
+        return
+    fi
+
+    host0=$1
+    shift
+    if [ $# -eq 0 ]; then
+        ssh $host0
+        return
+    fi
+
+    tmux new-window -n tssh ssh $host0
+    for host in "$@"; do
+        tmux split-window -h ssh "$host"
+        tmux select-layout tiled
+    done
+    tmux select-pane -t 1
+    tmux setw synchronize-panes
+}
+
 _confirm_run() {
     read -p "$1[confirm]:" -n 1 key
     if [ "$key" = "" ]; then
