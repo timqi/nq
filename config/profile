@@ -44,13 +44,13 @@ tssh() {
     host0=$1
     shift
     if [ $# -eq 0 ]; then
-        ssh $host0
+        issh $host0
         return
     fi
 
-    tmux new-window -n tssh ssh $host0
+    tmux new-window -n tssh issh $host0
     for host in "$@"; do
-        tmux split-window -h ssh "$host"
+        tmux split-window -h issh "$host"
         tmux select-layout tiled
     done
     tmux select-pane -t 1
