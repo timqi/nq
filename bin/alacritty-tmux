@@ -1,4 +1,4 @@
-#/usr/bin/env bash
+#!/bin/sh
 
 PATH="$PATH:/opt/homebrew/bin"
 exec tmux $@

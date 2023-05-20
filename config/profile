@@ -35,27 +35,6 @@ iploc() {
     done
 }
 
-tssh() {
-    if [ $# -eq 0 ]; then
-        echo "no host specified"
-        return
-    fi
-
-    host0=$1
-    shift
-    if [ $# -eq 0 ]; then
-        issh $host0
-        return
-    fi
-
-    tmux new-window -n tssh issh $host0
-    for host in "$@"; do
-        tmux split-window -h issh "$host"
-        tmux select-layout tiled
-    done
-    tmux select-pane -t 1
-    tmux setw synchronize-panes
-}
 
 _confirm_run() {
     read -p "$1[confirm]:" -n 1 key
@@ -147,7 +126,6 @@ zsh_cfg() {
     }
     zle -N fzf-complete-widget && bindkey '^G' fzf-complete-widget
 
-    # zoxide zshell shortcut
     zoxide_widget() {
         directory="$(zoxide query -l | fzf --layout=reverse --prompt='Directory: > ')"
         [ -n "$directory" ] && directory="cd $directory"
@@ -163,7 +141,6 @@ zsh_cfg() {
             fi
         done
     }
-    # zsh syntax end
    
     # PROMPT
     precmd() {
