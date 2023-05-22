@@ -122,7 +122,7 @@ def _run(cmd, stdin=None):
 
 
 def is_local_mac():
-    return os.environ.get("LOCAL_MACHINE_NAME").startswith("xy")
+    return os.environ.get("LOCAL_MACHINE_NAME", "").startswith("xy")
 
 
 def check_permission(perm):
