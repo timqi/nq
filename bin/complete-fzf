@@ -6,6 +6,9 @@ command=ssh ${host}
 [tssh-to-hosts]
 command=tssh ${host}
 
+[echo-ssh-host]
+command=echo ${host}
+
 [i2cssh-to-hosts]
 command=i2cssh ${host}
 

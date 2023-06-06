@@ -55,6 +55,8 @@ cr() {
 
 chpwd() {
     command -v zoxide >/dev/null 2>&1 && zoxide add `pwd`
+
+    [ -f ".git/pynq" ] && conda activate `cat .git/pynq`
 }
 
 # fzf
