@@ -7,7 +7,7 @@ set backspace=indent,eol,start
 set completeopt=menu,menuone,noselect
 set noswapfile nobackup nowritebackup
 set cindent autoindent smartindent expandtab smarttab
-set nu rnu signcolumn=number laststatus=1 cursorline ruler
+set nu signcolumn=number laststatus=1 cursorline ruler
 set autoread autowrite mouse=a
 set ts=4 sw=4 sts=4 scrolloff=3
 set statusline=%F\ %h%w%m%r%=%-14.(%l/%L,%c%V%)\ %P

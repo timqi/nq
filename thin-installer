@@ -8,7 +8,7 @@
 #
 
 # Handle thin client upgrade
-NQ_THIN_VERSION=2023.05.20
+NQ_THIN_VERSION=2023.07.05
 if [ -f "$HOME/nq/thin-installer" ]; then
     local_version=`grep 'NQ_THIN_VERSION=' $HOME/nq/thin-installer | head -n 1 | cut -d "=" -f 2`
     if [ "$local_version" = "$NQ_THIN_VERSION" ]; then

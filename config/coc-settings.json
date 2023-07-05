@@ -26,6 +26,7 @@
     "<C-c>": "do:exit",
     "<C-v>": "action:vsplit"
   },
-  "git.enableGutters": false
+  "git.enableGutters": false,
+  "snippets.ultisnips.pythonPrompt": false
 }
 
