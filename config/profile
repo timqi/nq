@@ -65,8 +65,8 @@ export FZF_DEFAULT_OPTS="--ansi -m --color dark --bind=ctrl-l:toggle-all --bind=
 
 # Basic settings
 export EDITOR=vim
-export LANG=en_US.UTF-8
-export LC_ALL=$LANG
+# export LANG=en_US.UTF-8
+# export LC_ALL=$LANG
 export TERM="xterm-256color"
 export PYTHONPATH="."
 

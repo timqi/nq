@@ -76,6 +76,11 @@ endif
 nnoremap = :Neoformat<CR>
 let g:neoformat_basic_format_align = 1
 let g:neoformat_basic_format_trim = 1
+let g:neoformat_python_black = {
+    \ 'exe': 'black',
+    \ 'stdin': 1,
+    \ 'args': ['--line-length=120', "-q", "-"],
+    \ }
 let g:neoformat_python_iosrt = {
     \ 'exe': 'isort',
     \ 'args': ['--profile=black'],
