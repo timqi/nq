@@ -252,6 +252,21 @@ install_dust() {
     github_install_logic $app ${app}_version $repo ${app}_install
 }
 
+install_grpcurl() {
+    app=grpcurl
+    repo=fullstorydev/grpcurl
+    grpcurl_version() {
+        echo "`grpcurl -version 2>&1|cut -d" " -f2`"
+    }
+    grpcurl_install() {
+        ar=`[ $ARCH = "Darwin" ] && echo "osx_arm64" || echo "linux_x86_64"`
+        url=`download_url $repo $1 "grpcurl_$(echo $1|cut -c2-100)_$ar.tar.gz"`
+        download $url | tar -zx -C $tmp
+        mv "$tmp/$app" "$bin_dir"
+    }
+    github_install_logic $app ${app}_version $repo ${app}_install
+}
+
 install_nvim() {
     app=nvim
     repo="neovim/neovim"
