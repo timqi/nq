@@ -53,6 +53,10 @@ cr() {
     _confirm_run "$cmd"
 }
 
+ensure_ssh_agent() {
+    export SSH_AUTH_SOCK=`sock_ssh.py`
+}
+
 chpwd() {
     command -v zoxide >/dev/null 2>&1 && zoxide add `pwd`
 
