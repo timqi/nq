@@ -62,11 +62,11 @@ Plug 'honza/vim-snippets', {'on': []}
 Plug 'github/copilot.vim', {'on': []}
 silent! call plug#end()
 
+let g:gutentags_enabled = 0
 let g:gutentags_project_root = ['.root', '.git']
 let g:gutentags_ctags_tagfile = '.tags'
 let s:vim_tags = expand('~/.vim/tags')
 let g:gutentags_cache_dir = s:vim_tags
-let g:gutentags_enabled = 0
 let g:gutentags_modules = ['ctags']
 let g:gutentags_exclude_filetypes = ['markdown']
 if !isdirectory(s:vim_tags)
@@ -162,7 +162,7 @@ augroup END
 
 
 " Theme
-colorscheme habamax
+"colorscheme habamax
 for g in ['Normal', 'EndOfBuffer', 'LineNr', "Directory"]
     exe "hi ".g." ctermbg=NONE guibg=NONE" | endfor
 hi clear CursorLine
@@ -183,7 +183,6 @@ function! LoadLsp()
 
     let g:coc_global_extensions = [
         \ "coc-typos",
-        \ "coc-snippets",
         \ "coc-go",
         \ "coc-pyright",
         \]
