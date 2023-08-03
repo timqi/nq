@@ -1,4 +1,4 @@
 #!/bin/sh
 
 PATH="$PATH:/opt/homebrew/bin"
-exec tmux $@
+exec tmux -L alacritty $@

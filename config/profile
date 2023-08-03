@@ -63,6 +63,15 @@ chpwd() {
     [ -f ".git/pynq" ] && conda activate `cat .git/pynq`
 }
 
+ltmux() {
+    if ! echo "$TMUX"|egrep ".*alacritty.*" >/dev/null; then
+        echo "not in a alacritty tmux session"
+    fi
+    tmux rename-window local
+    unset TMUX
+    tmux
+}
+
 # fzf
 export FZF_DEFAULT_COMMAND="fd --type file --follow --color=never --hidden --exclude '.git'"
 export FZF_DEFAULT_OPTS="--ansi -m --color dark --bind=ctrl-l:toggle-all --bind=ctrl-d:preview-half-page-down --bind=ctrl-u:preview-half-page-up --bind=ctrl-/:toggle-preview --inline-info --preview-window wrap --height=10"
