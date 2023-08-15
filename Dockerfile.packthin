@@ -4,7 +4,7 @@
 FROM --platform=linux/amd64 alpine as builder
 
 # https://github.com/vim/vim/tags
-ARG VIMVERSION=v9.0.1153 
+ARG VIMVERSION=v9.0.1679
 # https://github.com/mjakob-gh/build-static-tmux/releases
 ARG TMUXVERSION=v3.3a
 ARG NQTOOLS="rg,fzf,fd,chtsh,jq,zoxide"
