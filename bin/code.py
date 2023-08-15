@@ -4,6 +4,7 @@ import os
 import argparse
 import shutil
 import subprocess
+import time
 
 
 def _run(cmd, env={}):
@@ -33,15 +34,20 @@ def run_code(uri):
     cmds = [bin]
     cmds += [uri] if ":" not in uri else ["--folder-uri", uri]
 
+    stdout = stderr = code = ""
     if isin_ssh():
         ipcs = glob.glob(f"/run/user/{os.getuid()}/vscode-ipc-*")
         ipcs.sort(key=lambda x: os.path.getmtime(x), reverse=True)
         for ipc in ipcs[:20]:
             # print("ipc", ipc, "cmds", cmds)
             stdout, stderr, code = _run(" ".join(cmds), env={"VSCODE_IPC_HOOK_CLI": ipc})
-            # print("out", stdout, "err", stderr, "code", code)
             if code == 0:
                 return
+    else:
+        stdout, stderr, code = _run(" ".join(cmds))
+        if code == 0:
+            time.sleep(1)
+            return
     print("Open code failed:", stderr)
 
 
