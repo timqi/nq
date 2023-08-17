@@ -4,5 +4,5 @@ set -ex
 
 host=$1
 
-#ssh -t $host "curl -sL https://cdn.jsdelivr.net/gh/timqi/nq/thin-installer | sh -s; bash -l"
+#ssh -A -t $host "curl -sL https://cdn.jsdelivr.net/gh/timqi/nq/thin-installer | sh -s; bash -l"
 ssh -A -t $host "curl -sL https://raw.githubusercontent.com/timqi/nq/main/thin-installer | sh -s; bash -l"

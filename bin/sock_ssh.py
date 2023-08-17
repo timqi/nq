@@ -8,7 +8,6 @@ def find_ssh_sock():
         if path.startswith("ssh-"):
             p = "/tmp/" + path
             if check_file_owner_is_me(p):
-
                 for f in os.listdir(p):
                     if f.startswith("agent."):
                         return p + "/" + f

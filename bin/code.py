@@ -1,10 +1,25 @@
 #!/usr/bin/env python3
-import glob
-import os
 import argparse
+import glob
+import json
+import os
+import queue
 import shutil
+import socket
 import subprocess
 import time
+
+generate_cfg = {
+    "local": {
+        "~/Documents/Backups/linked": "",
+        "~/.config/nq": "PY",
+        "~/go/src/research": 1,
+        "~/go/src/gitlab.fish": 3,
+        "~/go/src/github.com": 2,
+    },
+    "ssh.xy2": {"~/go/src/research": 1, "~/go/src/gitlab.fish": 3, "~/go/src/github.com": 2},
+    "ssh.devhost": {"~/go/src/research": 1, "~/go/src/gitlab.fish": 3, "~/go/src/github.com": 2},
+}
 
 
 def _run(cmd, env={}):
@@ -51,16 +66,132 @@ def run_code(uri):
     print("Open code failed:", stderr)
 
 
+def get_profile_of_directory(directory):
+    level1 = [f.lower() for f in os.listdir(directory)]
+    profile = ""
+    if any(i in level1 for i in ["dfw.py", "requirements.txt"]):
+        profile = "PY"
+    elif [any(f.endswith(suffix) for suffix in [".py", ".ipynb"]) for f in level1].count(True) > 1:
+        profile = "PY"
+    elif any(i in level1 for i in ["go.mod", "go.sum"]):
+        profile = "GO"
+    elif any(i in level1 for i in ["package.json", "yarn.lock"]):
+        profile = "JS"
+    elif any(i in level1 for i in ["cargo.toml"]):
+        profile = "RS"
+    elif any(i in level1 for i in ["cmakelists.txt"]):
+        profile = "CC"
+    return profile
+
+
+def resolve_cfg(cfg):
+    q, results = queue.Queue(), {}
+    for directory, limit in cfg.items():
+        directory = os.path.realpath(os.path.expanduser(directory))
+        q.put((directory, limit, 0, []))
+    while not q.empty():
+        directory, limit, depth, proj_arr = q.get()
+        directory = os.path.realpath(os.path.expanduser(directory))
+        if isinstance(limit, str):
+            results[directory] = limit, os.path.basename(directory)
+            continue
+        if any(i in os.listdir(directory) for i in [".root", ".git"]):
+            results[directory] = get_profile_of_directory(directory), " / ".join(proj_arr)
+            continue
+        for file in os.listdir(directory):
+            file = os.path.realpath(os.path.join(directory, file))
+            if os.path.isdir(file) and depth < limit:
+                q.put((file, limit, depth + 1, proj_arr + [os.path.basename(file)]))
+    return results
+
+
+def generate_project_index(keys):
+    if keys == "list":
+        bin = os.path.realpath(__file__)
+        result = [{"title": "generate vscode proj index: all", "arg": f"{bin} --generate all"}]
+        result += [
+            {"title": f"generate vscode proj index: {key}", "arg": f"{bin} --generate {key}"}
+            for key in generate_cfg.keys()
+        ]
+        return print(json.dumps({"items": result}, indent=2))
+
+    # parse result from configuration
+    keys = list(generate_cfg.keys()) if keys == "all" else [key for key in keys.split(",") if key in generate_cfg]
+    generated = {}
+    for key in keys:
+        cfg = generate_cfg[key]
+        if key.startswith("ssh."):
+            hostname = key.lstrip("ssh.")
+            if socket.gethostname() == hostname:
+                continue
+            if isin_ssh():
+                return print(json.dumps(resolve_cfg(cfg)))
+            out, err, code = _run(f"scp -O {os.path.realpath(__file__)} {hostname}:/tmp/code.py")
+            if code != 0:
+                return print("scp failed:", err)
+            out, err, code = _run(f"ssh {hostname} python3 /tmp/code.py --generate {key}")
+            if code != 0:
+                return print("ssh", key, "code:", code, "failed:", err)
+            generated[key] = json.loads(out)
+            _run(f"ssh {hostname} rm /tmp/code.py")
+        else:
+            generated[key] = resolve_cfg(cfg)
+
+    # generate alfred datastructure
+    dest_dir = "/Users/qiqi/.cache/alfred/vscode/"
+    with open(os.path.join(dest_dir, "ssh.json")) as f:
+        sshs_ori = json.load(f).get("items", [])
+    locals, sshs = [], []
+    for key, result in generated.items():
+        print("handle key:", key)
+        is_ssh = key.startswith("ssh.")
+        host = key.split(".")[1] if is_ssh else ""
+        subtitle_prefix = f"[{host}] " if is_ssh else ""
+        if is_ssh:
+            sshs_ori = list(filter(lambda x: f"[{host}]" not in x["subtitle"], sshs_ori))
+        for path, v in result.items():
+            arr = sshs if is_ssh else locals
+            args = ["code"]
+            if v[0]:
+                args += ["--profile", v[0]]
+            if is_ssh:
+                uri = f"vscode-remote://ssh-remote+{host}{path}"
+                args += ["--folder-uri", uri]
+            else:
+                args += [path]
+            arr.append(
+                {
+                    "title": v[1],
+                    "subtitle": f"{subtitle_prefix}{path}",
+                    "arg": " ".join(args),
+                }
+            )
+    # persist into cache file
+    if len(locals) > 0:
+        with open(os.path.join(dest_dir, "local.json"), "w") as f:
+            json.dump({"items": locals}, f, indent=2)
+        print("local.json generated")
+    if len(sshs) > 0:
+        sshs += sshs_ori
+        with open(os.path.join(dest_dir, "ssh.json"), "w") as f:
+            json.dump({"items": sshs}, f, indent=2)
+        print("ssh.json generated")
+
+
 def create_args_parser():
     parser = argparse.ArgumentParser(description="Hello World!")
     parser.add_argument("uri", help="Folder or uri to process", nargs="*", default=".")
+    parser.add_argument("-g", "--generate", default=None, help="Generate code project index")
     return parser
 
 
 def main():
     parser = create_args_parser()
     args = parser.parse_args()
-    run_code(args.uri)
+    if args.generate is not None:
+        generate_project_index(args.generate)
+    else:
+        run_code(args.uri)
 
 
 if __name__ == "__main__":

@@ -145,21 +145,14 @@ def check_permission(perm):
         ]
         return any([os.access(f, mode) for f in sock_files])
     elif perm == "optional_sudo":
-        if (
-            os.environ.get("ORIGINAL_COMMAND", "").startswith("sudo")
-            and os.getuid() != 0
-        ):
+        if os.environ.get("ORIGINAL_COMMAND", "").startswith("sudo") and os.getuid() != 0:
             return False
         return True
 
 
 def section_has_permissions(section):
     perms = section.get("perm", "")
-    return (
-        True
-        if not perms
-        else all([check_permission(item) for item in perms.split(",")])
-    )
+    return True if not perms else all([check_permission(item) for item in perms.split(",")])
 
 
 def _is_macos():
@@ -229,9 +222,7 @@ def idf_space_docker_images():
 
 
 def _idf_docker_images():
-    stdout, _ = _run(
-        "docker images --format 'table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}'"
-    )
+    stdout, _ = _run("docker images --format 'table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}'")
     if not stdout:
         return None
     stdout, _ = _run(
@@ -263,9 +254,7 @@ def _idf_docker_containers(only_running=False):
     if exists("./docker-compose.yml") or exists("./docker-compose.yaml"):
         cmd = "docker-compose ps"
         compose, _ = _run(cmd)
-        compose_container_names = set(
-            [line.split()[0] for line in compose.splitlines()[1:]]
-        )
+        compose_container_names = set([line.split()[0] for line in compose.splitlines()[1:]])
 
         def _get_container_key(line):
             name = line.split()[2]
@@ -337,11 +326,7 @@ def idf_sub_directory_of_input():
     cmd = os.environ.get("ORIGINAL_COMMAND", "")
     parent = cmd.replace("cd", "").strip()
     folder = os.path.expanduser(parent) if parent else "."
-    find_cmd = (
-        f"fd --type directory '' {folder}"
-        if shutil.which("fd")
-        else f"find {folder} -type d"
-    )
+    find_cmd = f"fd --type directory '' {folder}" if shutil.which("fd") else f"find {folder} -type d"
     stdout, _ = _run(f"{find_cmd} | fzf -e --prompt='Directory> '")
     return stdout.splitlines()[0] if stdout else ""
 
@@ -405,21 +390,29 @@ def parse_alias(alias, command, section):
     return command
 
 
-def idf_host():
+def _parse_host():
     hosts = []
     with open(os.path.expanduser("~/.ssh/config")) as f:
         for line in f:
             if not line.startswith("Host "):
                 continue
-            if "*" in line:
-                continue
-            hosts += [host.strip() for host in line.split()[1:]]
+            hosts += [
+                {"host": host.strip(), "type": "native"}
+                for host in line.split()[1:]
+                if "*" not in host and "!" not in host
+            ]
     with open(os.path.expanduser("~/.ssh/fish.hosts")) as f:
         for line in f:
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
-            hosts.append(line)
+            hosts.append({"host": line, "type": "fish"})
+    return hosts
+
+
+def idf_host():
+    hosts = _parse_host()
+    hosts = [item["host"] for item in hosts]
     stdout, _ = _run(f"fzf -e --prompt='Host> '", stdin="\n".join(hosts))
     return stdout.strip().replace("\n", " ")
 
@@ -475,9 +468,7 @@ def main(args):
                 print(item)
         error()
 
-    os.environ["FZF_DEFAULT_OPTS"] = (
-        os.environ.get("FZF_DEFAULT_OPTS", "") + " --layout=reverse"
-    )
+    os.environ["FZF_DEFAULT_OPTS"] = os.environ.get("FZF_DEFAULT_OPTS", "") + " --layout=reverse"
 
     command, section_query = args.command, None
     if command:
