@@ -12,6 +12,8 @@ import time
 generate_cfg = {
     "local": {
         "~/Documents/Backups/linked": "",
+        "~/Documents/Stash/datagrip": "DB",
+        "~/Documents/Stash/toys": "PY",
         "~/.config/nq": "PY",
         "~/go/src/research": 1,
         "~/go/src/gitlab.fish": 3,
@@ -69,7 +71,7 @@ def run_code(uri):
 def get_profile_of_directory(directory):
     level1 = [f.lower() for f in os.listdir(directory)]
     profile = ""
-    if any(i in level1 for i in ["dfw.py", "requirements.txt"]):
+    if any(i in level1 for i in ["dfw.py", "requirements.txt", "pyproject.toml"]):
         profile = "PY"
     elif [any(f.endswith(suffix) for suffix in [".py", ".ipynb"]) for f in level1].count(True) > 1:
         profile = "PY"

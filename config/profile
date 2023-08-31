@@ -168,7 +168,7 @@ zsh_cfg() {
     alias ls='lsd --icon=never'
     alias ll='lsd --icon=never -alh'
     alias vih='nvim +History'
-    alias vij='nvim +LoadLsp +LoadCopilot'
+    alias vij='nvim +LoadLsp'
 }
 
 bash_cfg() {
