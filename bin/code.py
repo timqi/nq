@@ -124,17 +124,20 @@ def generate_project_index(keys):
         cfg = generate_cfg[key]
         if key.startswith("ssh."):
             hostname = key.lstrip("ssh.")
-            if socket.gethostname() == hostname:
+            if not isin_ssh() and socket.gethostname() == hostname:
                 continue
             if isin_ssh():
                 return print(json.dumps(resolve_cfg(cfg)))
             out, err, code = _run(f"scp -O {os.path.realpath(__file__)} {hostname}:/tmp/code.py")
             if code != 0:
                 return print("scp failed:", err)
-            out, err, code = _run(f"ssh {hostname} python3 /tmp/code.py --generate {key}")
+            out, err, code = _run(f"ssh {hostname} env python3 /tmp/code.py --generate {key}")
             if code != 0:
                 return print("ssh", key, "code:", code, "failed:", err)
-            generated[key] = json.loads(out)
+            try:
+                generated[key] = json.loads(out)
+            except Exception as e:
+                return print("error decode json:", out)
             _run(f"ssh {hostname} rm /tmp/code.py")
         else:
             generated[key] = resolve_cfg(cfg)
