@@ -8,7 +8,7 @@
 #
 
 # Handle thin client upgrade
-NQ_THIN_VERSION=2023.09.11
+NQ_THIN_VERSION=2023.09.12
 if [ -f "$HOME/nq/thin-installer" ]; then
     local_version=`grep 'NQ_THIN_VERSION=' $HOME/nq/thin-installer | head -n 1 | cut -d "=" -f 2`
     if [ "$local_version" = "$NQ_THIN_VERSION" ]; then
@@ -50,7 +50,9 @@ url="https://github.com/timqi/nq/archive/main.tar.gz"
 download_and_decompress $url $nq_dir
 
 mv "$nq_script_dir/config/tmux.conf" $nq_dir/tmux.conf
-ln -sv $nq_dir/tmux.conf $HOME/.tmux.conf
+[ ! -h "$HOME/.tmux.conf" ] ||\
+    [ "`readlink $HOME/.tmux.conf`" != "$nq_dir/tmux.conf" ] &&\
+    ln -sfv $nq_dir/tmux.conf $HOME/.tmux.conf
 
 mv "$nq_script_dir/bin/"* "$nq_dir/bin/"
 mv "$nq_script_dir/nq" "$nq_dir/bin/"
@@ -63,7 +65,10 @@ mv "$nq_script_dir/config/profile" $nq_dir/profile
 # Add vim executable
 vim_dir="$nq_dir/vim"
 mv "$nq_script_dir/config/vimrc" "$vim_dir"
-ln -sv $vim_dir $HOME/.vim
+[ ! -h "$HOME/.vim" ] ||\
+    [ "`readlink $HOME/.vim`" != "$vim_dir" ] &&\
+    ln -sfv $vim_dir $HOME/.vim
+
 cat <<EOF > "$nq_dir/bin/vim"
 VIMRUNTIME="$vim_dir/runtime" "$vim_dir/vim" \$@
 EOF
