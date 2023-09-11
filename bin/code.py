@@ -19,7 +19,12 @@ generate_cfg = {
         "~/go/src/gitlab.fish": 3,
         "~/go/src/github.com": 2,
     },
-    "ssh.xy2": {"~/go/src/research": 1, "~/go/src/gitlab.fish": 3, "~/go/src/github.com": 2},
+    "ssh.xy2": {
+        "~/Documents/Stash/datagrip": "DB",
+        "~/go/src/research": 1,
+        "~/go/src/gitlab.fish": 3,
+        "~/go/src/github.com": 2,
+    },
     "ssh.devhost": {"~/go/src/research": 1, "~/go/src/gitlab.fish": 3, "~/go/src/github.com": 2},
 }
 

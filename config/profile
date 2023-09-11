@@ -7,19 +7,21 @@ local_dir="$HOME/.local"
 # Homebrew
 brew_path="/opt/homebrew/bin/brew"
 [ -f $brew_path ] && [ -z $HOMEBREW_PREFIX ] &&\
-    eval "$($brew_path shellenv)"
+    eval "$($brew_path shellenv | grep -v 'export PATH')"
 
 # Handle PATH
+[ -d "$HOME/nq/bin" ] &&\
+    nqitembin="$HOME/nq/bin" nqbin="$HOME/nq/bin" ||\
+    nqitembin="$local_dir/bin" nqbin="$HOME/.config/nq/bin"
+
+subpath="$HOME/go/bin:$nqitembin:$nqitembin/node:$nqbin"
+subpath="$subpath:$local_dir/conda/bin:$HOME/.cargo/bin"
+[ -f $brew_path ] &&\
+    subpath="$subpath:/opt/homebrew/bin:/opt/homebrew/sbin"
+
 case $PATH in 
-    *conda*) ;;
-    *) if [ -d "$HOME/nq/bin" ]; then
-            nqitembin="$HOME/nq/bin" nqbin="$HOME/nq/bin"
-        else
-            nqitembin="$local_dir/bin" nqbin="$HOME/.config/nq/bin"
-        fi
-        PATH="$nqbin:$local_dir/conda/bin:$HOME/.cargo/bin:$PATH"
-        PATH="$HOME/go/bin:$nqitembin:$nqitembin/node:$PATH"
-        export PATH;;
+    *conda*) export PATH="$subpath:${PATH/$subpath}";;
+    *) export PATH="$subpath:$PATH";;
 esac
 
 
@@ -59,7 +61,6 @@ ensure_ssh_agent() {
 
 chpwd() {
     command -v zoxide >/dev/null 2>&1 && zoxide add `pwd`
-
     [ -f ".git/pynq" ] && conda activate `cat .git/pynq`
 }
 
@@ -99,8 +100,6 @@ alias zdd='zoxide add "`pwd`"'
 alias zclear='zoxide query -l | xargs zoxide remove'
 alias zl='zoxide query -l -s'
 
-alias vih='suvim +History'
-
 alias bat='bat -p'
 alias m='bat --language=man --color=always'
 export BAT_THEME="Solarized (dark)"
@@ -125,6 +124,7 @@ zsh_cfg() {
     zstyle ':completion:*' menu yes select
     zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
     bindkey -e && bindkey -M menuselect '/' history-incremental-search-forward
+    bindkey '^U' backward-kill-line
 
     # zsh syntax begin
     . "$local_dir/zsh-autosuggestions/zsh-autosuggestions.zsh"
@@ -167,8 +167,6 @@ zsh_cfg() {
 
     alias ls='lsd --icon=never'
     alias ll='lsd --icon=never -alh'
-    alias vih='nvim +History'
-    alias vij='nvim +LoadLsp'
 }
 
 bash_cfg() {
@@ -218,7 +216,7 @@ bash_cfg() {
     #
     alias d='sudo docker'
     alias dc='sudo docker-compose'
-    tmux source-file ~/.tmux.conf
+    [ -f "$HOME/.tmux.conf" ] && tmux source-file ~/.tmux.conf
 }
 
 if command -v zle &> /dev/null; then

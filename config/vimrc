@@ -250,3 +250,6 @@ endfunction
 command! LoadLsp exe 'call LoadLsp()'
 command! LoadCopilot exe 'call plug#load("copilot.vim")'
 
+if has("nvim")
+    LoadLsp
+endif
