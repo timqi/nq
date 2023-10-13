@@ -91,8 +91,8 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     if args.download:
-        remote_url = parse_remote(args.download)
-        uri = urlparse(remote_url)
+        remote_url = args.download
+        uri = urlparse(remote_url.replace("git@", "").replace(":", "/"))
         print("Remote url:", uri)
         if isinstance(args.research, list):
             base = ["research"] if len(args.research) == 0 else ["research", args.research[0]]

@@ -15,7 +15,7 @@ generate_cfg = {
         "~/Documents/Stash/datagrip": "DB",
         "~/Documents/Stash/toys": "PY",
         "~/.config/nq": "PY",
-        "~/go/src/research": 1,
+        "~/go/src/research": 2,
         "~/go/src/gitlab.fish": 3,
         "~/go/src/github.com": 2,
     },
@@ -25,7 +25,7 @@ generate_cfg = {
         "~/go/src/gitlab.fish": 3,
         "~/go/src/github.com": 2,
     },
-    "ssh.devhost": {"~/go/src/research": 1, "~/go/src/gitlab.fish": 3, "~/go/src/github.com": 2},
+    "ssh.devhost": {"~/go/src/research": 2, "~/go/src/gitlab.fish": 3, "~/go/src/github.com": 2},
 }
 
 
@@ -80,10 +80,10 @@ def get_profile_of_directory(directory):
         profile = "PY"
     elif [any(f.endswith(suffix) for suffix in [".py", ".ipynb"]) for f in level1].count(True) > 1:
         profile = "PY"
-    elif any(i in level1 for i in ["go.mod", "go.sum"]):
-        profile = "GO"
     elif any(i in level1 for i in ["package.json", "yarn.lock"]):
         profile = "JS"
+    elif any(i in level1 for i in ["go.mod", "go.sum"]):
+        profile = "GO"
     elif any(i in level1 for i in ["cargo.toml"]):
         profile = "RS"
     elif any(i in level1 for i in ["cmakelists.txt"]):
@@ -132,7 +132,7 @@ def generate_project_index(keys):
             if not isin_ssh() and socket.gethostname() == hostname:
                 continue
             if isin_ssh():
-                return print(json.dumps(resolve_cfg(cfg)))
+                return print(json.dumps(resolve_cfg(cfg), indent=2))
             out, err, code = _run(f"scp -O {os.path.realpath(__file__)} {hostname}:/tmp/code.py")
             if code != 0:
                 return print("scp failed:", err)
@@ -149,8 +149,11 @@ def generate_project_index(keys):
 
     # generate alfred datastructure
     dest_dir = "/Users/qiqi/.cache/alfred/vscode/"
-    with open(os.path.join(dest_dir, "ssh.json")) as f:
-        sshs_ori = json.load(f).get("items", [])
+    sshs_file_path = os.path.join(dest_dir, "ssh.json")
+    sshs_ori = []
+    if os.path.exists(sshs_file_path):
+        with open(sshs_file_path) as f:
+            sshs_ori = json.load(f).get("items", [])
     locals, sshs = [], []
     for key, result in generated.items():
         print("handle key:", key)
