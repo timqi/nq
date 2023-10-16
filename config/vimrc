@@ -51,7 +51,6 @@ Plug 'tpope/vim-fugitive',
 Plug 'jiangmiao/auto-pairs',
 Plug '907th/vim-auto-save',
 Plug 'sbdchd/neoformat',
-Plug 'vim-scripts/ReplaceWithRegister'
 Plug 'wellle/targets.vim'
 Plug 'michaeljsmith/vim-indent-object'
 Plug 'skywind3000/asyncrun.vim'
