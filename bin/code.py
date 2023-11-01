@@ -25,7 +25,12 @@ generate_cfg = {
         "~/go/src/gitlab.fish": 3,
         "~/go/src/github.com": 2,
     },
-    "ssh.devhost": {"~/go/src/research": 2, "~/go/src/gitlab.fish": 3, "~/go/src/github.com": 2},
+    "ssh.devhost": {
+        "~/scripts": "PY",
+        "~/go/src/research": 2,
+        "~/go/src/gitlab.fish": 3,
+        "~/go/src/github.com": 2,
+    },
 }
 
 
@@ -195,7 +200,33 @@ def create_args_parser():
     parser = argparse.ArgumentParser(description="Hello World!")
     parser.add_argument("uri", help="Folder or uri to process", nargs="*", default=".")
     parser.add_argument("-g", "--generate", default=None, help="Generate code project index")
+    parser.add_argument("--patchpilot", default=None, type=str, help="Patch copilot token")
     return parser
+
+
+def patchpilot(token):
+    def patch_dir(d):
+        for folder in os.listdir(d):
+            if not folder.startswith("github.copilot"):
+                continue
+            p = os.path.join(d, folder, "dist/extension.js")
+            if not os.path.exists(p):
+                continue
+            with open(p, "r+") as f:
+                r = f.read()
+                if not r:
+                    continue
+                print("will patch:", p)
+                r = r.replace(
+                    "headers:{Authorization:`token ${t.token}`",
+                    "headers:{Authorization:`token %s`" % token,
+                )
+                f.write(r)
+
+    home = os.path.expanduser("~")
+    d = os.path.join(home, ".vscode/extensions")
+    if os.path.exists(d):
+        patch_dir(d)
 
 
 def main():
@@ -203,6 +234,8 @@ def main():
     args = parser.parse_args()
     if args.generate is not None:
         generate_project_index(args.generate)
+    elif args.patchpilot is not None:
+        patchpilot(args.patchpilot)
     else:
         run_code(args.uri)
 

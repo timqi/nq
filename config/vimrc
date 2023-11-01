@@ -252,4 +252,5 @@ command! LoadCopilot exe 'call plug#load("copilot.vim")'
 
 if has("nvim")
     LoadLsp
+    LoadCopilot
 endif
