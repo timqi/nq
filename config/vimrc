@@ -51,7 +51,6 @@ Plug 'tpope/vim-fugitive',
 Plug 'jiangmiao/auto-pairs',
 Plug '907th/vim-auto-save',
 Plug 'sbdchd/neoformat',
-Plug 'vim-scripts/ReplaceWithRegister'
 Plug 'wellle/targets.vim'
 Plug 'michaeljsmith/vim-indent-object'
 Plug 'skywind3000/asyncrun.vim'
@@ -232,7 +231,7 @@ function! LoadLsp()
 
     inoremap <expr> <c-n> coc#pum#visible() ? coc#pum#next(1): coc#refresh()
     inoremap <expr> <c-p> coc#pum#visible() ? coc#pum#prev(1): "\<c-p>"
-    inoremap <expr> <cr>  coc#pum#visible() ? coc#_select_confirm() : "\<CR>"
+    "inoremap <expr> <cr>  coc#pum#visible() ? coc#_select_confirm() : "\<CR>"
     inoremap <expr> <c-space> coc#refresh()
 
     nnoremap <leader>a   :<C-u>CocFzfList diagnostics --current-buf<CR>
