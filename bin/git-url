@@ -92,7 +92,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.download:
         remote_url = args.download
-        uri = urlparse(remote_url.replace("git@", "").replace(":", "/"))
+        if remote_url.startswith("git@"):
+            remote_url = "ssh://" + remote_url.replace(":", "/")
+        uri = urlparse(remote_url)
         print("Remote url:", uri)
         if isinstance(args.research, list):
             base = ["research"] if len(args.research) == 0 else ["research", args.research[0]]
@@ -100,7 +102,7 @@ if __name__ == "__main__":
             dest = os.path.join(*base)
         else:
             path = uri.path.replace(".git", "").strip("/")
-            dest = os.path.join(uri.netloc.strip("/"), path)
+            dest = os.path.join(uri.hostname.strip("/"), path)
         dest = os.path.join(os.environ.get("HOME", ""), "go/src", dest)
         print("Will clone into:", dest)
         if os.path.exists(dest):
