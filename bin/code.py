@@ -12,20 +12,14 @@ import time
 generate_cfg = {
     "local": {
         "~/Documents/Backups/linked": "",
-        "~/Documents/Stash/datagrip": "DB",
         "~/Documents/Stash/toys": "PY",
         "~/.config/nq": "PY",
         "~/go/src/research": 2,
         "~/go/src/gitlab.fish": 3,
         "~/go/src/github.com": 2,
     },
-    "ssh.xy2": {
-        "~/Documents/Stash/datagrip": "DB",
-        "~/go/src/research": 1,
-        "~/go/src/gitlab.fish": 3,
-        "~/go/src/github.com": 2,
-    },
     "ssh.devhost": {
+        "~/go/src/gitlab.fish/qiqi/datagrip": "DB",
         "~/scripts": "PY",
         "~/go/src/research": 2,
         "~/go/src/gitlab.fish": 3,
@@ -212,19 +206,27 @@ def patchpilot(token):
             p = os.path.join(d, folder, "dist/extension.js")
             if not os.path.exists(p):
                 continue
-            with open(p, "r+") as f:
+            with open(p, "r") as f:
                 r = f.read()
                 if not r:
                     continue
-                print("will patch:", p)
-                r = r.replace(
-                    "headers:{Authorization:`token ${t.token}`",
-                    "headers:{Authorization:`token %s`" % token,
-                )
+            print("will patch:", p)
+            r = r.replace(
+                "headers:{Authorization:`token ${t.token}`",
+                "headers:{Authorization:`token %s`" % token,
+            )
+            r = r.replace(
+                "return r.devOverride?.copilotTokenUrl??this.tokenUrl",
+                'return "https://mgithub.cc/apis/ed_gh_stu.i/copilot_internal/v2/token"',
+            )
+            with open(p, "w") as f:
                 f.write(r)
 
     home = os.path.expanduser("~")
     d = os.path.join(home, ".vscode/extensions")
+    if os.path.exists(d):
+        patch_dir(d)
+    d = os.path.join(home, ".vscode-server/extensions")
     if os.path.exists(d):
         patch_dir(d)
 
