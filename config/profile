@@ -139,14 +139,14 @@ zsh_cfg() {
     fzf-complete-widget() {
       BUFFER=$(complete-fzf --alias="`alias`" --command="$LBUFFER"); CURSOR=$#BUFFER; zle redisplay
     }
-    zle -N fzf-complete-widget && bindkey '^G' fzf-complete-widget
+    zle -N fzf-complete-widget && bindkey '^T' fzf-complete-widget
 
     zoxide_widget() {
         directory="$(zoxide query -l | fzf --layout=reverse --prompt='Directory: > ')"
         [ -n "$directory" ] && directory="cd $directory"
         BUFFER="$directory"; CURSOR=$#BUFFER; zle redisplay
     }
-    zle -N zoxide_widget && bindkey '^H' zoxide_widget
+    zle -N zoxide_widget && bindkey '^G' zoxide_widget
     
     printcolors() {
         for i in {0..255} ; do
@@ -180,14 +180,14 @@ bash_cfg() {
         READLINE_LINE="$directory"
         READLINE_POINT=0x7fffffff
     }
-    bind -x '"\C-h": __zoxide_to_directory__'
+    bind -x '"\C-g": __zoxide_to_directory__'
 
     __fzf_complete__() {
       output=$(complete-fzf --alias="`alias`" --command="$READLINE_LINE")
       READLINE_LINE="$output"
       READLINE_POINT=0x7fffffff
     }
-    bind -x '"\C-g": __fzf_complete__'
+    bind -x '"\C-t": __fzf_complete__'
 
     __fzf_history__() {
       local output opts script
