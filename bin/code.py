@@ -216,6 +216,10 @@ def patchpilot(token):
                 "headers:{Authorization:`token %s`" % token,
             )
             r = r.replace(
+                "headers:{Authorization:`token ${e.token}`",
+                "headers:{Authorization:`token %s`" % token,
+            )
+            r = r.replace(
                 "return r.devOverride?.copilotTokenUrl??this.tokenUrl",
                 'return "https://mgithub.cc/apis/ed_gh_stu.i/copilot_internal/v2/token"',
             )
