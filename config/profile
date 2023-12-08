@@ -30,14 +30,6 @@ CONDA_INIT_SCRIPT="$local_dir/conda/etc/profile.d/conda.sh"
 [ -f $CONDA_INIT_SCRIPT ] && . $CONDA_INIT_SCRIPT
 
 
-iploc() {
-    for ip in "$@"; do
-        curl --silent "http://a8ae7a319bf8a4c53aac54e335fe1cf2-882779430.ap-east-1.elb.amazonaws.com/get_area_from_ip?ip=$ip"|\
-            jq '"\(.country_long);\(.region);\(.city)"'
-    done
-}
-
-
 _confirm_run() {
     read -p "$1[confirm]:" -n 1 key
     if [ "$key" = "" ]; then
