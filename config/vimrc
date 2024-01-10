@@ -54,7 +54,6 @@ Plug 'sbdchd/neoformat',
 Plug 'wellle/targets.vim'
 Plug 'michaeljsmith/vim-indent-object'
 Plug 'skywind3000/asyncrun.vim'
-Plug 'christoomey/vim-tmux-navigator'
 
 Plug 'neoclide/coc.nvim', {'branch': 'release', 'on': []}
 Plug 'antoinemadec/coc-fzf', {'on': []}
