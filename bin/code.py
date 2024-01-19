@@ -4,6 +4,7 @@ import glob
 import json
 import os
 import queue
+import re
 import shutil
 import socket
 import subprocess
@@ -211,18 +212,12 @@ def patchpilot(token):
                 if not r:
                     continue
             print("will patch:", p)
-            r = r.replace(
-                "headers:{Authorization:`token ${t.token}`",
-                "headers:{Authorization:`token %s`" % token,
-            )
-            r = r.replace(
-                "headers:{Authorization:`token ${e.token}`",
-                "headers:{Authorization:`token %s`" % token,
-            )
-            r = r.replace(
-                "return n.devOverride?.copilotTokenUrl??this.tokenUrl",
-                'return "https://mgithub.cc/apis/ed_gh_stu.i/copilot_internal/v2/token"',
-            )
+            repl = "headers:{Authorization:`token %s`" % token
+            r = re.sub(r"headers:\{Authorization:`token \$\{\w.token\}`", repl, r)
+
+            repl = r"""getTokenUrl(n){return "https://mgithub.cc/apis/ed_gh_stu.i/copilot_internal/v2/token"}"""
+            r = re.sub(r"getTokenUrl\(\w\)\{[^}]*\}", repl, r)
+
             with open(p, "w") as f:
                 f.write(r)
 
