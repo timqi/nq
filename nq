@@ -57,7 +57,7 @@ github_install_logic() {
     curr=`command -v $1 >/dev/null && echo $($2) || echo 'unknown'`
     url="https://api.github.com/repos/$3/releases"
     ver=`download ${url} |\
-        grep 'tag_name' | grep -v "nightly" | grep -v "stable" |\
+        grep 'tag_name' | grep -v "nightly" | grep -v -i alpha | grep -v "stable" |\
         head -n 1 | cut -d\" -f4`
     [ "$curr" = "$ver" ] && log "[$1] $ver is the latest, return" && return
     log "[$1] will install $ver, current: $curr"
@@ -188,6 +188,21 @@ install_alist() {
         url=`download_url $repo $1 "alist-$ar.tar.gz"`
         download $url | tar -zx -C $tmp
         mv "$tmp/$app" "$bin_dir"
+    }
+    github_install_logic $app ${app}_version $repo ${app}_install
+}
+
+install_mihomo() {
+    app=mihomo
+    repo="MetaCubeX/mihomo"
+    mihomo_version() {
+        echo `mihomo -v |grep "Meta" | cut -d " " -f3`
+    }
+    mihomo_install() {
+        ar=`[ $ARCH = "Darwin" ] && echo "darwin-arm64" || echo "linux-amd64"`
+        url=`download_url $repo $1 "mihomo-$ar-go120-${1}.gz"`
+        download $url | gzip -d -c > $tmp/$app
+        mv "$tmp/$app" "$bin_dir" && chmod +x "$bin_dir/$app"
     }
     github_install_logic $app ${app}_version $repo ${app}_install
 }
