@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import glob
+import importlib.util
 import json
 import os
 import queue
@@ -27,6 +28,15 @@ generate_cfg = {
         "~/go/src/github.com": 2,
     },
 }
+
+
+def load_file_as_module(file_path):
+    spec = importlib.util.spec_from_loader("", loader=None)
+    module = importlib.util.module_from_spec(spec)
+    with open(file_path, "r") as f:
+        code_string = f.read()
+    exec(code_string, module.__dict__)
+    return module
 
 
 def _run(cmd, env={}):
@@ -60,17 +70,21 @@ def run_code(uri):
     if isin_ssh():
         ipcs = glob.glob(f"/run/user/{os.getuid()}/vscode-ipc-*")
         ipcs.sort(key=lambda x: os.path.getmtime(x), reverse=True)
-        for ipc in ipcs[:20]:
+        limit = 6
+        for ipc in ipcs[:limit]:
             # print("ipc", ipc, "cmds", cmds)
             stdout, stderr, code = _run(" ".join(cmds), env={"VSCODE_IPC_HOOK_CLI": ipc})
             if code == 0:
-                return
+                break
+        for ipc in ipcs[limit:]:
+            os.remove(ipc)
     else:
         stdout, stderr, code = _run(" ".join(cmds))
         if code == 0:
             time.sleep(1)
-            return
-    print("Open code failed:", stderr)
+    if stderr:
+        print("Open code failed:", stderr)
+        print("pwd:", os.getcwd())
 
 
 def get_profile_of_directory(directory):
@@ -148,7 +162,7 @@ def generate_project_index(keys):
             generated[key] = resolve_cfg(cfg)
 
     # generate alfred datastructure
-    dest_dir = "/Users/qiqi/.cache/alfred/vscode/"
+    dest_dir = os.path.expanduser("~/.cache/alfred/vscode/")
     sshs_file_path = os.path.join(dest_dir, "ssh.json")
     sshs_ori = []
     if os.path.exists(sshs_file_path):
@@ -191,14 +205,6 @@ def generate_project_index(keys):
         print("ssh.json generated")
 
 
-def create_args_parser():
-    parser = argparse.ArgumentParser(description="Hello World!")
-    parser.add_argument("uri", help="Folder or uri to process", nargs="*", default=".")
-    parser.add_argument("-g", "--generate", default=None, help="Generate code project index")
-    parser.add_argument("--patchpilot", default=None, type=str, help="Patch copilot token")
-    return parser
-
-
 def patchpilot(token):
     def patch_dir(d):
         for folder in os.listdir(d):
@@ -230,10 +236,52 @@ def patchpilot(token):
         patch_dir(d)
 
 
+def get_ssh(only_host=False):
+    file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "complete-fzf")
+    m = load_file_as_module(file)
+    hosts = m._parse_host()
+    items, issh = [], os.path.join(os.path.dirname(__file__), "issh")
+    for item in hosts:
+        host, type = item["host"], item["type"]
+        if host in ["github.com", "localhost"]:
+            continue
+        arg = host if only_host else f"{issh} {host}" if type == "fish" else f"ssh -A {host}"
+        items.append({"title": host, "arg": arg})
+    return json.dumps({"items": items})
+
+
+def parse_tmux_project():
+    tmux = os.path.join(os.path.dirname(__file__), "alacritty-tmux")
+    out, err, _ = _run(f"{tmux} capture-pane -p")
+    if err:
+        raise Exception(err)
+    result = re.findall(r"\s/[^\s]+\s", out)
+    path = [p.strip() for p in result]
+    if not path:
+        raise Exception("valid path not found. length:", len(path))
+    hosts, path = json.loads(get_ssh(True)), path[-1]
+    for item in hosts["items"]:
+        host = item["arg"]
+        item["arg"] = f"code --folder-uri vscode-remote://ssh-remote+{host}{path}"
+        item["subtitle"] = f"{path}"
+    return json.dumps(hosts)
+
+
+def create_args_parser():
+    parser = argparse.ArgumentParser(description="Hello World!")
+    parser.add_argument("uri", help="Folder or uri to process", nargs="*", default=".")
+    parser.add_argument("-g", "--generate", default=None, help="Generate code project index")
+    parser.add_argument("--patchpilot", default=None, type=str, help="Patch copilot token")
+    parser.add_argument("--parse-tmux-project", action="store_true", help="Parse tmux project in terminal")
+    return parser
+
+
 def main():
     parser = create_args_parser()
     args = parser.parse_args()
-    if args.generate is not None:
+    if args.parse_tmux_project:
+        print(parse_tmux_project())
+    elif args.generate is not None:
         generate_project_index(args.generate)
     elif args.patchpilot is not None:
         patchpilot(args.patchpilot)
