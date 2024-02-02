@@ -61,7 +61,7 @@ def search_code_bin_ssh():
 
 def run_code(uri):
     bin = search_code_bin_ssh() if isin_ssh() else shutil.which("code")
-    if not bin:
+    if not bin and not isin_ssh():
         raise Exception("code command not found")
     cmds = [bin]
     cmds += [uri] if ":" not in uri else ["--folder-uri", uri]
@@ -70,6 +70,8 @@ def run_code(uri):
     if isin_ssh():
         ipcs = glob.glob(f"/run/user/{os.getuid()}/vscode-ipc-*")
         ipcs.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+        if len(ipcs) < 1:
+            stderr = "No vscode server found."
         limit = 6
         for ipc in ipcs[:limit]:
             # print("ipc", ipc, "cmds", cmds)

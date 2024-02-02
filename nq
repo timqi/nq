@@ -396,7 +396,7 @@ install_ctags() {
     ./autogen.sh >/dev/null
     ./configure --prefix="$tmp" >/dev/null
     log "make ctags ..."
-    make >/dev/null
+    make -j`nproc` >/dev/null
     make install >/dev/null
     cp $tmp/bin/* "$bin_dir"
     cd -
