@@ -30,7 +30,7 @@ download() {
 
 
 install_go() {
-    ver="1.20.5"
+    ver="1.22.0"
     command -v go >/dev/null &&\
         case `go version` in *$ver*) log "go$ver already installed, return" && return;; esac ||\
         log "go is not installed now"
@@ -296,15 +296,10 @@ install_nvim() {
         link "../nvim/bin/nvim" "$bin_dir/nvim"
     }
     github_install_logic $app ${app}_version $repo ${app}_install
-    
-    # Install pynvim pymodule
-    [ -f $local_dir/conda/bin/python ] &&\
-        $local_dir/conda/bin/python -m pip install pynvim ||\
-        echo "Please install pynvim manually!"
 }
 
 nn() {
-    default_ver="20.10.0"
+    default_ver="20.11.1"
     [ -n "$2" ] && ver="$2" || ver=$default_ver
     node_root="$local_dir/node"; node_path="$node_root/$ver"
     case $1 in
@@ -439,6 +434,8 @@ handle_item_install() {
     rm -rf "$tmp"
 }
 
+normal_apps="go,bat,lazygit,jq,zoxide,fzf,rg,watchexec,fd,lsd,dust,nvim,node,config,zplug,vimrc,ctags"
+
 if ! test -z "$1" && egrep -q "^install_$1" $0; then
     handle_item_install $1
 elif [ "$1" = "all" ]; then
@@ -450,13 +447,19 @@ elif [ "$1" = "all" ]; then
         fi
         handle_item_install $item
     done
+elif [ "$1" = "normal" ]; then
+    for item in $(echo $normal_apps | sed 's/,/ /g'); do
+        handle_item_install $item
+    done
 elif echo "$1" | grep -q ','; then
     for item in $(echo $1 | sed 's/,/ /g'); do
         handle_item_install $item
     done
 else
-    log '`nq all` to install all components'
+    echo '`nq normal` to install:'
+    log "$normal_apps"
+    echo '`nq all` to install:'
     items=`all_items`
-    log "apps: $items"
+    log "$items"
 fi
 
