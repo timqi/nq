@@ -4,6 +4,7 @@ import asyncio
 import importlib.util
 import json
 import os
+import shutil
 import subprocess
 import sys
 import urllib.parse
@@ -46,7 +47,7 @@ def get_ssh(only_host=False):
     file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "complete-fzf")
     m = load_file_as_module(file)
     hosts = m._parse_host()
-    items, issh = [], "/Users/qiqi/.config/nq/bin/issh"
+    items, issh = [], os.path.join(os.path.dirname(__file__), "issh")
     for item in hosts:
         host, type = item["host"], item["type"]
         if host in ["github.com", "localhost"]:
@@ -123,7 +124,10 @@ if __name__ == "__main__":
         print(run(args.run))
     elif args.generate:
         obj = run(args.generate)
-        with open(f"/Users/qiqi/.cache/alfred/{args.generate}.json", "w") as f:
+        file = os.path.expanduser(f"~/.cache/alfred/{args.generate}.json")
+        if not os.path.exists(os.path.dirname(file)):
+            shutil.mkdir(os.path.dirname(file))
+        with open(file, "w") as f:
             f.write(obj)
     else:
         parser.print_help()

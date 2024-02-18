@@ -401,12 +401,13 @@ def _parse_host():
                 for host in line.split()[1:]
                 if "*" not in host and "!" not in host
             ]
-    with open(os.path.expanduser("~/.ssh/fish.hosts")) as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            hosts.append({"host": line, "type": "fish"})
+    for item in ["fish", "cus"]:
+        with open(os.path.expanduser(f"~/.ssh/{item}.hosts")) as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                hosts.append({"host": line, "type": "fish"})
     return hosts
 
 
