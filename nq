@@ -367,7 +367,6 @@ install_vimrc() {
     link "$conf_dir/vimrc" "$HOME/.vimrc"
 
     [ ! -d "$HOME/.config/nvim" ] && mkdir -p "$HOME/.config/nvim"
-    link "$conf_dir/coc-settings.json" "$HOME/.config/nvim"
 
     nvimrc="$HOME/.config/nvim/init.vim" && rm -f $nvimrc
     echo "set runtimepath^=~/.vim" > $nvimrc
