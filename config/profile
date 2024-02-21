@@ -62,7 +62,7 @@ ltmux() {
     fi
     tmux rename-window local
     unset TMUX
-    tmux
+    tmux $@
 }
 
 # fzf
