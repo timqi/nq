@@ -181,8 +181,8 @@ def generate_project_index(keys):
         for path, v in result.items():
             arr = sshs if is_ssh else locals
             args = ["code"]
-            if v[0]:
-                args += ["--profile", v[0]]
+            # if v[0]:
+            #     args += ["--profile", v[0]]
             if is_ssh:
                 uri = f"vscode-remote://ssh-remote+{host}{path}"
                 args += ["--folder-uri", uri]

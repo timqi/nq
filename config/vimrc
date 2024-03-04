@@ -7,7 +7,7 @@ set backspace=indent,eol,start
 set completeopt=menu,menuone,noselect
 set noswapfile nobackup nowritebackup
 set cindent autoindent smartindent expandtab smarttab
-set nu signcolumn=number laststatus=2 cursorline ruler
+set nu signcolumn=number laststatus=1 cursorline ruler
 set autoread autowrite mouse=a
 set ts=4 sw=4 sts=4 scrolloff=3
 set statusline=%F\ %h%w%m%r%=%-14.(%l/%L,%c%V%)\ %P
@@ -96,8 +96,8 @@ command! -bang -nargs=* BRg
   \   'rg --column --line-number --no-heading --color=always --smart-case --fixed-strings -g '.shellescape(expand('%')).' -- '.shellescape(<q-args>), 1,
   \   fzf#vim#with_preview(), <bang>0)
 
-noremap  <c-g>      :<C-U>call fzf#vim#files('')<CR>
-noremap  <leader>g  :<C-U>call fzf#vim#files('')<CR>
+noremap  <c-p>      :<C-U>call fzf#vim#files('')<CR>
+noremap  <leader>p  :<C-U>call fzf#vim#files('')<CR>
 nnoremap <leader>e  :<C-U>call fzf#vim#history()<CR>
 nnoremap <leader>m  :<C-U>call fzf#vim#marks()<CR>
 nnoremap <leader>n  :<C-U>Commands<CR>
@@ -149,7 +149,7 @@ augroup vimrc
     au FileType qf,git,term,fzf setlocal nonu nornu
     au FileType python let b:neoformat_run_all_formatters = 1
     au FileType fzf set laststatus=0 showmode noruler
-        \| au BufLeave <buffer> set laststatus=2 noshowmode ruler
+        \| au BufLeave <buffer> set laststatus=1 noshowmode ruler
     au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
         \| exe "normal! g'\"" | endif
 augroup END
