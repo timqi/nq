@@ -27,6 +27,10 @@ generate_cfg = {
         "~/go/src/gitlab.fish": 3,
         "~/go/src/github.com": 2,
     },
+    "ssh.gb0": {
+        "~/go/src/research": 2,
+        "~/go/src/github.com": 2,
+    },
 }
 
 
@@ -117,6 +121,8 @@ def resolve_cfg(cfg):
         directory = os.path.realpath(os.path.expanduser(directory))
         if isinstance(limit, str):
             results[directory] = limit, os.path.basename(directory)
+            continue
+        if not os.path.exists(directory):
             continue
         if any(i in os.listdir(directory) for i in [".root", ".git"]):
             results[directory] = get_profile_of_directory(directory), " / ".join(proj_arr)
