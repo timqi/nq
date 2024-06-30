@@ -32,27 +32,6 @@ nnoremap k gk
 vnoremap < <gv
 vnoremap > >gv
 
-" Plugins
-set rtp+=~/.vim
-if empty(glob('~/.vim/autoload/plug.vim'))
-    execute '!curl --silent -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
-    autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
-endif
-if !empty(glob($HOME..'/nq/bin'))
-    let $PATH = $HOME..'/nq/bin:'..$PATH
-endif
-silent! call plug#begin('~/.vim/plugged')
-Plug 'junegunn/fzf',
-Plug 'junegunn/fzf.vim',
-Plug 'ludovicchabant/vim-gutentags'
-Plug 'tpope/vim-commentary',
-Plug 'tpope/vim-surround',
-Plug 'jiangmiao/auto-pairs',
-Plug '907th/vim-auto-save',
-Plug 'sbdchd/neoformat',
-Plug 'wellle/targets.vim'
-Plug 'michaeljsmith/vim-indent-object'
-silent! call plug#end()
 
 let g:gutentags_enabled = 0
 let g:gutentags_project_root = ['.root', '.git']
@@ -170,6 +149,209 @@ function! ApplyTheme()
     hi VisualNOS ctermbg=240 guibg=#03045e
     hi PmenuSel ctermbg=22 ctermfg=255 guibg=#03045e guifg=#ffffff
 endfunction
+"colorscheme habamax
+"call ApplyTheme()
 
-colorscheme habamax
-call ApplyTheme()
+let g:basic_plugins = [
+    \ 'ludovicchabant/vim-gutentags',
+    \ 'tpope/vim-commentary',
+    \ 'tpope/vim-surround',
+    \ 'jiangmiao/auto-pairs',
+    \ '907th/vim-auto-save',
+    \ 'sbdchd/neoformat',
+    \ 'wellle/targets.vim',
+    \ 'michaeljsmith/vim-indent-object',
+    \]
+
+if !has("nvim")
+    set rtp+=~/.vim
+    if empty(glob('~/.vim/autoload/plug.vim'))
+        execute '!curl --silent -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+        autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+    endif
+    if !empty(glob($HOME..'/nq/bin'))
+        let $PATH = $HOME..'/nq/bin:'..$PATH
+    endif
+    silent! call plug#begin('~/.vim/plugged')
+    let g:basic_plugins += ['junegunn/fzf', 'junegunn/fzf.vim']
+    for plugin in g:basic_plugins
+        Plug plugin
+    endfor
+    silent! call plug#end()
+    call ApplyTheme()
+    finish
+endif
+
+
+lua <<EOF
+local home_path = os.getenv("HOME")
+vim.env.XDG_CONFIG_HOME = home_path.."/.vim/config"
+vim.env.XDG_DATA_HOME = home_path.."/.vim/data"
+vim.env.XDG_STATE_HOME = home_path.."/.vim/state"
+
+local lazypath = home_path.."/.vim/plugged/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+    vim.fn.system({
+        "git", "clone", "--filter=blob:none",
+        "https://github.com/folke/lazy.nvim.git",
+        "--branch=stable", lazypath,
+    }) end
+vim.opt.rtp:prepend(lazypath)
+
+local plugins = {}
+table.foreach(vim.g.basic_plugins, function(_, plugin)
+    -- table.insert(plugins, {plugin, event = "VeryLazy"})
+    table.insert(plugins, {plugin})
+end)
+
+table.insert(plugins, {
+    'nvim-treesitter/nvim-treesitter',
+    config = function()
+        require'nvim-treesitter.configs'.setup {
+          ensure_installed = { "javascript", "go", "python" },
+          sync_install = true,
+          auto_install = true,
+        }
+    end
+})
+
+table.insert(plugins, {
+    'Wansmer/treesj',
+    dependencies = { 'nvim-treesitter/nvim-treesitter' },
+    config = function()
+        require('treesj').setup({
+            check_syntax_error = false,
+            se_default_keymaps = false,
+            notify = false,
+        })
+    end,
+})
+
+table.insert(plugins, {
+    "folke/tokyonight.nvim",
+    lazy = false, priority = 1000,
+    config = function()
+        vim.cmd([[colorscheme tokyonight]])
+    end,
+})
+
+table.insert(plugins, {
+    "nvim-telescope/telescope.nvim",
+    dependencies = { "nvim-lua/plenary.nvim", "nvim-telescope/telescope-ui-select.nvim" },
+    config = function()
+        local builtin = require("telescope.builtin")
+        vim.keymap.set("n", "<c-p>", builtin.find_files, {})
+        vim.keymap.set("n", "<leader>p", builtin.find_files, {})
+        vim.keymap.set("n", "<leader>e", builtin.oldfiles, {})
+        vim.keymap.set("n", "<leader>s", builtin.live_grep, {})
+        vim.keymap.set("n", "<leader>w", builtin.grep_string, {})
+        vim.keymap.set("n", "<leader>n", builtin.commands, {})
+        vim.keymap.set("n", "<leader>m", builtin.marks, {})
+        vim.keymap.set("n", "<leader>h", builtin.help_tags, {})
+        vim.keymap.set("n", "<leader>y", builtin.tags, {})
+        vim.keymap.set("n", "<leader>t", builtin.lsp_document_symbols, {})
+        -- vim.keymap.set("n", "<leader>t", builtin.current_buffer_tags, {})
+        require("telescope").setup({
+            defaults = {
+                layout_config = {},
+            },
+            extensions = {
+                ["ui-select"] = {
+                    require("telescope.themes").get_dropdown({}),
+                },
+            },
+        })
+        require("telescope").load_extension("ui-select")
+    end,
+})
+
+table.insert(plugins, {
+    "hrsh7th/nvim-cmp",
+    event = "InsertEnter",
+    dependencies = { "hrsh7th/cmp-nvim-lsp", "hrsh7th/cmp-buffer" },
+    config = function()
+        local cmp = require("cmp")
+        cmp.setup({
+            snippet = {
+                expand = function(args)
+                    vim.snippet.expand(args.body)
+                end,
+            },
+            mapping = cmp.mapping.preset.insert({
+                ["<S-up>"] = cmp.mapping.scroll_docs(-4),
+                ["<S-down>"] = cmp.mapping.scroll_docs(4),
+                ["<C-Space>"] = cmp.mapping.complete(),
+                ["<C-e>"] = cmp.mapping.abort(),
+                ["<CR>"] = cmp.mapping.confirm({ select = true }),
+            }),
+            sources = cmp.config.sources({
+                { name = "nvim_lsp" },
+            }, { { name = "buffer" } }),
+        })
+        cmp.setup.cmdline({ '/', '?' }, {
+            mapping = cmp.mapping.preset.cmdline(),
+            sources = {{ name = 'buffer' }}
+        })
+    end,
+})
+
+table.insert(plugins, {
+    "neovim/nvim-lspconfig",
+    event = "VeryLazy",
+    ft = { "python", "go" },
+    dependencies = {
+        "williamboman/mason.nvim",
+        "hrsh7th/nvim-cmp",
+        "williamboman/mason-lspconfig.nvim",
+        "nvim-lua/plenary.nvim",
+    },
+    config = function()
+        require("mason").setup({})
+        require("mason-lspconfig").setup({
+            ensure_installed = { "pyright", "gopls" },
+        })
+        local lspconfig = require("lspconfig")
+        local on_attach = function(client, bufnr)
+            vim.api.nvim_buf_set_option(bufnr, "omnifunc", "v:lua.vim.lsp.omnifunc")
+            local bufopts = { noremap = true, silent = false, buffer = bufnr }
+            vim.keymap.set("n", "gD", vim.lsp.buf.declaration, bufopts)
+            vim.keymap.set("n", "gd", vim.lsp.buf.definition, bufopts)
+            vim.keymap.set("n", "gk", vim.lsp.buf.hover, bufopts)
+            vim.keymap.set("n", "gi", vim.lsp.buf.implementation, bufopts)
+            vim.keymap.set("n", "gt", vim.lsp.buf.type_definition, bufopts)
+            vim.keymap.set("n", "ga", vim.lsp.buf.rename, bufopts)
+            vim.keymap.set("n", "ge", vim.lsp.buf.code_action, bufopts)
+            vim.keymap.set("n", "gr", vim.lsp.buf.references, bufopts)
+            -- vim.keymap.set({ "i", "n" }, "<c-p>", vim.lsp.buf.signature_help, bufopts)
+        end
+        local lsp_flags = { debounce_text_changes = 150 }
+        local cmp_capabilities = require("cmp_nvim_lsp").default_capabilities()
+        lspconfig["gopls"].setup({ on_attach = on_attach, flags = lsp_flags, capabilities = cmp_capabilities })
+        lspconfig["pyright"].setup({
+            on_attach = on_attach,
+            flags = lsp_flags,
+            capabilities = cmp_capabilities,
+            settings = {
+                python = {
+                    analysis = {
+                        reportOptionalSubscript = "none",
+                        reportGeneralTypeIssues = "none",
+                        reportOptionalOperand = "warning",
+                        reportOptionalMemberAccess = "none",
+                    },
+                },
+            },
+        })
+    end,
+})
+
+function setup()
+    require("lazy").setup(plugins, {
+        root = home_path.."/.vim/plugged",
+        performance = {rtp = {disabled_plugins = {
+            "tutor", "gzip", "tarPlugin", "zipPlugin", "tohtml"
+        }}}
+    })
+end
+setup()
+EOF
