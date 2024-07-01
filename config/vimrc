@@ -163,14 +163,16 @@ let g:basic_plugins = [
     \ 'michaeljsmith/vim-indent-object',
     \]
 
+if !empty(glob($HOME..'/nq/bin'))
+    let $PATH = $HOME..'/nq/bin:'..$PATH
+endif
+
 if !has("nvim")
     set rtp+=~/.vim
     if empty(glob('~/.vim/autoload/plug.vim'))
-        execute '!curl --silent -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+        let plug_url = "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
+        execute "!curl --silent -fLo ~/.vim/autoload/plug.vim --create-dirs ".plug_url
         autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
-    endif
-    if !empty(glob($HOME..'/nq/bin'))
-        let $PATH = $HOME..'/nq/bin:'..$PATH
     endif
     silent! call plug#begin('~/.vim/plugged')
     let g:basic_plugins += ['junegunn/fzf', 'junegunn/fzf.vim']
@@ -231,7 +233,8 @@ table.insert(plugins, {
     "folke/tokyonight.nvim",
     lazy = false, priority = 1000,
     config = function()
-        vim.cmd([[colorscheme tokyonight]])
+        vim.cmd([[colorscheme tokyonight
+            hi CursorLine ctermbg=237 guibg=#386641]])
     end,
 })
 
@@ -262,6 +265,22 @@ table.insert(plugins, {
             },
         })
         require("telescope").load_extension("ui-select")
+    end,
+})
+
+table.insert(plugins, {
+    "NeogitOrg/neogit",
+    dependencies = {
+        "nvim-lua/plenary.nvim",
+        "sindrets/diffview.nvim",
+        "nvim-telescope/telescope.nvim",
+    },
+    config = function()
+        require("neogit").setup({
+            disable_hint = true,
+            disable_context_highlighting = true,
+            disable_signs = true,
+        })
     end,
 })
 
