@@ -161,6 +161,7 @@ let g:basic_plugins = [
     \ 'sbdchd/neoformat',
     \ 'wellle/targets.vim',
     \ 'michaeljsmith/vim-indent-object',
+    \ 'tpope/vim-fugitive'
     \]
 
 if !empty(glob($HOME..'/nq/bin'))
@@ -265,22 +266,6 @@ table.insert(plugins, {
             },
         })
         require("telescope").load_extension("ui-select")
-    end,
-})
-
-table.insert(plugins, {
-    "NeogitOrg/neogit",
-    dependencies = {
-        "nvim-lua/plenary.nvim",
-        "sindrets/diffview.nvim",
-        "nvim-telescope/telescope.nvim",
-    },
-    config = function()
-        require("neogit").setup({
-            disable_hint = true,
-            disable_context_highlighting = true,
-            disable_signs = true,
-        })
     end,
 })
 
