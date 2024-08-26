@@ -150,7 +150,7 @@ install_fzf() {
     }
     fzf_install() {
         ar=`[ $ARCH = "Darwin" ] && echo "darwin_arm64.zip" || echo "linux_amd64.tar.gz"`
-        url=`download_url $repo $1 "fzf-${1}-$ar"`
+        url=`download_url $repo $1 "fzf-$(echo $1|cut -c2-100)-$ar"`
         if [ $ARCH = "Darwin" ]; then
             download $url > "$tmp/$app.dl"
             unzip "$tmp/$app.dl" -d "$tmp"
@@ -172,6 +172,22 @@ install_rg() {
         ar=`[ $ARCH = "Darwin" ] && echo "x86_64-apple-darwin" || echo "x86_64-unknown-linux-musl"`
         url=`download_url $repo $1 "ripgrep-${1}-$ar.tar.gz"`
         download $url | tar -zx -C $tmp --strip-components=1
+        mv "$tmp/$app" "$bin_dir"
+    }
+    github_install_logic $app ${app}_version $repo ${app}_install
+}
+
+install_restic() {
+    app=restic
+    repo="restic/restic"
+    restic_version() {
+        echo `restic version | cut -d " " -f2`
+    }
+    restic_install() {
+        ar=`[ $ARCH = "Darwin" ] && echo "darwin_arm64" || echo "linux_amd64"`
+        url=`download_url $repo $1 "restic_$(echo $1|cut -c2-100)_$ar.bz2"`
+        download $url | bunzip2 > $tmp/restic
+        chmod +x $tmp/restic
         mv "$tmp/$app" "$bin_dir"
     }
     github_install_logic $app ${app}_version $repo ${app}_install
