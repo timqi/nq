@@ -292,10 +292,6 @@ table.insert(plugins, {
                 { name = "nvim_lsp" },
             }, { { name = "buffer" } }),
         })
-        cmp.setup.cmdline({ '/', '?' }, {
-            mapping = cmp.mapping.preset.cmdline(),
-            sources = {{ name = 'buffer' }}
-        })
     end,
 })
 
