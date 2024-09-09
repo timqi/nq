@@ -80,6 +80,25 @@ install_bat() {
     github_install_logic $app ${app}_version $repo ${app}_install
 }
 
+install_onekeyd() {
+    if [ "$ARCH" != "Darwin" ]; then
+        echo "onekeyd is for macOS"
+        return 0
+    fi
+
+    log "[onekeyd] Check newest release: https://github.com/OneKeyHQ/onekey-bridge/releases"
+
+    ver="2.2.0"
+    url="https://github.com/OneKeyHQ/onekey-bridge/releases/download/v$ver/onekey-bridge-$ver.signed.pkg"
+
+    cd $tmp
+    curl -L -s $url > onekeyd.pkg
+    pkgutil --expand onekeyd.pkg onekeyd
+    cd onekeyd/so.onekey.bridge.install.pkg/
+    tar -xvf Payload
+    mv Applications/Utilities/OneKey\ Bridge/onekeyd_darwin_arm64 ~/.local/bin/onekeyd
+}
+
 install_websocat() {
     app=websocat
     repo="vi/$app"

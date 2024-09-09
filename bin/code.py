@@ -21,11 +21,11 @@ generate_cfg = {
         "~/go/src/github.com": 2,
     },
     "ssh.devhost": {
-        "~/go/src/gitlab.fish/qiqi/datagrip": "DB",
         "~/scripts": "PY",
         "~/go/src/research": 2,
         "~/go/src/gitlab.fish": 3,
         "~/go/src/github.com": 2,
+        "~/running/tdengine/runtime/src": 2,
     },
     "ssh.gb0": {
         "~/go/src/research": 2,
