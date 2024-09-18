@@ -308,7 +308,7 @@ table.insert(plugins, {
     config = function()
         require("mason").setup({})
         require("mason-lspconfig").setup({
-            ensure_installed = { "pyright", "gopls", "tsserver" },
+            ensure_installed = { "pyright", "gopls", "ts_ls" },
         })
         local lspconfig = require("lspconfig")
         local on_attach = function(client, bufnr)
@@ -326,7 +326,7 @@ table.insert(plugins, {
         end
         local lsp_flags = { debounce_text_changes = 150 }
         local cmp_capabilities = require("cmp_nvim_lsp").default_capabilities()
-        lspconfig["tsserver"].setup({ on_attach = on_attach, flags = lsp_flags, capabilities = cmp_capabilities })
+        lspconfig["ts_ls"].setup({ on_attach = on_attach, flags = lsp_flags, capabilities = cmp_capabilities })
         lspconfig["gopls"].setup({ on_attach = on_attach, flags = lsp_flags, capabilities = cmp_capabilities })
         lspconfig["pyright"].setup({
             on_attach = on_attach,
