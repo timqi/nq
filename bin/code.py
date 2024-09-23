@@ -25,9 +25,8 @@ generate_cfg = {
         "~/go/src/research": 2,
         "~/go/src/gitlab.fish": 3,
         "~/go/src/github.com": 2,
-        "~/running/tdengine/runtime/src": 2,
     },
-    "ssh.gb0": {
+    "ssh.ts-um790p": {
         "~/go/src/research": 2,
         "~/go/src/github.com": 2,
     },
@@ -171,6 +170,8 @@ def generate_project_index(keys):
 
     # generate alfred datastructure
     dest_dir = os.path.expanduser("~/.cache/alfred/vscode/")
+    if not os.path.exists(dest_dir):
+        os.makedirs(dest_dir, exist_ok=True)
     sshs_file_path = os.path.join(dest_dir, "ssh.json")
     sshs_ori = []
     if os.path.exists(sshs_file_path):

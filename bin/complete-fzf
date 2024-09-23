@@ -392,22 +392,26 @@ def parse_alias(alias, command, section):
 
 def _parse_host():
     hosts = []
-    with open(os.path.expanduser("~/.ssh/config")) as f:
-        for line in f:
-            if not line.startswith("Host "):
-                continue
-            hosts += [
-                {"host": host.strip(), "type": "native"}
-                for host in line.split()[1:]
-                if "*" not in host and "!" not in host
-            ]
-    for item in ["fish", "cus"]:
-        with open(os.path.expanduser(f"~/.ssh/{item}.hosts")) as f:
+    def parse_ssh_config(path, _type):
+        nonlocal hosts
+        with open(os.path.expanduser(path)) as f:
             for line in f:
-                line = line.strip()
-                if not line or line.startswith("#"):
+                if not line.startswith("Host "):
                     continue
-                hosts.append({"host": line, "type": "fish"})
+                hosts += [
+                    {"host": host.strip(), "type": _type}
+                    for host in line.split()[1:]
+                    if "*" not in host and "!" not in host
+                ]
+    parse_ssh_config("~/.ssh/config", "native")
+    parse_ssh_config("~/.ssh/ssm", "fish")
+
+    with open(os.path.expanduser(f"~/.ssh/cus.hosts")) as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            hosts.append({"host": line, "type": "fish"})
     return hosts
 
 
