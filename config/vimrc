@@ -346,6 +346,11 @@ table.insert(plugins, {
     end,
 })
 
+table.insert(plugins, {
+    "github/copilot.vim",
+    event = "VeryLazy",
+})
+
 function setup()
     require("lazy").setup(plugins, {
         root = home_path.."/.vim/plugged",
