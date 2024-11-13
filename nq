@@ -329,7 +329,7 @@ install_nvim() {
 }
 
 nn() {
-    default_ver="20.11.1"
+    default_ver="22.10.0"
     [ -n "$2" ] && ver="$2" || ver=$default_ver
     node_root="$local_dir/node"; node_path="$node_root/$ver"
     case $1 in
