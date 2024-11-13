@@ -64,7 +64,7 @@ async def get_cmc():
         raise Exception(f"Request {url} failed: {resp['reason']}")
     obj = json.loads(resp["content"])
     coins = obj.get("values", [])
-    items = [{"title": f"{coin[2]} {coin[1]}", "arg": coin[3]} for coin in coins]
+    items = [{"title": f"{coin[2]} {coin[1]}", "arg": f"https://coinmarketcap.com/currencies/{coin[3]}"} for coin in coins]
     print("generated cmc items:", len(items))
     return json.dumps({"items": items})
 
