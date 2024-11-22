@@ -217,6 +217,10 @@ elif command -v bind &> /dev/null; then
 fi
 #### Advanced shells end ####
 
-if [ "$TERM_PROGRAM" != "vscode" ] && test -n $SSH_TTY && tmux ls | grep run; then
+if [ "$TERM_PROGRAM" != "vscode" ] \
+    && test -z $TMUX \
+    && test -n $SSH_TTY \
+    && tmux ls 2>&1 >/dev/null | grep "run:"
+then
     tmux attach -t run
 fi
