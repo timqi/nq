@@ -106,22 +106,6 @@ command! Workspaces call fzf#run(fzf#wrap({
 command! Lg execute '!tmux popup -d "\#{pane_current_path}" -xC -yC -w99\% -h99\% -E "zsh -i -c lazygit"'
 
 
-" Custom scripts
-function! CreatePlayGround(fileName)
-    let l:directory = expand('~/.config/playground')
-    if !isdirectory(l:directory)
-        call mkdir(l:directory)
-    endif
-    let l:ext = fnamemodify(a:fileName, ':e')
-    if index(["go", "py"], l:ext) < 0
-        echo "Only go,py supported. You typed: ".l:ext
-        return
-    endif
-    exe 'edit '.l:directory.'/'.a:fileName
-endfunction
-command! -nargs=1 CreatePlayGround call CreatePlayGround(<f-args>)
-
-
 " Auto cmd group
 augroup vimrc
     au FileType javascript,html,vue setlocal sw=2 ts=2 sts=2
@@ -161,7 +145,9 @@ let g:basic_plugins = [
     \ 'sbdchd/neoformat',
     \ 'wellle/targets.vim',
     \ 'michaeljsmith/vim-indent-object',
-    \ 'tpope/vim-fugitive'
+    \ 'tpope/vim-fugitive',
+    \ 'junegunn/fzf',
+    \ 'junegunn/fzf.vim',
     \]
 
 if !empty(glob($HOME..'/nq/bin'))
@@ -239,117 +225,6 @@ table.insert(plugins, {
     end,
 })
 
-table.insert(plugins, {
-    "nvim-telescope/telescope.nvim",
-    dependencies = { "nvim-lua/plenary.nvim", "nvim-telescope/telescope-ui-select.nvim" },
-    config = function()
-        local builtin = require("telescope.builtin")
-        vim.keymap.set("n", "<c-p>", builtin.find_files, {})
-        vim.keymap.set("n", "<leader>p", builtin.find_files, {})
-        vim.keymap.set("n", "<leader>e", builtin.oldfiles, {})
-        vim.keymap.set("n", "<leader>s", builtin.live_grep, {})
-        vim.keymap.set("n", "<leader>w", builtin.grep_string, {})
-        vim.keymap.set("n", "<leader>n", builtin.commands, {})
-        vim.keymap.set("n", "<leader>m", builtin.marks, {})
-        vim.keymap.set("n", "<leader>h", builtin.help_tags, {})
-        vim.keymap.set("n", "<leader>y", builtin.tags, {})
-        vim.keymap.set("n", "<leader>t", builtin.lsp_document_symbols, {})
-        -- vim.keymap.set("n", "<leader>t", builtin.current_buffer_tags, {})
-        require("telescope").setup({
-            defaults = {
-                layout_config = {},
-            },
-            extensions = {
-                ["ui-select"] = {
-                    require("telescope.themes").get_dropdown({}),
-                },
-            },
-        })
-        require("telescope").load_extension("ui-select")
-    end,
-})
-
-table.insert(plugins, {
-    "hrsh7th/nvim-cmp",
-    event = "InsertEnter",
-    dependencies = { "hrsh7th/cmp-nvim-lsp", "hrsh7th/cmp-buffer" },
-    config = function()
-        local cmp = require("cmp")
-        cmp.setup({
-            snippet = {
-                expand = function(args)
-                    vim.snippet.expand(args.body)
-                end,
-            },
-            mapping = cmp.mapping.preset.insert({
-                ["<S-up>"] = cmp.mapping.scroll_docs(-4),
-                ["<S-down>"] = cmp.mapping.scroll_docs(4),
-                ["<C-Space>"] = cmp.mapping.complete(),
-                ["<C-e>"] = cmp.mapping.abort(),
-                ["<CR>"] = cmp.mapping.confirm({ select = true }),
-            }),
-            sources = cmp.config.sources({
-                { name = "nvim_lsp" },
-            }, { { name = "buffer" } }),
-        })
-    end,
-})
-
-table.insert(plugins, {
-    "neovim/nvim-lspconfig",
-    event = "VeryLazy",
-    ft = { "python", "go" },
-    dependencies = {
-        "williamboman/mason.nvim",
-        "hrsh7th/nvim-cmp",
-        "williamboman/mason-lspconfig.nvim",
-        "nvim-lua/plenary.nvim",
-    },
-    config = function()
-        require("mason").setup({})
-        require("mason-lspconfig").setup({
-            ensure_installed = { "pyright", "gopls", "ts_ls" },
-        })
-        local lspconfig = require("lspconfig")
-        local on_attach = function(client, bufnr)
-            vim.api.nvim_buf_set_option(bufnr, "omnifunc", "v:lua.vim.lsp.omnifunc")
-            local bufopts = { noremap = true, silent = false, buffer = bufnr }
-            vim.keymap.set("n", "gD", vim.lsp.buf.declaration, bufopts)
-            vim.keymap.set("n", "gd", vim.lsp.buf.definition, bufopts)
-            vim.keymap.set("n", "gk", vim.lsp.buf.hover, bufopts)
-            vim.keymap.set("n", "gi", vim.lsp.buf.implementation, bufopts)
-            vim.keymap.set("n", "gt", vim.lsp.buf.type_definition, bufopts)
-            vim.keymap.set("n", "ga", vim.lsp.buf.rename, bufopts)
-            vim.keymap.set("n", "ge", vim.lsp.buf.code_action, bufopts)
-            vim.keymap.set("n", "gr", vim.lsp.buf.references, bufopts)
-            -- vim.keymap.set({ "i", "n" }, "<c-p>", vim.lsp.buf.signature_help, bufopts)
-        end
-        local lsp_flags = { debounce_text_changes = 150 }
-        local cmp_capabilities = require("cmp_nvim_lsp").default_capabilities()
-        lspconfig["ts_ls"].setup({ on_attach = on_attach, flags = lsp_flags, capabilities = cmp_capabilities })
-        lspconfig["gopls"].setup({ on_attach = on_attach, flags = lsp_flags, capabilities = cmp_capabilities })
-        lspconfig["pyright"].setup({
-            on_attach = on_attach,
-            flags = lsp_flags,
-            capabilities = cmp_capabilities,
-            settings = {
-                python = {
-                    analysis = {
-                        reportOptionalSubscript = "none",
-                        reportGeneralTypeIssues = "none",
-                        reportOptionalOperand = "warning",
-                        reportOptionalMemberAccess = "none",
-                    },
-                },
-            },
-        })
-    end,
-})
-
-table.insert(plugins, {
-    "github/copilot.vim",
-    event = "VeryLazy",
-})
 
 function setup()
     require("lazy").setup(plugins, {
