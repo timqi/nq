@@ -7,8 +7,10 @@
 # $2: REMOVE_ADVANCED_SHELL
 #
 
+[ -d "$HOME/.config/nq" ] && echo "$HOME/.config/nq exists" && exit 0
+
 # Handle thin client upgrade
-NQ_THIN_VERSION=2024.11.22
+NQ_THIN_VERSION=2024.12.16
 if [ -f "$HOME/nq/thin-installer" ]; then
     local_version=`grep 'NQ_THIN_VERSION=' $HOME/nq/thin-installer | head -n 1 | cut -d "=" -f 2`
     if [ "$local_version" = "$NQ_THIN_VERSION" ]; then
