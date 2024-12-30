@@ -26,7 +26,7 @@ generate_cfg = {
         "~/go/src/gitlab.fish": 3,
         "~/go/src/github.com": 2,
     },
-    "ssh.um790p": {
+    "ssh.gb0": {
         "~/go/src/research": 2,
         "~/go/src/github.com": 2,
     },

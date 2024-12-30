@@ -95,6 +95,8 @@ alias bat='bat -p'
 alias m='bat --language=man --color=always'
 export BAT_THEME="Solarized (dark)"
 
+alias ai='aichat'
+
 
 [ -f "$HOME/.platformrc" ] && . "$HOME/.platformrc"
 
