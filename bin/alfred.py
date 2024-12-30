@@ -64,7 +64,7 @@ async def get_cmc():
         raise Exception(f"Request {url} failed: {resp['reason']}")
     obj = json.loads(resp["content"])
     coins = obj.get("values", [])
-    items = [{"title": f"{coin[2]} {coin[1]}", "arg": coin[3]} for coin in coins]
+    items = [{"title": f"{coin[2]} {coin[1]}", "arg": f"https://coinmarketcap.com/currencies/{coin[3]}"} for coin in coins]
     print("generated cmc items:", len(items))
     return json.dumps({"items": items})
 
@@ -98,6 +98,40 @@ async def get_binance():
     return json.dumps({"items": items})
 
 
+async def get_all_raindrop_link():
+    header = {"Authorization": f"Bearer {os.getenv('TOKEN')}"}
+    url = "https://api.raindrop.io/rest/v1/collections/childrens"
+    resp = await async_request(url, headers=header)
+    items = sorted(json.loads(resp["content"])["items"], key=lambda x: x["sort"])
+    colls = [{"id": i["_id"], "title": i["title"]} for i in items]
+    coll_map = dict((i["_id"], i["title"]) for i in items)
+    for i in items:
+        if i["parent"] is None:
+            continue
+        for ii in colls:
+            if ii["id"] == i["_id"]:
+                ii["title"] = coll_map[i["parent"]["$id"]] + "/" + ii["title"]
+    items = []
+    for coll in colls:
+        for i in range(10):
+            url = f"https://api.raindrop.io/rest/v1/raindrops/{coll['id']}?perpage=50&page={i}"
+            print("fetch:", url)
+            resp = await async_request(url, headers=header)
+            links = sorted(json.loads(resp["content"])["items"], key=lambda x: x["sort"])
+            for l in links:
+                items.append(
+                    {
+                        "title": l["title"],
+                        "subtitle": f"[{coll['title']}] {l['link']}",
+                        "arg": l["link"],
+                    }
+                )
+            if len(links) < 50:
+                break
+            await asyncio.sleep(1)
+    return json.dumps({"items": items})
+
+
 def run(key):
     if key == "ssh":
         return get_ssh(False)
@@ -107,6 +141,8 @@ def run(key):
         return asyncio.run(get_cmc())
     elif key == "binance":
         return asyncio.run(get_binance())
+    elif key == "raindrop":
+        return asyncio.run(get_all_raindrop_link())
     print("No such command")
 
 

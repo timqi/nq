@@ -21,7 +21,6 @@ generate_cfg = {
         "~/go/src/github.com": 2,
     },
     "ssh.devhost": {
-        "~/go/src/gitlab.fish/qiqi/datagrip": "DB",
         "~/scripts": "PY",
         "~/go/src/research": 2,
         "~/go/src/gitlab.fish": 3,
@@ -171,6 +170,8 @@ def generate_project_index(keys):
 
     # generate alfred datastructure
     dest_dir = os.path.expanduser("~/.cache/alfred/vscode/")
+    if not os.path.exists(dest_dir):
+        os.makedirs(dest_dir, exist_ok=True)
     sshs_file_path = os.path.join(dest_dir, "ssh.json")
     sshs_ori = []
     if os.path.exists(sshs_file_path):

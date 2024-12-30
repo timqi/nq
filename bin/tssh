@@ -12,10 +12,11 @@ if [ $# -eq 0 ]; then
     return
 fi
 
-tmux="/Users/qiqi/.config/nq/bin/alacritty-tmux"
+tmux="$HOME/.config/nq/bin/alacritty-tmux"
 $tmux new-window -n tssh issh $host0
 for host in "$@"; do
     $tmux split-window -h issh "$host"
+    $tmux select-layout even-horizontal
 done
 if [ $# -eq 2 ]; then
     $tmux select-layout even-vertical

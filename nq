@@ -80,6 +80,25 @@ install_bat() {
     github_install_logic $app ${app}_version $repo ${app}_install
 }
 
+install_onekeyd() {
+    if [ "$ARCH" != "Darwin" ]; then
+        echo "onekeyd is for macOS"
+        return 0
+    fi
+
+    log "[onekeyd] Check newest release: https://github.com/OneKeyHQ/onekey-bridge/releases"
+
+    ver="2.2.0"
+    url="https://github.com/OneKeyHQ/onekey-bridge/releases/download/v$ver/onekey-bridge-$ver.signed.pkg"
+
+    cd $tmp
+    curl -L -s $url > onekeyd.pkg
+    pkgutil --expand onekeyd.pkg onekeyd
+    cd onekeyd/so.onekey.bridge.install.pkg/
+    tar -xvf Payload
+    mv Applications/Utilities/OneKey\ Bridge/onekeyd_darwin_arm64 ~/.local/bin/onekeyd
+}
+
 install_websocat() {
     app=websocat
     repo="vi/$app"
@@ -149,14 +168,9 @@ install_fzf() {
         echo `fzf --version|cut -d " " -f1`
     }
     fzf_install() {
-        ar=`[ $ARCH = "Darwin" ] && echo "darwin_arm64.zip" || echo "linux_amd64.tar.gz"`
-        url=`download_url $repo $1 "fzf-${1}-$ar"`
-        if [ $ARCH = "Darwin" ]; then
-            download $url > "$tmp/$app.dl"
-            unzip "$tmp/$app.dl" -d "$tmp"
-        else
-            download $url | tar -zx -C $tmp
-        fi
+        ar=`[ $ARCH = "Darwin" ] && echo "darwin_arm64.tar.gz" || echo "linux_amd64.tar.gz"`
+        url=`download_url $repo $1 "fzf-$(echo $1|cut -c2-100)-$ar"`
+        download $url | tar -zx -C $tmp
         mv "$tmp/$app" "$bin_dir"
     }
     github_install_logic $app ${app}_version $repo ${app}_install
@@ -172,6 +186,22 @@ install_rg() {
         ar=`[ $ARCH = "Darwin" ] && echo "x86_64-apple-darwin" || echo "x86_64-unknown-linux-musl"`
         url=`download_url $repo $1 "ripgrep-${1}-$ar.tar.gz"`
         download $url | tar -zx -C $tmp --strip-components=1
+        mv "$tmp/$app" "$bin_dir"
+    }
+    github_install_logic $app ${app}_version $repo ${app}_install
+}
+
+install_restic() {
+    app=restic
+    repo="restic/restic"
+    restic_version() {
+        echo `restic version | cut -d " " -f2`
+    }
+    restic_install() {
+        ar=`[ $ARCH = "Darwin" ] && echo "darwin_arm64" || echo "linux_amd64"`
+        url=`download_url $repo $1 "restic_$(echo $1|cut -c2-100)_$ar.bz2"`
+        download $url | bunzip2 > $tmp/restic
+        chmod +x $tmp/restic
         mv "$tmp/$app" "$bin_dir"
     }
     github_install_logic $app ${app}_version $repo ${app}_install
@@ -244,7 +274,7 @@ install_lsd() {
         echo "`lsd -V|cut -d" " -f2`"
     }
     lsd_install() {
-        ar=`[ $ARCH = "Darwin" ] && echo "x86_64-apple-darwin" || echo "i686-unknown-linux-musl"`
+        ar=`[ $ARCH = "Darwin" ] && echo "aarch64-apple-darwin" || echo "i686-unknown-linux-musl"`
         url=`download_url $repo $1 "lsd-${1}-$ar.tar.gz"`
         download $url | tar -zx -C $tmp --strip-components=1
         mv "$tmp/$app" "$bin_dir"
@@ -262,6 +292,21 @@ install_dust() {
         ar=`[ $ARCH = "Darwin" ] && echo "x86_64-apple-darwin" || echo "x86_64-unknown-linux-musl"`
         url=`download_url $repo $1 "dust-${1}-$ar.tar.gz"`
         download $url | tar -zx -C $tmp --strip-components=1
+        mv "$tmp/$app" "$bin_dir"
+    }
+    github_install_logic $app ${app}_version $repo ${app}_install
+}
+
+install_aichat() {
+    app=aichat
+    repo=sigoden/aichat
+    aichat_version() {
+        echo "v`aichat -V|cut -d" " -f2`"
+    }
+    aichat_install() {
+        ar=`[ $ARCH = "Darwin" ] && echo "aarch64-apple-darwin" || echo "x86_64-unknown-linux-musl"`
+        url=`download_url $repo $1 "aichat-${1}-$ar.tar.gz"`
+        download $url | tar -zx -C $tmp #--strip-components=1
         mv "$tmp/$app" "$bin_dir"
     }
     github_install_logic $app ${app}_version $repo ${app}_install
@@ -294,12 +339,14 @@ install_nvim() {
         download $url | tar -zx -C $tmp --strip-components=1
         rm -rf "$local_dir/nvim" && cp -r "$tmp" "$local_dir/nvim"
         link "../nvim/bin/nvim" "$bin_dir/nvim"
+        link "../nvim/bin/nvim" "$bin_dir/vim"
+        link "../nvim/bin/nvim" "$bin_dir/view"
     }
     github_install_logic $app ${app}_version $repo ${app}_install
 }
 
 nn() {
-    default_ver="20.11.1"
+    default_ver="22.10.0"
     [ -n "$2" ] && ver="$2" || ver=$default_ver
     node_root="$local_dir/node"; node_path="$node_root/$ver"
     case $1 in
