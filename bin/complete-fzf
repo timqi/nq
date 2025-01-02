@@ -218,6 +218,7 @@ def idf_docker_element():
 
 def idf_space_docker_images():
     images = _idf_docker_images()
+    images = [f'"{img}"' for img in images]
     return " ".join(images)
 
 
