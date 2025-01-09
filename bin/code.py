@@ -57,28 +57,27 @@ def isin_ssh():
 
 
 def search_code_bin_ssh():
-    g = os.path.expanduser("~/.vscode-server/bin/**/bin/remote-cli/code")
+    g = os.path.expanduser("~/.cursor-server/bin/**/bin/remote-cli/cursor")
     file = glob.glob(g, recursive=True)
     return file[0] if file else None
 
 
 def run_code(uri):
-    bin = search_code_bin_ssh() if isin_ssh() else shutil.which("code")
+    bin = search_code_bin_ssh() if isin_ssh() else shutil.which("cursor")
     if not bin and not isin_ssh():
-        raise Exception("code command not found")
+        raise Exception("cursor command not found")
     cmds = [bin]
     cmds += [uri] if ":" not in uri else ["--folder-uri", uri]
 
     stdout = stderr = code = ""
     if isin_ssh():
-        ipcs = glob.glob(f"/run/user/{os.getuid()}/vscode-ipc-*")
+        ipcs = glob.glob(f"/run/user/{os.getuid()}/cursor-ipc-*")
         ipcs.sort(key=lambda x: os.path.getmtime(x), reverse=True)
         if len(ipcs) < 1:
-            stderr = "No vscode server found."
+            stderr = "No cursor server found."
         limit = 6
         for ipc in ipcs[:limit]:
-            # print("ipc", ipc, "cmds", cmds)
-            stdout, stderr, code = _run(" ".join(cmds), env={"VSCODE_IPC_HOOK_CLI": ipc})
+            stdout, stderr, code = _run(" ".join(cmds), env={"CURSOR_IPC_HOOK_CLI": ipc})
             if code == 0:
                 break
         for ipc in ipcs[limit:]:
@@ -88,7 +87,7 @@ def run_code(uri):
         if code == 0:
             time.sleep(1)
     if stderr:
-        print("Open code failed:", stderr)
+        print("Open cursor failed:", stderr)
         print("pwd:", os.getcwd())
 
 
@@ -136,9 +135,9 @@ def resolve_cfg(cfg):
 def generate_project_index(keys):
     if keys == "list":
         bin = os.path.realpath(__file__)
-        result = [{"title": "generate vscode proj index: all", "arg": f"{bin} --generate all"}]
+        result = [{"title": "generate cursor proj index: all", "arg": f"{bin} --generate all"}]
         result += [
-            {"title": f"generate vscode proj index: {key}", "arg": f"{bin} --generate {key}"}
+            {"title": f"generate cursor proj index: {key}", "arg": f"{bin} --generate {key}"}
             for key in generate_cfg.keys()
         ]
         return print(json.dumps({"items": result}, indent=2))
@@ -187,9 +186,7 @@ def generate_project_index(keys):
             sshs_ori = list(filter(lambda x: f"[{host}]" not in x["subtitle"], sshs_ori))
         for path, v in result.items():
             arr = sshs if is_ssh else locals
-            args = ["code"]
-            # if v[0]:
-            #     args += ["--profile", v[0]]
+            args = ["cursor"]
             if is_ssh:
                 uri = f"vscode-remote://ssh-remote+{host}{path}"
                 args += ["--folder-uri", uri]
@@ -271,7 +268,7 @@ def parse_tmux_project():
     hosts, path = json.loads(get_ssh(True)), path[-1]
     for item in hosts["items"]:
         host = item["arg"]
-        item["arg"] = f"code --folder-uri vscode-remote://ssh-remote+{host}{path}"
+        item["arg"] = f"cursor --folder-uri vscode-remote://ssh-remote+{host}{path}"
         item["subtitle"] = f"{path}"
     return json.dumps(hosts)
 
