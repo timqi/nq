@@ -19,9 +19,9 @@ subpath="$subpath:$local_dir/conda/bin:$HOME/.cargo/bin"
 [ -f $brew_path ] &&\
     subpath="$subpath:/opt/homebrew/bin:/opt/homebrew/sbin"
 
-case $PATH in 
-    *conda*) export PATH="$subpath:${PATH/$subpath}";;
-    *) export PATH="$subpath:$PATH";;
+case ":$PATH:" in
+    *":$subpath:"*) ;;
+    *) export PATH="$subpath:$PATH:$condapath";;
 esac
 
 
@@ -49,6 +49,19 @@ cr() {
 
 ensure_ssh_agent() {
     export SSH_AUTH_SOCK=`sock_ssh.py`
+}
+
+add_to_path() {
+    subpath=$1
+    if [ -z "$subpath" ]; then
+        echo "Usage: add_to_path <path>"
+        return 1
+    fi
+
+    case ":$PATH:" in
+        *":$subpath:"*) ;;
+        *) export PATH="$subpath:$PATH";;
+    esac
 }
 
 chpwd() {
