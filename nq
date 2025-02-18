@@ -30,7 +30,7 @@ download() {
 
 
 install_go() {
-    ver="1.22.0"
+    ver="1.23.6"
     command -v go >/dev/null &&\
         case `go version` in *$ver*) log "go$ver already installed, return" && return;; esac ||\
         log "go is not installed now"
