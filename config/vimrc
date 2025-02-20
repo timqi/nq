@@ -210,7 +210,7 @@ table.insert(plugins, {
     config = function()
         require('treesj').setup({
             check_syntax_error = false,
-            se_default_keymaps = false,
+            use_default_keymaps = false,
             notify = false,
         })
     end,

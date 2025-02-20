@@ -129,7 +129,7 @@ async def get_all_raindrop_link():
             if len(links) < 50:
                 break
             await asyncio.sleep(1)
-    return json.dumps({"items": items})
+    return json.dumps({"items": items}, indent=2)
 
 
 def run(key):
