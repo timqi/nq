@@ -89,6 +89,7 @@ if __name__ == "__main__":
         nargs="*",
         help="Clone in repo in ~/go/src/research folder",
     )
+    parser.add_argument("--depth", default=None, help="Clone depth of this repo")
     args = parser.parse_args()
     if args.download:
         remote_url = args.download
@@ -111,7 +112,11 @@ if __name__ == "__main__":
         d = os.path.dirname(dest)
         if not os.path.exists(d):
             os.makedirs(d)
-        _run(f"git clone {remote_url} {dest}")
+        cmd = f"git clone "
+        if args.depth is not None:
+            cmd += f"--depth {args.depth} "
+        cmd += f"{remote_url} {dest}"
+        _run(cmd)
         if shutil.which("zoxide"):
             _run(f"zoxide add {dest}")
     else:
