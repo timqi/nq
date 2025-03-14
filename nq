@@ -334,7 +334,7 @@ install_nvim() {
         echo `nvim -v|head -n 1|cut -d " " -f2`
     }
     nvim_install() {
-        ar=`[ $ARCH = "Darwin" ] && echo "macos-arm64" || echo "linux64"`
+        ar=`[ $ARCH = "Darwin" ] && echo "macos-arm64" || echo "linux-x86_64"`
         url=`download_url $repo $1 "nvim-$ar.tar.gz"`
         download $url | tar -zx -C $tmp --strip-components=1
         rm -rf "$local_dir/nvim" && cp -r "$tmp" "$local_dir/nvim"
