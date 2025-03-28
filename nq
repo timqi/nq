@@ -396,6 +396,7 @@ install_uv() {
         url=`download_url $repo $1 "uv-$ar.tar.gz"`
         download $url | tar -zx -C $tmp --strip-components=1
         mv "$tmp/$app" "$bin_dir"
+        mv "$tmp/uvx" "$bin_dir"
     }
     github_install_logic $app ${app}_version $repo ${app}_install
 }

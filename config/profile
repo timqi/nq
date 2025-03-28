@@ -15,19 +15,14 @@ brew_path="/opt/homebrew/bin/brew"
     nqitembin="$local_dir/bin" nqbin="$HOME/.config/nq/bin"
 
 subpath="$HOME/go/bin:$nqitembin:$nqitembin/node:$nqbin"
-subpath="$subpath:$local_dir/conda/bin:$HOME/.cargo/bin"
+subpath="$subpath:$HOME/.cargo/bin"
 [ -f $brew_path ] &&\
     subpath="$subpath:/opt/homebrew/bin:/opt/homebrew/sbin"
 
 case ":$PATH:" in
     *":$subpath:"*) ;;
-    *) export PATH="$subpath:$PATH:$condapath";;
+    *) export PATH="$subpath:$PATH";;
 esac
-
-
-# Conda
-CONDA_INIT_SCRIPT="$local_dir/conda/etc/profile.d/conda.sh" 
-[ -f $CONDA_INIT_SCRIPT ] && . $CONDA_INIT_SCRIPT
 
 
 _confirm_run() {
@@ -66,7 +61,6 @@ add_to_path() {
 
 chpwd() {
     command -v zoxide >/dev/null 2>&1 && zoxide add `pwd`
-    [ -f ".git/pynq" ] && conda activate `cat .git/pynq`
 }
 
 ltmux() {
