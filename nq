@@ -366,6 +366,9 @@ nn() {
            echo "  nn use [ver default:$default_ver]"
            echo "  nn install [ver default:$default_ver]"
            echo "  nn rm [ver default:$default_ver]"
+           echo ""
+           echo "  https://github.com/nodejs/Release?tab=readme-ov-file"
+           echo "  https://nodejs.org/en/about/previous-releases"
            echo "" && nn list;;
     esac
 }
