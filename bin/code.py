@@ -57,7 +57,7 @@ def isin_ssh():
 
 
 def search_code_bin_ssh():
-    g = os.path.expanduser("~/.vscode-server/bin/**/bin/remote-cli/code")
+    g = os.path.expanduser("~/.vscode-server/cli/servers/**/server/bin/remote-cli/code")
     file = glob.glob(g, recursive=True)
     return file[0] if file else None
 
@@ -68,6 +68,7 @@ def run_code(uri):
         raise Exception("code command not found")
     cmds = [bin]
     cmds += [uri] if ":" not in uri else ["--folder-uri", uri]
+    print(cmds, bin, uri)
 
     stdout = stderr = code = ""
     if isin_ssh():
@@ -75,9 +76,9 @@ def run_code(uri):
         ipcs.sort(key=lambda x: os.path.getmtime(x), reverse=True)
         if len(ipcs) < 1:
             stderr = "No vscode server found."
-        limit = 6
+        limit = 8
         for ipc in ipcs[:limit]:
-            # print("ipc", ipc, "cmds", cmds)
+            print("ipc", ipc, "cmds", cmds)
             stdout, stderr, code = _run(" ".join(cmds), env={"VSCODE_IPC_HOOK_CLI": ipc})
             if code == 0:
                 break
@@ -214,37 +215,6 @@ def generate_project_index(keys):
         print("ssh.json generated")
 
 
-def patchpilot(token):
-    def patch_dir(d):
-        for folder in os.listdir(d):
-            if not folder.startswith("github.copilot"):
-                continue
-            p = os.path.join(d, folder, "dist/extension.js")
-            if not os.path.exists(p):
-                continue
-            with open(p, "r") as f:
-                r = f.read()
-                if not r:
-                    continue
-            print("will patch:", p)
-            repl = "headers:{Authorization:`token %s`" % token
-            r = re.sub(r"headers:\{Authorization:`token \$\{\w.token\}`", repl, r)
-
-            repl = r"""getTokenUrl(n){return "https://mgithub.cc/apis/ed_gh_stu.i/copilot_internal/v2/token"}"""
-            r = re.sub(r"getTokenUrl\(\w\)\{[^}]*\}", repl, r)
-
-            with open(p, "w") as f:
-                f.write(r)
-
-    home = os.path.expanduser("~")
-    d = os.path.join(home, ".vscode/extensions")
-    if os.path.exists(d):
-        patch_dir(d)
-    d = os.path.join(home, ".vscode-server/extensions")
-    if os.path.exists(d):
-        patch_dir(d)
-
-
 def get_ssh(only_host=False):
     file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "complete-fzf")
     m = load_file_as_module(file)
@@ -278,11 +248,67 @@ def parse_tmux_project():
 
 def create_args_parser():
     parser = argparse.ArgumentParser(description="Hello World!")
-    parser.add_argument("uri", help="Folder or uri to process", nargs="*", default=".")
+    parser.add_argument("uri", help="Folder or uri to process", nargs="?", default=".")
     parser.add_argument("-g", "--generate", default=None, help="Generate code project index")
-    parser.add_argument("--patchpilot", default=None, type=str, help="Patch copilot token")
     parser.add_argument("--parse-tmux-project", action="store_true", help="Parse tmux project in terminal")
+    parser.add_argument("--clean", action="store_true", help="clean ~/.vscode-server")
     return parser
+
+
+def clean_vscode_data(base_dir):
+    base_dir = os.path.expanduser(base_dir)
+    if not os.path.exists(base_dir):
+        print("path not exists:", base_dir)
+        return
+    print("cleaning extensions:")
+    exts_dir = os.path.join(base_dir, "extensions")
+    j = os.path.join(exts_dir, "extensions.json")
+    with open(j) as f:
+        exts = json.load(f)
+
+    all_exts = [d for d in os.listdir(exts_dir) if os.path.isdir(os.path.join(exts_dir, d))]
+    for ext in exts:
+        ext_path = ext.get("relativeLocation")
+        all_exts.remove(ext_path)
+    for ext in all_exts:
+        ext_path = os.path.join(exts_dir, ext)
+        if os.path.exists(ext_path):
+            print("remove", ext_path)
+            shutil.rmtree(ext_path)
+
+    print("cleaning old servers:")
+    code_servers = [d for d in os.listdir(base_dir) if d.startswith("code-")]
+
+    def get_version(server):
+        code_path = os.path.join(base_dir, server)
+        if not os.path.exists(code_path):
+            return "0.0.0"
+        stdout, _, _ = _run(f"{code_path} --version")
+        match = re.search(r"(\d+\.\d+\.\d+)", stdout)
+        return match.group(1) if match else "0.0.0"
+
+    code_servers.sort(key=lambda d: [int(x) for x in get_version(d).split(".")])
+    print("valid server version:", code_servers[-1], "(" + get_version(code_servers[-1]) + ")")
+    invalid_hash = [h.split("-")[-1] for h in code_servers[:-1]]
+    for bin in os.listdir(os.path.join(base_dir)):
+        if bin.startswith("code-") and bin.split("-")[-1] in invalid_hash:
+            bin_path = os.path.join(base_dir, bin)
+            print("remove bin", bin_path)
+            os.remove(bin_path)
+    for server in os.listdir(os.path.join(base_dir, "cli", "servers")):
+        for h in invalid_hash:
+            if h in server:
+                server_path = os.path.join(base_dir, "cli", "servers", server)
+                print("remove server", server_path)
+                shutil.rmtree(server_path)
+
+    print("cleaning logs of cli")
+    for root, dirs, files in os.walk(base_dir):
+        for file in files:
+            if file.startswith(".cli") and file.endswith(".log"):
+                log_path = os.path.join(root, file)
+                print(f"removing log file: {log_path}")
+                os.remove(log_path)
 
 
 def main():
@@ -292,8 +318,8 @@ def main():
         print(parse_tmux_project())
     elif args.generate is not None:
         generate_project_index(args.generate)
-    elif args.patchpilot is not None:
-        patchpilot(args.patchpilot)
+    elif args.clean:
+        clean_vscode_data("~/.vscode-server")
     else:
         run_code(args.uri)
 
