@@ -80,6 +80,12 @@ command=go test ${go_test_pkg} -v -run ${go_test_func}$$
 
 [pytest-function-test]
 command=pytest -s -k ${pytest_func}
+
+[vscode-open-project]
+command=${vscode_proj_list}
+
+[raindrop-bookmarks]
+command=${raindrop_bookmarks}
 """
 
 import argparse
@@ -90,6 +96,7 @@ import shutil
 import string
 import subprocess
 import sys
+import json
 from os.path import exists
 
 global_cache_map = {}
@@ -421,6 +428,41 @@ def idf_host():
     hosts = [item["host"] for item in hosts]
     stdout, _ = _run(f"fzf -e --prompt='Host> '", stdin="\n".join(hosts))
     return stdout.strip().replace("\n", " ")
+
+
+def _get_list_from_alfred_cache(files, prompt):
+    b = os.path.expanduser("~/.cache/alfred")
+    items = []
+    for file in files:
+        file_path = os.path.join(b, file)
+        if not exists(file_path):
+            continue
+        with open(file_path) as f:
+            items += json.load(f).get("items", [])
+
+    texts = [f"{idx} {item['title']} {item['subtitle']}" for idx, item in enumerate(items)]
+    stdout, _ = _run(f"fzf -e --prompt='{prompt}> '", stdin="\n".join(texts))
+    return items[int(stdout.split(" ")[0])]["arg"]
+
+
+def idf_vscode_proj_list():
+    return _get_list_from_alfred_cache(
+        ["vscode/local.json", "vscode/ssh.json"],
+        "Vscode Proj",
+    )
+
+
+def idf_raindrop_bookmarks():
+    bookmark_url = _get_list_from_alfred_cache(
+        ["raindrop.json"],
+        "Raindrop Bookmarks",
+    )
+    if not bookmark_url:
+        return ""
+        
+    # Determine the appropriate open command based on platform
+    open_cmd = "open" if _is_macos() else "xdg-open"
+    return f"{open_cmd} '{bookmark_url}'"
 
 
 def handle_section(section):

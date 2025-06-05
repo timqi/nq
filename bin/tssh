@@ -1,21 +1,38 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ $# -eq 0 ]; then
     echo "no host specified"
     return
 fi
 
+ssh="ssh -A"
+tmux="$HOME/.config/nq/bin/alacritty-tmux"
+
 host0=$1
 shift
 if [ $# -eq 0 ]; then
-    issh $host0
-    return
+    if [[ "$host0" == aws* || "$host0" == ali* || "$host0" == hw* ]]; then
+        title=${host0#*-}
+        tmp=${title#*-}
+        title="${title%%-*}.${tmp//-/}"
+    else
+        title=$host0
+    fi
+
+    line=`$tmux list-windows -a | grep "$title" | head -n 1`
+    if [ -z "$line" ]; then
+        $tmux new-window -n $title $ssh $host0
+    else
+        target="${line%:* *}"
+        $tmux switch-client -t "$target"
+    fi
+
+    exit 0
 fi
 
-tmux="$HOME/.config/nq/bin/alacritty-tmux"
-$tmux new-window -n tssh issh $host0
+$tmux new-window -n tssh ssh -A $host0
 for host in "$@"; do
-    $tmux split-window -h issh "$host"
+    $tmux split-window -h issh -A "$host"
     $tmux select-layout even-horizontal
 done
 if [ $# -eq 2 ]; then
