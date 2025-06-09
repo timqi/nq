@@ -30,9 +30,10 @@ if [ $# -eq 0 ]; then
     exit 0
 fi
 
-$tmux new-window -n tssh ssh -A $host0
+$tmux new-window -n tssh $ssh $host0
 for host in "$@"; do
-    $tmux split-window -h issh -A "$host"
+    echo $host
+    $tmux split-window -h $ssh "$host"
     $tmux select-layout even-horizontal
 done
 if [ $# -eq 2 ]; then
