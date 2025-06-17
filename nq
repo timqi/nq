@@ -246,7 +246,7 @@ install_watchexec() {
     watchexec_install() {
         ar=`[ $ARCH = "Darwin" ] && echo "aarch64-apple-darwin" || echo "x86_64-unknown-linux-musl"`
         url=`download_url $repo $1 "watchexec-$(echo $1|cut -c2-100)-$ar.tar.xz"`
-        download $url | tar -xJ -C $tmp --strip-components=1
+        download $url | tar -C $tmp --strip-components=1 -xJf -
         mv "$tmp/$app" "$bin_dir"
     }
     github_install_logic $app ${app}_version $repo ${app}_install
