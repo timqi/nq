@@ -24,6 +24,52 @@ case ":$PATH:" in
     *) export PATH="$subpath:$PATH";;
 esac
 
+uvm() {
+    UVBASE=$HOME/.local/uv/envs
+    [ ! -d $UVBASE ] && mkdir -p $UVBASE
+    case $1 in
+        create)
+            shift; env=$1; shift;
+            [ -z "$env" ] && echo "Error: environment name required" && return 1
+            uv venv $UVBASE/$env $@
+            # VIRTUAL_ENV=$UVBASE/$env uv pip install pip
+            pipfile=$UVBASE/$env/bin/pip
+            echo "#!/bin/sh" > $pipfile
+            echo 'uv pip $@' >> $pipfile
+            chmod +x $pipfile
+            ;;
+        list)
+            [ -n "$VIRTUAL_ENV" ] && env="$VIRTUAL_ENV" || env="no env"
+            command -v python 2>&1 >/dev/null && ver=`python -V` || ver="no python"
+            printf "\033[0;32mCurrent: $env [$ver]\033[0m\n";
+            for ver in `ls $UVBASE`; do
+                desc=`$UVBASE/$ver/bin/python -V`
+                echo "  - $ver [$desc]";
+            done
+            ;;
+        rm)
+            shift; env=$1; shift;
+            [ -z "$env" ] && echo "Error: environment name required" && return 1
+            rm -r $UVBASE/$env
+            ;;
+        use)
+            shift; env=$1; shift;
+            [ -z "$env" ] && echo "Error: environment name required" && return 1
+            source $UVBASE/$env/bin/activate
+            ;;
+        deactivate)
+            [ -n $VIRTUAL_ENV ] && command -v deactivate 2>&1 >/dev/null && deactivate
+            ;;
+        *) echo '  uvm list'
+           echo '  uvm use [env] will use default if empty'
+           echo '  uvm create [env] options from `uv venv`'
+           echo '  uvm rm [env]'
+           echo '  uvm deactivate'
+           echo ''
+           echo '  Envs is located in $UVBASE'
+           echo '' && uvm list;;
+    esac
+}
 
 _confirm_run() {
     read -p "$1[confirm]:" -n 1 key
