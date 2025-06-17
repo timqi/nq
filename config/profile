@@ -137,7 +137,7 @@ alias abrew='arch -arm64 brew'
 alias g='git'
 alias Lg='lazygit'
 alias d='docker'
-alias dc='docker-compose'
+alias dc='docker compose'
 alias sv="sudo supervisorctl"
 
 alias zdd='zoxide add "`pwd`"'
@@ -261,7 +261,7 @@ bash_cfg() {
     # end bash
     #
     alias d='sudo docker'
-    alias dc='sudo docker-compose'
+    alias dc='sudo docker compose'
     [ -f "$HOME/.tmux.conf" ] && tmux source-file ~/.tmux.conf
 }
 
