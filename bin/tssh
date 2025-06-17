@@ -6,7 +6,8 @@ if [ $# -eq 0 ]; then
 fi
 
 ssh="ssh -A"
-tmux="$HOME/.config/nq/bin/alacritty-tmux"
+#tmux="$HOME/.config/nq/bin/alacritty-tmux"
+tmux="tmux -L alacritty"
 
 host0=$1
 shift
@@ -21,7 +22,7 @@ if [ $# -eq 0 ]; then
 
     line=`$tmux list-windows -a | grep "$title" | head -n 1`
     if [ -z "$line" ]; then
-        $tmux new-window -n "$title" $ssh $host0
+        $tmux new-window -e SSH_AUTH_SOCK=$SSH_AUTH_SOCK -n "$title" $ssh $host0
     else
         target="${line%:* *}"
         $tmux switch-client -t "$target"
@@ -30,7 +31,7 @@ if [ $# -eq 0 ]; then
     exit 0
 fi
 
-$tmux new-window -n "ssh.m" $ssh $host0
+$tmux new-window -e SSH_AUTH_SOCK=$SSH_AUTH_SOCK -n ssh.m $ssh $host0
 for host in "$@"; do
     echo $host
     $tmux split-window -h $ssh "$host"

@@ -499,7 +499,7 @@ handle_item_install() {
     rm -rf "$tmp"
 }
 
-normal_apps="go,bat,lazygit,jq,zoxide,fzf,rg,watchexec,fd,lsd,dust,nvim,node,config,zplug,vimrc,ctags"
+normal_apps="jq,zoxide,fzf,rg,fd,lsd,zplug,config,vimrc"
 
 if ! test -z "$1" && egrep -q "^install_$1" $0; then
     handle_item_install $1
