@@ -19,6 +19,12 @@ subpath="$subpath:$HOME/.cargo/bin"
 [ -f $brew_path ] &&\
     subpath="$subpath:/opt/homebrew/bin:/opt/homebrew/sbin"
 
+# use uv default env as python interpreter
+uv_env_default=$HOME/.local/uv/envs/default
+[ -d "$uv_env_default" ] &&\
+    subpath="$subpath:$uv_env_default/bin" &&\
+    export VIRTUAL_ENV=$uv_env_default
+
 case ":$PATH:" in
     *":$subpath:"*) ;;
     *) export PATH="$subpath:$PATH";;
@@ -69,6 +75,10 @@ uvm() {
            echo '  Envs is located in $UVBASE'
            echo '' && uvm list;;
     esac
+}
+
+thin_update() {
+    url=https://raw.githubusercontent.com/timqi/nq/main/thin-installer; nq=/tmp/nq.thin.sh; curl -# $url -sL -o $nq || wget -O $nq $url; sh $nq 0 0; source $HOME/nq/profile; rm -f $nq
 }
 
 _confirm_run() {
