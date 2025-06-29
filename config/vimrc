@@ -301,6 +301,20 @@ table.insert(plugins, {
     end,
 })
 
+table.insert(plugins, {
+    "ibhagwan/fzf-lua",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    config = function()
+        require("fzf-lua").setup({
+            keymap = {
+                builtin = {
+                    
+                }
+            }
+        })
+    end,
+})
+
 
 function setup()
     require("lazy").setup(plugins, {
