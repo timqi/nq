@@ -1,3 +1,4 @@
+#!/bin/bash
 # Code extracted from https://stuartleeks.com/posts/wsl-ssh-key-forward-to-windows/ 
 
 # (IMPORTANT) Create the folder on your root for the `agent.sock` (How mentioned by @rfay and @Lochnair in the comments)
