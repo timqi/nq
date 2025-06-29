@@ -79,7 +79,7 @@ noremap  <c-p>      :<C-U>call fzf#vim#files('')<CR>
 noremap  <leader>p  :<C-U>call fzf#vim#files('')<CR>
 nnoremap <leader>u  :<C-U>call fzf#vim#history()<CR>
 nnoremap <leader>m  :<C-U>call fzf#vim#marks()<CR>
-nnoremap <leader>n  :<C-U>Commands<CR>
+nnoremap <leader>c  :<C-U>Commands<CR>
 nnoremap <leader>t  :<C-U>BTags<CR>
 nnoremap <leader>y  :<C-U>Tags<CR>
 nnoremap <leader>h  :<C-U>Helptags<CR>
@@ -237,6 +237,7 @@ table.insert(plugins, {
   version = '1.*',
   opts = {
     fuzzy = { implementation = "rust" },
+    list = { selection = { preselect = false, auto_insert = true } },
     sources = {
       default = { 'lsp', 'path', 'snippets', 'buffer' },
     },
@@ -305,14 +306,29 @@ table.insert(plugins, {
     "ibhagwan/fzf-lua",
     dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
-        require("fzf-lua").setup({
-            keymap = {
-                builtin = {
-                    
-                }
-            }
-        })
+        require("fzf-lua").setup({"ivy"})
     end,
+    keys = {
+        { "<c-p>",     "<cmd>FzfLua files<cr>", desc = "Find Files" },
+        { "<leader>p", "<cmd>FzfLua files<cr>", desc = "Find Files" },
+        { "<leader>u", "<cmd>FzfLua oldfiles<cr>", desc = "Recent Files" },
+        { "<leader>m", "<cmd>FzfLua marks<cr>", desc = "Find Marks" },
+        { "<leader>c", "<cmd>FzfLua commands<cr>", desc = "Commands" },
+        { "<leader>n", "<cmd>FzfLua builtin<cr>", desc = "FzfLua Builtin Commands" },
+        { "<leader>t", "<cmd>FzfLua btags<cr>", desc = "Find Tags in Buffer" },
+        { "<leader>y", "<cmd>FzfLua tags<cr>", desc = "Find Tags" },
+        { "<leader>h", "<cmd>FzfLua help_tags<cr>", desc = "Help Tags" },
+        { "<leader>r", "<cmd>FzfLua tags_grep_cword<cr>", desc = "Grep Current Tag" },
+
+        { "<leader>w", "<cmd>FzfLua grep_cword<cr>", desc = "Grep Current Word" },
+        { "<leader>b", "<cmd>FzfLua grep_curbuf<cr>", desc = "Grep Current Buffer" },
+        { "<leader>s", "<cmd>FzfLua grep<cr>", desc = "Grep" },
+
+        { "<leader>j", "<cmd>FzfLua command_history<cr>", desc = "Command History" },
+
+        { "<leader>fb", "<cmd>FzfLua buffers<cr>", desc = "Find Buffers" },
+        { "<leader>fk", "<cmd>FzfLua keymaps<cr>", desc = "Keymaps" },
+    }
 })
 
 
