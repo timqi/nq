@@ -162,6 +162,7 @@ alias ai='aichat'
 
 
 [ -f "$HOME/.platformrc" ] && . "$HOME/.platformrc"
+[ -f "$HOME/.platformrc.sh" ] && . "$HOME/.platformrc.sh"
 
 #### Advanced shells start ####
 zsh_cfg() {

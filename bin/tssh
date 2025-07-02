@@ -5,7 +5,7 @@ if [ $# -eq 0 ]; then
     exit 0
 fi
 
-ssh="ssh -A"
+ssh="ssh -v -A"
 #tmux="$HOME/.config/nq/bin/alacritty-tmux"
 tmux="tmux -L alacritty"
 

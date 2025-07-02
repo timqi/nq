@@ -123,8 +123,8 @@ function! ApplyTheme()
     for g in ['Normal', 'EndOfBuffer', 'LineNr', "Directory"]
         exe "hi ".g." ctermbg=NONE guibg=NONE" | endfor
     hi clear CursorLine
-    hi CursorLine ctermbg=237 guibg=#386641
-    hi LineNr ctermfg=238 ctermbg=NONE guifg=#386641 guibg=NONE
+    "hi CursorLine ctermbg=237 guibg=#386641
+    "hi LineNr ctermfg=238 ctermbg=NONE guifg=#386641 guibg=NONE
     hi SpellBad ctermbg=17 guibg=#959595
     "hi StatusLine ctermbg=208 guibg=#6a994e
     "hi StatusLineNC ctermbg=94 guibg=#6d6875
