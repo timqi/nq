@@ -92,17 +92,6 @@ let g:fzf_layout = { 'window': 'enew' }
 let g:fzf_commits_log_options =  "-200 --color=always"
 let g:fzf_preview_window = ['up:80%', 'ctrl-/']
 
-function! s:GoToWorkspace(directory)
-    execute 'cd '.a:directory
-    execute 'Files'
-    if exists(":CocRestart") | execute 'CocRestart' | endif
-endfunction
-command! Workspaces call fzf#run(fzf#wrap({
-      \ 'source': 'zoxide query -l',
-      \ 'sink': function('s:GoToWorkspace'),
-      \ 'options': '--prompt "Workspace> " '
-      \ }))
-
 command! Lg execute '!tmux popup -d "\#{pane_current_path}" -xC -yC -w99\% -h99\% -E "zsh -i -c lazygit"'
 
 
@@ -226,12 +215,6 @@ table.insert(plugins, {
 })
 
 table.insert(plugins, {
-    "rest-nvim/rest.nvim",
-    opts = { rocks = { enabled = false } },
-    config = function() end,
-})
-
-table.insert(plugins, {
   'saghen/blink.cmp',
   dependencies = { 'rafamadriz/friendly-snippets' },
   version = '1.*',
@@ -338,12 +321,6 @@ function setup()
         performance = {rtp = {disabled_plugins = {
             "tutor", "gzip", "tarPlugin", "zipPlugin", "tohtml"
         }}},
-        rocks = {
-            enabled = true,
-            root = home_path.."/.vim/data/lazy-rocks",
-            server = "https://nvim-neorocks.github.io/rocks-binaries/",
-            hererocks = nil,
-        },
     })
 end
 setup()
