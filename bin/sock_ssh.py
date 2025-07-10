@@ -29,14 +29,18 @@ def check_file_owner_is_me(path):
 
 # main logic
 log("current agent:", os.getenv("SSH_AUTH_SOCK"))
-wsl = os.getenv("WSL_DISTRO_NAME")
-if not wsl:
-    print(find_ssh_sock())
+ssh_connection = os.getenv("SSH_CONNECTION")
+if ssh_connection:
+    agent = find_ssh_sock()
+    log("find agent:", agent)
+    print(agent)
     sys.exit(0)
 
+
 # handle wsl
-log("wsl:", wsl)
+wsl = os.getenv("WSL_DISTRO_NAME")
 wsl_ssh_agent = "/tmp/ssh-wsl.agent"
+log("wsl:", wsl, "use:", wsl_ssh_agent)
 print(wsl_ssh_agent)
 env = os.environ.copy()
 env["SSH_AUTH_SOCK"] = wsl_ssh_agent
