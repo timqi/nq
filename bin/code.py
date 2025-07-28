@@ -11,27 +11,6 @@ import socket
 import subprocess
 import time
 
-generate_cfg = {
-    "local": {
-        "~/Documents/Backups/linked": "",
-        "~/Documents/Stash/toys": "PY",
-        "~/.config/nq": "PY",
-        "~/go/src/research": 2,
-        "~/go/src/gitlab.fish": 3,
-        "~/go/src/github.com": 2,
-    },
-    "ssh.devhost": {
-        "~/scripts": "PY",
-        "~/go/src/research": 2,
-        "~/go/src/gitlab.fish": 3,
-        "~/go/src/github.com": 2,
-    },
-    "ssh.gb0": {
-        "~/go/src/research": 2,
-        "~/go/src/github.com": 2,
-    },
-}
-
 
 def load_file_as_module(file_path):
     spec = importlib.util.spec_from_loader("", loader=None)
@@ -43,6 +22,7 @@ def load_file_as_module(file_path):
 
 
 def _run(cmd, env={}):
+    env["PATH"] = ":".join(["/usr/bin", os.path.expanduser("~/.local/bin")])
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, env=env)
     stdout, stderr = p.communicate()
     return (
@@ -135,6 +115,9 @@ def resolve_cfg(cfg):
 
 
 def generate_project_index(keys):
+    with open(os.path.expanduser("~/.code_proj_index.json")) as f:
+        generate_cfg = json.load(f)
+
     if keys == "list":
         bin = os.path.realpath(__file__)
         result = [{"title": "generate vscode proj index: all", "arg": f"{bin} --generate all"}]

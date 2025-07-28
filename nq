@@ -230,7 +230,7 @@ install_mihomo() {
     }
     mihomo_install() {
         ar=`[ $ARCH = "Darwin" ] && echo "darwin-arm64" || echo "linux-amd64"`
-        url=`download_url $repo $1 "mihomo-$ar-go120-${1}.gz"`
+        url=`download_url $repo $1 "mihomo-$ar-v3-go123-${1}.gz"`
         download $url | gzip -d -c > $tmp/$app
         mv "$tmp/$app" "$bin_dir" && chmod +x "$bin_dir/$app"
     }
@@ -339,7 +339,7 @@ install_nvim() {
         download $url | tar -zx -C $tmp --strip-components=1
         rm -rf "$local_dir/nvim" && cp -r "$tmp" "$local_dir/nvim"
         link "../nvim/bin/nvim" "$bin_dir/nvim"
-        # link "../nvim/bin/nvim" "$bin_dir/vim"
+        link "../nvim/bin/nvim" "$bin_dir/nv"
         # link "../nvim/bin/nvim" "$bin_dir/view"
     }
     github_install_logic $app ${app}_version $repo ${app}_install
