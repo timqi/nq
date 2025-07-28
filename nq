@@ -340,7 +340,6 @@ install_nvim() {
         rm -rf "$local_dir/nvim" && cp -r "$tmp" "$local_dir/nvim"
         link "../nvim/bin/nvim" "$bin_dir/nvim"
         link "../nvim/bin/nvim" "$bin_dir/nv"
-        # link "../nvim/bin/nvim" "$bin_dir/view"
     }
     github_install_logic $app ${app}_version $repo ${app}_install
 }
