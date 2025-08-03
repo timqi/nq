@@ -229,8 +229,8 @@ install_mihomo() {
         echo `mihomo -v |grep "Meta" | cut -d " " -f3`
     }
     mihomo_install() {
-        ar=`[ $ARCH = "Darwin" ] && echo "darwin-arm64" || echo "linux-amd64"`
-        url=`download_url $repo $1 "mihomo-$ar-go120-${1}.gz"`
+        ar=`[ $ARCH = "Darwin" ] && echo "darwin-arm64" || echo "linux-amd64-v3-go123"`
+        url=`download_url $repo $1 "mihomo-$ar-${1}.gz"`
         download $url | gzip -d -c > $tmp/$app
         mv "$tmp/$app" "$bin_dir" && chmod +x "$bin_dir/$app"
     }
