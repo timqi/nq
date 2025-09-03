@@ -230,7 +230,7 @@ install_mihomo() {
     }
     mihomo_install() {
         ar=`[ $ARCH = "Darwin" ] && echo "darwin-arm64" || echo "linux-amd64"`
-        url=`download_url $repo $1 "mihomo-$ar-v3-go123-${1}.gz"`
+        url=`download_url $repo $1 "mihomo-$ar-${1}.gz"`
         download $url | gzip -d -c > $tmp/$app
         mv "$tmp/$app" "$bin_dir" && chmod +x "$bin_dir/$app"
     }

@@ -58,8 +58,8 @@ let g:neoformat_python_iosrt = {
     \ }
 let g:neoformat_enabled_python = ['isort', 'black']
 let g:neoformat_rust_rustfmt = {
-    \ 'exe': 'rustfmt',
-    \ 'args': ['--emit=stdout', '--edition=2021'],
+    \ 'exe': 'cargo',
+    \ 'args': ['fmt'],
     \ }
 
 let g:auto_save = 1
