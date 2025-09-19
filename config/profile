@@ -22,8 +22,7 @@ subpath="$subpath:$HOME/.cargo/bin"
 # use uv default env as python interpreter
 uv_env_default=$HOME/.local/uv/envs/default
 [ -d "$uv_env_default" ] &&\
-    subpath="$subpath:$uv_env_default/bin" &&\
-    export VIRTUAL_ENV=$uv_env_default
+    subpath="$subpath:$uv_env_default/bin"
 
 case ":$PATH:" in
     *":$subpath:"*) ;;
@@ -38,15 +37,14 @@ uvm() {
             shift; env=$1; shift;
             [ -z "$env" ] && echo "Error: environment name required" && return 1
             uv venv $UVBASE/$env $@
-            # VIRTUAL_ENV=$UVBASE/$env uv pip install pip
             pipfile=$UVBASE/$env/bin/pip
             echo "#!/bin/sh" > $pipfile
             echo 'uv pip $@' >> $pipfile
             chmod +x $pipfile
             ;;
         list)
-            [ -n "$VIRTUAL_ENV" ] && env="$VIRTUAL_ENV" || env="no env"
             command -v python 2>&1 >/dev/null && ver=`python -V` || ver="no python"
+            env=`which python`
             printf "\033[0;32mCurrent: $env [$ver]\033[0m\n";
             for ver in `ls $UVBASE`; do
                 desc=`$UVBASE/$ver/bin/python -V`
@@ -64,7 +62,10 @@ uvm() {
             source $UVBASE/$env/bin/activate
             ;;
         deactivate)
-            [ -n $VIRTUAL_ENV ] && command -v deactivate 2>&1 >/dev/null && deactivate
+            case "`which python`" in
+                "$UVBASE"*) deactivate;;
+                *);;
+            esac
             ;;
         *) echo '  uvm list'
            echo '  uvm use [env] will use default if empty'
