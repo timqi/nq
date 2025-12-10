@@ -193,10 +193,10 @@ def idf_docker_container_with_shell():
     if not containers:
         return
     container = containers[0]
-    os_info, _ = _run(f"docker exec {container} cat /etc/os-release")
-    os_info = os_info.splitlines()[0]
-    sh = "sh" if "alpine" in os_info.lower() else "bash"
-    return container + " " + sh
+    bash_path, _ = _run(f"docker exec {container} which bash")
+    if not bash_path:
+        return container + " bash"
+    return container + " sh"
 
 
 def idf_docker_element():
