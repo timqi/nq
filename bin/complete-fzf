@@ -194,7 +194,7 @@ def idf_docker_container_with_shell():
         return
     container = containers[0]
     bash_path, _ = _run(f"docker exec {container} which bash")
-    if not bash_path:
+    if not bash_path and bash_path.startswith("/"):
         return container + " bash"
     return container + " sh"
 
