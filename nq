@@ -391,7 +391,7 @@ install_uv() {
     app=uv
     repo="astral-sh/uv"
     uv_version() {
-        echo `uv version|cut -d " " -f2`
+        echo `uv self version|cut -d " " -f2`
     }
     uv_install() {
         ar=`[ $ARCH = "Darwin" ] && echo "aarch64-apple-darwin" || echo "x86_64-unknown-linux-musl"`
