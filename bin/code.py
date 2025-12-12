@@ -114,10 +114,22 @@ def resolve_cfg(cfg):
     return results
 
 
+generate_cfg = {
+  "local": {
+    "~/Documents/Backups/linked": "",
+    "~/Documents/Stash/toys": "PY",
+    "~/.config/nq": "PY",
+    "~/go/src/research": 2,
+    "~/go/src/gitlab.fish": 3,
+    "~/go/src/github.com": 2
+  },
+  "ssh.um790pd": {
+    "~/go/src/research": 2,
+    "~/go/src/gitlab.fish": 3,
+    "~/go/src/github.com": 2
+  }
+}
 def generate_project_index(keys):
-    with open(os.path.expanduser("~/.code_proj_index.json")) as f:
-        generate_cfg = json.load(f)
-
     if keys == "list":
         bin = os.path.realpath(__file__)
         result = [{"title": "generate vscode proj index: all", "arg": f"{bin} --generate all"}]
@@ -213,8 +225,7 @@ def get_ssh(only_host=False):
 
 
 def parse_tmux_project():
-    tmux = os.path.join(os.path.dirname(__file__), "alacritty-tmux")
-    out, err, _ = _run(f"{tmux} capture-pane -p")
+    out, err, _ = _run(f"/opt/homebrew/bin/tmux -L alacritty capture-pane -p")
     if err:
         raise Exception(err)
     result = re.findall(r"\s/[^\s]+\s", out)
