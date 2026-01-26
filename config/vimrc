@@ -1,3 +1,6 @@
+" =============================================================================
+" Basic Settings
+" =============================================================================
 set encoding=utf-8
 let mapleader = "\<space>"
 
@@ -13,11 +16,22 @@ set ts=4 sw=4 sts=4 scrolloff=3
 set statusline=%F\ %h%w%m%r%=%-14.(%l/%L,%c%V%)\ %P
 set wildignore+=.bak,*.swp,*.class,*.pyc,*DS_Store*,*.swp,
 
+" =============================================================================
+" Key Mappings
+" =============================================================================
+" Navigation
 nnoremap <C-c> :q<CR>
 nnoremap -     :Explore<CR>
 nnoremap [q    :cprevious<CR>
 nnoremap ]q    :cnext<CR>
+nnoremap j gj
+nnoremap k gk
 
+" Visual mode indentation
+vnoremap < <gv
+vnoremap > >gv
+
+" Emacs-style line editing
 inoremap <C-b> <left>
 cnoremap <C-b> <left>
 inoremap <C-f> <right>
@@ -27,32 +41,31 @@ cnoremap <C-a> <home>
 inoremap <C-e> <end>
 cnoremap <C-e> <end>
 
-nnoremap j gj
-nnoremap k gk
-vnoremap < <gv
-vnoremap > >gv
-
-
+" =============================================================================
+" Plugin Settings (Vim)
+" =============================================================================
+" Gutentags
 let g:gutentags_enabled = 0
 let g:gutentags_project_root = ['.root', '.git']
 let g:gutentags_ctags_tagfile = '.tags'
-let s:vim_tags = expand('~/.vim/tags')
-let g:gutentags_cache_dir = s:vim_tags
 let g:gutentags_modules = ['ctags']
 let g:gutentags_exclude_filetypes = ['markdown']
+let s:vim_tags = expand('~/.vim/tags')
+let g:gutentags_cache_dir = s:vim_tags
 if !isdirectory(s:vim_tags)
-   silent! call mkdir(s:vim_tags, 'p')
+    silent! call mkdir(s:vim_tags, 'p')
 endif
 
+" Neoformat
 nnoremap = :Neoformat<CR>
 let g:neoformat_basic_format_align = 1
 let g:neoformat_basic_format_trim = 1
 let g:neoformat_python_black = {
     \ 'exe': 'black',
     \ 'stdin': 1,
-    \ 'args': ['--line-length=120', "-q", "-"],
+    \ 'args': ['--line-length=120', '-q', '-'],
     \ }
-let g:neoformat_python_iosrt = {
+let g:neoformat_python_isort = {
     \ 'exe': 'isort',
     \ 'args': ['--profile=black'],
     \ }
@@ -62,18 +75,20 @@ let g:neoformat_rust_rustfmt = {
     \ 'args': ['fmt'],
     \ }
 
+" Auto-save & Netrw
 let g:auto_save = 1
 let g:netrw_dirhistmax = 0
 
+" FZF (for vanilla Vim)
 command! -bang -nargs=* FRg
-  \ call fzf#vim#grep(
-  \   'rg --column --line-number --no-heading --color=always --smart-case --fixed-strings -- '.shellescape(<q-args>), 1,
-  \   fzf#vim#with_preview(), <bang>0)
+    \ call fzf#vim#grep(
+    \   'rg --column --line-number --no-heading --color=always --smart-case --fixed-strings -- '.shellescape(<q-args>), 1,
+    \   fzf#vim#with_preview(), <bang>0)
 
 command! -bang -nargs=* BRg
-  \ call fzf#vim#grep(
-  \   'rg --column --line-number --no-heading --color=always --smart-case --fixed-strings -g '.shellescape(expand('%')).' -- '.shellescape(<q-args>), 1,
-  \   fzf#vim#with_preview(), <bang>0)
+    \ call fzf#vim#grep(
+    \   'rg --column --line-number --no-heading --color=always --smart-case --fixed-strings -g '.shellescape(expand('%')).' -- '.shellescape(<q-args>), 1,
+    \   fzf#vim#with_preview(), <bang>0)
 
 noremap  <c-p>      :<C-U>call fzf#vim#files('')<CR>
 noremap  <leader>p  :<C-U>call fzf#vim#files('')<CR>
@@ -88,15 +103,19 @@ nnoremap <leader>w  y:<C-U><C-R>=printf("FRg %s", expand("<cword>"))<CR>
 nnoremap <leader>b  y:<C-U><C-R>=printf("BRg %s", expand("<cword>"))<CR>
 nnoremap <leader>s  :<C-U><C-R>=printf("FRg ")<CR>
 nnoremap <leader>j  :History:<CR>
+
 let g:fzf_layout = { 'window': 'enew' }
-let g:fzf_commits_log_options =  "-200 --color=always"
+let g:fzf_commits_log_options = '-200 --color=always'
 let g:fzf_preview_window = ['up:80%', 'ctrl-/']
 
+" Lazygit
 command! Lg execute '!tmux popup -d "\#{pane_current_path}" -xC -yC -w99\% -h99\% -E "zsh -i -c lazygit"'
 
-
-" Auto cmd group
+" =============================================================================
+" Autocommands
+" =============================================================================
 augroup vimrc
+    autocmd!
     au FileType javascript,html,vue setlocal sw=2 ts=2 sts=2
     au FileType qf,git,term,fzf setlocal nonu nornu
     au FileType python let b:neoformat_run_all_formatters = 1
@@ -106,25 +125,24 @@ augroup vimrc
         \| exe "normal! g'\"" | endif
 augroup END
 
-
+" =============================================================================
 " Theme
+" =============================================================================
 function! ApplyTheme()
-    for g in ['Normal', 'EndOfBuffer', 'LineNr', "Directory"]
-        exe "hi ".g." ctermbg=NONE guibg=NONE" | endfor
-    hi clear CursorLine
-    "hi CursorLine ctermbg=237 guibg=#386641
-    "hi LineNr ctermfg=238 ctermbg=NONE guifg=#386641 guibg=NONE
-    hi SpellBad ctermbg=17 guibg=#959595
-    "hi StatusLine ctermbg=208 guibg=#6a994e
-    "hi StatusLineNC ctermbg=94 guibg=#6d6875
-    hi Search ctermbg=240 guibg=#03045e
-    hi Visual ctermbg=240 guibg=#03045e
-    hi VisualNOS ctermbg=240 guibg=#03045e
-    hi PmenuSel ctermbg=22 ctermfg=255 guibg=#03045e guifg=#ffffff
+    for g in ['Normal', 'EndOfBuffer', 'LineNr', 'Directory']
+        exe 'hi '.g.' ctermbg=NONE guibg=NONE'
+    endfor
+    " hi clear CursorLine
+    hi SpellBad   ctermbg=17  guibg=#959595
+    hi Search     ctermbg=240 guibg=#03045e
+    hi Visual     ctermbg=240 guibg=#03045e
+    hi VisualNOS  ctermbg=240 guibg=#03045e
+    hi PmenuSel   ctermbg=22 ctermfg=255 guibg=#03045e guifg=#ffffff
 endfunction
-"colorscheme habamax
-"call ApplyTheme()
 
+" =============================================================================
+" Plugin List (shared between Vim and Neovim)
+" =============================================================================
 let g:basic_plugins = [
     \ 'ludovicchabant/vim-gutentags',
     \ 'tpope/vim-commentary',
@@ -137,17 +155,21 @@ let g:basic_plugins = [
     \ 'tpope/vim-fugitive',
     \ 'junegunn/fzf',
     \ 'junegunn/fzf.vim',
-    \]
+    \ ]
 
+" Add ~/nq/bin to PATH if it exists
 if !empty(glob($HOME..'/nq/bin'))
     let $PATH = $HOME..'/nq/bin:'..$PATH
 endif
 
-if !has("nvim")
+" =============================================================================
+" Vim-specific Setup (non-Neovim)
+" =============================================================================
+if !has('nvim')
     set rtp+=~/.vim
     if empty(glob('~/.vim/autoload/plug.vim'))
-        let plug_url = "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
-        execute "!curl --silent -fLo ~/.vim/autoload/plug.vim --create-dirs ".plug_url
+        let plug_url = 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+        execute '!curl --silent -fLo ~/.vim/autoload/plug.vim --create-dirs '.plug_url
         autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
     endif
     silent! call plug#begin('~/.vim/plugged')
@@ -160,44 +182,54 @@ if !has("nvim")
     finish
 endif
 
-
+" =============================================================================
+" Neovim-specific Setup (Lua)
+" =============================================================================
 lua <<EOF
-local home_path = os.getenv("HOME")
-vim.env.XDG_CONFIG_HOME = home_path.."/.vim/config"
-vim.env.XDG_DATA_HOME = home_path.."/.vim/data"
-vim.env.XDG_STATE_HOME = home_path.."/.vim/state"
+local home = os.getenv("HOME")
 
-local lazypath = home_path.."/.vim/plugged/lazy.nvim"
+-- XDG directories
+vim.env.XDG_CONFIG_HOME = home .. "/.vim/config"
+vim.env.XDG_DATA_HOME   = home .. "/.vim/data"
+vim.env.XDG_STATE_HOME  = home .. "/.vim/state"
+
+-- Bootstrap lazy.nvim
+local lazypath = home .. "/.vim/plugged/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
     vim.fn.system({
         "git", "clone", "--filter=blob:none",
         "https://github.com/folke/lazy.nvim.git",
         "--branch=stable", lazypath,
-    }) end
+    })
+end
 vim.opt.rtp:prepend(lazypath)
 
+-- Build plugin list
 local plugins = {}
-table.foreach(vim.g.basic_plugins, function(_, plugin)
-    -- table.insert(plugins, {plugin, event = "VeryLazy"})
-    table.insert(plugins, {plugin})
-end)
 
+-- Add basic plugins from vim config
+for _, plugin in ipairs(vim.g.basic_plugins) do
+    table.insert(plugins, { plugin })
+end
+
+-- Treesitter
 table.insert(plugins, {
-    'nvim-treesitter/nvim-treesitter',
+    "nvim-treesitter/nvim-treesitter",
+    build = ":TSUpdate",
     config = function()
-        require'nvim-treesitter.configs'.setup {
-          ensure_installed = { "javascript", "go", "python", "http" },
-          sync_install = true,
-          auto_install = true,
-        }
-    end
+        require("nvim-treesitter").setup({
+            ensure_installed = { "javascript", "go", "python", "lua", "bash" },
+            auto_install = true,
+        })
+    end,
 })
 
+-- Treesj (split/join)
 table.insert(plugins, {
-    'Wansmer/treesj',
-    dependencies = { 'nvim-treesitter/nvim-treesitter' },
+    "Wansmer/treesj",
+    dependencies = { "nvim-treesitter/nvim-treesitter" },
     config = function()
-        require('treesj').setup({
+        require("treesj").setup({
             check_syntax_error = false,
             use_default_keymaps = false,
             notify = false,
@@ -205,63 +237,78 @@ table.insert(plugins, {
     end,
 })
 
+-- Colorscheme
 table.insert(plugins, {
-    "folke/tokyonight.nvim",
-    lazy = false, priority = 1000,
+    "Mofiqul/vscode.nvim",
+    lazy = false,
+    priority = 1000,
     config = function()
-        vim.cmd([[colorscheme tokyonight
-            hi CursorLine ctermbg=237 guibg=#386641]])
+        require("vscode").setup({
+            transparent = true,
+            italic_comments = true,
+        })
+        vim.cmd([[colorscheme vscode]])
+        vim.cmd([[hi CursorLine guibg=#3a3a3a ctermbg=237]])
     end,
 })
 
+-- Completion
 table.insert(plugins, {
-  'saghen/blink.cmp',
-  dependencies = { 'rafamadriz/friendly-snippets' },
-  version = '1.*',
-  opts = {
-    fuzzy = { implementation = "rust" },
-    list = { selection = { preselect = false, auto_insert = true } },
-    sources = {
-      default = { 'lsp', 'path', 'snippets', 'buffer' },
+    "saghen/blink.cmp",
+    dependencies = { "rafamadriz/friendly-snippets" },
+    version = "1.*",
+    opts = {
+        fuzzy = { implementation = "rust" },
+        completion = {
+            list = { selection = { preselect = false, auto_insert = true } },
+        },
+        sources = { default = { "lsp", "path", "snippets", "buffer" } },
     },
-  },
-  opts_extend = { "sources.default" }
+    opts_extend = { "sources.default" },
 })
 
+-- LSP
 table.insert(plugins, {
     "neovim/nvim-lspconfig",
     event = "VeryLazy",
-    ft = { "python", "go" },
+    ft = { "python", "go", "typescript", "typescriptreact", "javascript", "javascriptreact", "rust" },
     dependencies = {
         "williamboman/mason.nvim",
-        "saghen/blink.cmp",
         "williamboman/mason-lspconfig.nvim",
+        "saghen/blink.cmp",
     },
     config = function()
         local on_attach = function(client, bufnr)
             vim.api.nvim_buf_set_option(bufnr, "omnifunc", "v:lua.vim.lsp.omnifunc")
+
             local function map(mode, lhs, rhs, desc)
-                vim.keymap.set(mode, lhs, rhs,
-                    { buffer = bufnr, desc = desc, noremap = true, silent = false }
-                )
+                vim.keymap.set(mode, lhs, rhs, {
+                    buffer = bufnr,
+                    desc = desc,
+                    noremap = true,
+                    silent = false,
+                })
             end
-            map('n', 'gd', vim.lsp.buf.definition, 'Go to definition')
-            map('n', 'gD', vim.lsp.buf.declaration, 'Go to declaration')
-            map('n', 'gi', vim.lsp.buf.implementation, 'Go to implementation')
-            map('n', 'gr', vim.lsp.buf.references, 'Go to references')
-            map('n', 'K', vim.lsp.buf.hover, 'Hover documentation')
-            map('n', '<C-k>', vim.lsp.buf.signature_help, 'Signature help')
-            -- 代码操作
-            map('n', '<leader>rn', vim.lsp.buf.rename, 'Rename symbol')
-            map({'n', 'v'}, '<leader>ca', vim.lsp.buf.code_action, 'Code action')
-            map('n', '<leader>f', function() vim.lsp.buf.format({ async = true }) end, 'Format')
-            -- 类型定义
-            map('n', '<leader>D', vim.lsp.buf.type_definition, 'Type definition')
-            -- 诊断
-            map('n', '<leader>e', vim.diagnostic.open_float, 'Open diagnostic float')
-            map('n', '[d', vim.diagnostic.goto_prev, 'Previous diagnostic')
-            map('n', ']d', vim.diagnostic.goto_next, 'Next diagnostic')
-            map('n', '<leader>q', vim.diagnostic.setloclist, 'Diagnostic loclist')
+
+            -- Navigation
+            map("n", "gd", vim.lsp.buf.definition, "Go to definition")
+            map("n", "gD", vim.lsp.buf.declaration, "Go to declaration")
+            map("n", "gi", vim.lsp.buf.implementation, "Go to implementation")
+            map("n", "gr", vim.lsp.buf.references, "Go to references")
+            map("n", "K", vim.lsp.buf.hover, "Hover documentation")
+            map("n", "<C-k>", vim.lsp.buf.signature_help, "Signature help")
+
+            -- Code actions
+            map("n", "<leader>rn", vim.lsp.buf.rename, "Rename symbol")
+            map({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, "Code action")
+            map("n", "<leader>f", function() vim.lsp.buf.format({ async = true }) end, "Format")
+            map("n", "<leader>D", vim.lsp.buf.type_definition, "Type definition")
+
+            -- Diagnostics
+            map("n", "<leader>e", vim.diagnostic.open_float, "Open diagnostic float")
+            map("n", "[d", vim.diagnostic.goto_prev, "Previous diagnostic")
+            map("n", "]d", vim.diagnostic.goto_next, "Next diagnostic")
+            map("n", "<leader>q", vim.diagnostic.setloclist, "Diagnostic loclist")
         end
 
         local servers = {
@@ -273,56 +320,66 @@ table.insert(plugins, {
             cssls = {},
             jsonls = {},
         }
+
         require("mason").setup({})
-        require("mason-lspconfig").setup({ ensure_installed = vim.tbl_keys(servers), })
+        require("mason-lspconfig").setup({
+            ensure_installed = vim.tbl_keys(servers),
+        })
+
         for server, config in pairs(servers) do
-            vim.lsp.config[server] = vim.tbl_extend('force', {
+            vim.lsp.config[server] = vim.tbl_extend("force", {
                 on_attach = on_attach,
             }, config)
             vim.lsp.enable(server)
         end
-
     end,
 })
 
+-- Fuzzy finder
 table.insert(plugins, {
     "ibhagwan/fzf-lua",
     dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
-        require("fzf-lua").setup({"ivy"})
+        require("fzf-lua").setup({ "ivy" })
     end,
     keys = {
-        { "<c-p>",     "<cmd>FzfLua files<cr>", desc = "Find Files" },
+        -- Files
+        { "<c-p>", "<cmd>FzfLua files<cr>", desc = "Find Files" },
         { "<leader>p", "<cmd>FzfLua files<cr>", desc = "Find Files" },
         { "<leader>u", "<cmd>FzfLua oldfiles<cr>", desc = "Recent Files" },
-        { "<leader>m", "<cmd>FzfLua marks<cr>", desc = "Find Marks" },
-        { "<leader>c", "<cmd>FzfLua commands<cr>", desc = "Commands" },
-        { "<leader>n", "<cmd>FzfLua builtin<cr>", desc = "FzfLua Builtin Commands" },
-        { "<leader>t", "<cmd>FzfLua btags<cr>", desc = "Find Tags in Buffer" },
-        { "<leader>y", "<cmd>FzfLua tags<cr>", desc = "Find Tags" },
-        { "<leader>h", "<cmd>FzfLua help_tags<cr>", desc = "Help Tags" },
-        { "<leader>r", "<cmd>FzfLua tags_grep_cword<cr>", desc = "Grep Current Tag" },
+        { "<leader>fb", "<cmd>FzfLua buffers<cr>", desc = "Find Buffers" },
 
+        -- Search
         { "<leader>w", "<cmd>FzfLua grep_cword<cr>", desc = "Grep Current Word" },
         { "<leader>b", "<cmd>FzfLua grep_curbuf<cr>", desc = "Grep Current Buffer" },
         { "<leader>s", "<cmd>FzfLua grep<cr>", desc = "Grep" },
 
-        { "<leader>j", "<cmd>FzfLua command_history<cr>", desc = "Command History" },
+        -- Tags
+        { "<leader>t", "<cmd>FzfLua btags<cr>", desc = "Find Tags in Buffer" },
+        { "<leader>y", "<cmd>FzfLua tags<cr>", desc = "Find Tags" },
+        { "<leader>r", "<cmd>FzfLua tags_grep_cword<cr>", desc = "Grep Current Tag" },
 
-        { "<leader>fb", "<cmd>FzfLua buffers<cr>", desc = "Find Buffers" },
+        -- Misc
+        { "<leader>m", "<cmd>FzfLua marks<cr>", desc = "Find Marks" },
+        { "<leader>c", "<cmd>FzfLua commands<cr>", desc = "Commands" },
+        { "<leader>n", "<cmd>FzfLua builtin<cr>", desc = "FzfLua Builtin Commands" },
+        { "<leader>h", "<cmd>FzfLua help_tags<cr>", desc = "Help Tags" },
+        { "<leader>j", "<cmd>FzfLua command_history<cr>", desc = "Command History" },
         { "<leader>fk", "<cmd>FzfLua keymaps<cr>", desc = "Keymaps" },
-    }
+    },
 })
 
-
-function setup()
-    require("lazy").setup(plugins, {
-        root = home_path.."/.vim/plugged",
-        performance = {rtp = {disabled_plugins = {
-            "tutor", "gzip", "tarPlugin", "zipPlugin", "tohtml"
-        }}},
-    })
-end
-setup()
+-- Initialize lazy.nvim
+require("lazy").setup(plugins, {
+    root = home .. "/.vim/plugged",
+    performance = {
+        rtp = {
+            disabled_plugins = {
+                "tutor", "gzip", "tarPlugin", "zipPlugin", "tohtml",
+            },
+        },
+    },
+})
 EOF
+
 call ApplyTheme()

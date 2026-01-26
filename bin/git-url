@@ -32,7 +32,7 @@ def _run(cmd):
 
 def parse_remote(remote_url):
     if remote_url.startswith("git@"):
-        ptn = "git@(?P<host>[a-zA-Z0-9.-]+):(?P<username>[a-zA-Z0-9][a-zA-Z0-9_-]*)/(?P<repo>[a-zA-Z0-9][a-zA-Z0-9_-]*)(\.git)?"
+        ptn = r"git@(?P<host>[a-zA-Z0-9.-]+):(?P<username>[a-zA-Z0-9][a-zA-Z0-9_-]*)/(?P<repo>[a-zA-Z0-9][a-zA-Z0-9_-]*)(\.git)?"
         r = re.match(ptn, remote_url).groupdict()
         remote_url = f"https://{r['host']}/{r['username']}/{r['repo']}"
     elif remote_url.startswith("ssh://"):
