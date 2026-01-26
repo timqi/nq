@@ -314,7 +314,7 @@ table.insert(plugins, {
         local servers = {
             pyright = {},
             gopls = {},
-            ts_ls = {},
+            tsserver = {},
             rust_analyzer = {},
             html = {},
             cssls = {},

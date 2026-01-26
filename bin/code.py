@@ -123,7 +123,7 @@ generate_cfg = {
     "~/go/src/gitlab.fish": 3,
     "~/go/src/github.com": 2
   },
-  "ssh.um790pd": {
+  "ssh.gb0": {
     "~/go/src/research": 2,
     "~/go/src/gitlab.fish": 3,
     "~/go/src/github.com": 2
@@ -183,7 +183,10 @@ def generate_project_index(keys):
             sshs_ori = list(filter(lambda x: f"[{host}]" not in x["subtitle"], sshs_ori))
         for path, v in result.items():
             arr = sshs if is_ssh else locals
-            args = ["code"]
+
+            # args = ["code"]
+            args = ["cursor"]
+
             # if v[0]:
             #     args += ["--profile", v[0]]
             if is_ssh:
