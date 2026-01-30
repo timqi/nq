@@ -132,7 +132,7 @@ function! ApplyTheme()
     for g in ['Normal', 'EndOfBuffer', 'LineNr', 'Directory']
         exe 'hi '.g.' ctermbg=NONE guibg=NONE'
     endfor
-    " hi clear CursorLine
+    hi clear CursorLine
     hi SpellBad   ctermbg=17  guibg=#959595
     hi Search     ctermbg=240 guibg=#03045e
     hi Visual     ctermbg=240 guibg=#03045e
@@ -314,7 +314,7 @@ table.insert(plugins, {
         local servers = {
             pyright = {},
             gopls = {},
-            tsserver = {},
+            ts_ls = {},
             rust_analyzer = {},
             html = {},
             cssls = {},
