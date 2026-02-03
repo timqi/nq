@@ -357,6 +357,8 @@ table.insert(plugins, {
         { "<leader>h", "<cmd>FzfLua help_tags<cr>", desc = "Help Tags" },
         { "<leader>j", "<cmd>FzfLua command_history<cr>", desc = "Command History" },
         { "<leader>fk", "<cmd>FzfLua keymaps<cr>", desc = "Keymaps" },
+        { "<leader>ds", "<cmd>FzfLua lsp_document_symbols<cr>", desc = "Document Symbols" },
+        { "<leader>ws", "<cmd>FzfLua lsp_workspace_symbols<cr>", desc = "Workspace Symbols" },
     },
 })
 
