@@ -253,7 +253,20 @@ table.insert(plugins, {
         })
         vim.cmd([[colorscheme vscode]])
         vim.cmd([[hi CursorLine guibg=#3a3a3a ctermbg=237]])
+        -- Lighter gitsigns colors for dark terminal
+        vim.cmd([[hi GitSignsAdd    guifg=#98c379 ctermfg=114]])
+        vim.cmd([[hi GitSignsChange guifg=#e5c07b ctermfg=180]])
+        vim.cmd([[hi GitSignsDelete guifg=#e06c75 ctermfg=168]])
     end,
+})
+
+-- Breadcrumb/winbar
+table.insert(plugins, {
+    "Bekaboo/dropbar.nvim",
+    event = "VeryLazy",
+    keys = {
+        { "<leader>;", function() require("dropbar.api").pick() end, desc = "Dropbar pick" },
+    },
 })
 
 -- Completion
@@ -359,6 +372,53 @@ table.insert(plugins, {
         { "<leader>fk", "<cmd>FzfLua keymaps<cr>", desc = "Keymaps" },
         { "<leader>ds", "<cmd>FzfLua lsp_document_symbols<cr>", desc = "Document Symbols" },
         { "<leader>ws", "<cmd>FzfLua lsp_workspace_symbols<cr>", desc = "Workspace Symbols" },
+    },
+})
+
+-- Git signs (inline hunks)
+table.insert(plugins, {
+    "lewis6991/gitsigns.nvim",
+    event = "VeryLazy",
+    opts = {
+        signs = {
+            add          = { text = "+" },
+            change       = { text = "~" },
+            delete       = { text = "_" },
+            topdelete    = { text = "‾" },
+            changedelete = { text = "~" },
+        },
+        signs_staged_enable = false,
+        on_attach = function(bufnr)
+            local gs = require("gitsigns")
+            local function map(mode, l, r, desc)
+                vim.keymap.set(mode, l, r, { buffer = bufnr, desc = desc })
+            end
+            map("n", "]c", function() gs.nav_hunk("next") end, "Next hunk")
+            map("n", "[c", function() gs.nav_hunk("prev") end, "Prev hunk")
+            map("n", "<leader>gp", gs.preview_hunk, "Preview hunk")
+            map("n", "<leader>gs", gs.stage_hunk, "Stage hunk")
+            map("n", "<leader>gr", gs.reset_hunk, "Reset hunk")
+            map("n", "<leader>gu", gs.undo_stage_hunk, "Undo stage hunk")
+            map("n", "<leader>gb", gs.blame_line, "Blame line")
+        end,
+    },
+})
+
+-- Diffview (diff viewer)
+table.insert(plugins, {
+    "sindrets/diffview.nvim",
+    cmd = { "DiffviewOpen", "DiffviewFileHistory" },
+    keys = {
+        { "<leader>gd", "<cmd>DiffviewOpen<cr>", desc = "Diff view" },
+        { "<leader>gh", "<cmd>DiffviewFileHistory %<cr>", desc = "File history" },
+        { "<leader>gl", "<cmd>DiffviewFileHistory<cr>", desc = "Git log" },
+    },
+    opts = {
+        enhanced_diff_hl = true,
+        view = {
+            default = { winbar_info = true },
+            file_history = { winbar_info = true },
+        },
     },
 })
 

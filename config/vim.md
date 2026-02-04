@@ -57,6 +57,12 @@ Python files use `isort` + `black` (120 char line length). Rust uses `cargo fmt`
 | `<Space>j` | Command history |
 | `<Space>fk` | Keymaps |
 
+## Dropbar (breadcrumb navigation)
+
+| Key | Action |
+|-----|--------|
+| `<Space>;` | Pick breadcrumb segment (then type shown letter) |
+
 ## LSP (Neovim only)
 
 ### Navigation
@@ -93,6 +99,27 @@ Python files use `isort` + `black` (120 char line length). Rust uses `cargo fmt`
 |---------|--------|
 | `:Lg` | Open lazygit in tmux popup |
 | `:Git ...` | Fugitive git commands |
+
+### Gitsigns (inline hunks)
+
+| Key | Action |
+|-----|--------|
+| `]c` / `[c` | Next/Previous hunk |
+| `<Space>gp` | Preview hunk |
+| `<Space>gs` | Stage hunk |
+| `<Space>gr` | Reset hunk |
+| `<Space>gu` | Undo stage hunk |
+| `<Space>gb` | Blame line |
+
+### Diffview (diff viewer)
+
+| Key | Action |
+|-----|--------|
+| `<Space>gd` | Open diff view (staged/unstaged changes) |
+| `<Space>gh` | Current file history |
+| `<Space>gl` | Full git log |
+
+In diffview: `]x`/`[x` to jump between conflicts, `q` to close.
 
 ## Text Objects (from plugins)
 
