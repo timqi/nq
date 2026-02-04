@@ -327,6 +327,21 @@ install_gh() {
     github_install_logic $app ${app}_version $repo ${app}_install
 }
 
+install_delta() {
+    app=delta
+    repo="dandavison/delta"
+    delta_version() {
+        echo `delta -V|cut -d " " -f2`
+    }
+    delta_install() {
+        ar=`[ $ARCH = "Darwin" ] && echo "aarch64-apple-darwin" || echo "x86_64-unknown-linux-musl"`
+        url=`download_url $repo $1 "delta-$1-$ar.tar.gz"`
+        download $url | tar -zx -C $tmp --strip-components=1
+        mv "$tmp/$app" "$bin_dir"
+    }
+    github_install_logic $app ${app}_version $repo ${app}_install
+}
+
 install_grpcurl() {
     app=grpcurl
     repo=fullstorydev/grpcurl
