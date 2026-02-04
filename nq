@@ -312,6 +312,21 @@ install_aichat() {
     github_install_logic $app ${app}_version $repo ${app}_install
 }
 
+install_gh() {
+    app=gh
+    repo=cli/cli
+    gh_version() {
+        echo "v`gh --version|head -n 1|cut -d\" \" -f3`"
+    }
+    gh_install() {
+        ar=`[ $ARCH = "Darwin" ] && echo "macOS_arm64" || echo "linux_amd64"`
+        url=`download_url $repo $1 "gh_$(echo $1|cut -c2-100)_$ar.tar.gz"`
+        download $url | tar -zx -C $tmp --strip-components=1
+        mv "$tmp/bin/$app" "$bin_dir"
+    }
+    github_install_logic $app ${app}_version $repo ${app}_install
+}
+
 install_grpcurl() {
     app=grpcurl
     repo=fullstorydev/grpcurl
