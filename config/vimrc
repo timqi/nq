@@ -342,6 +342,7 @@ table.insert(plugins, {
 -- Fuzzy finder
 table.insert(plugins, {
     "ibhagwan/fzf-lua",
+    version = "0.7",
     dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
         require("fzf-lua").setup({ "ivy" })
