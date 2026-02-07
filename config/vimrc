@@ -405,21 +405,26 @@ table.insert(plugins, {
     },
 })
 
--- Diffview (diff viewer)
+-- Inline diff (unified, non-split)
+table.insert(plugins, {
+    "axkirillov/unified.nvim",
+    keys = {
+        { "<leader>gd", function() require("unified").toggle() end, desc = "Toggle inline diff" },
+    },
+    opts = {},
+})
+
+-- Diffview (split diff viewer)
 table.insert(plugins, {
     "sindrets/diffview.nvim",
     cmd = { "DiffviewOpen", "DiffviewFileHistory" },
     keys = {
-        { "<leader>gd", "<cmd>DiffviewOpen<cr>", desc = "Diff view" },
+        { "<leader>gD", "<cmd>DiffviewOpen<cr>", desc = "Diff view (split)" },
         { "<leader>gh", "<cmd>DiffviewFileHistory %<cr>", desc = "File history" },
         { "<leader>gl", "<cmd>DiffviewFileHistory<cr>", desc = "Git log" },
     },
     opts = {
         enhanced_diff_hl = true,
-        view = {
-            default = { winbar_info = true },
-            file_history = { winbar_info = true },
-        },
     },
 })
 
