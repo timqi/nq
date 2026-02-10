@@ -154,8 +154,6 @@ let g:basic_plugins = [
     \ 'jiangmiao/auto-pairs',
     \ '907th/vim-auto-save',
     \ 'sbdchd/neoformat',
-    \ 'wellle/targets.vim',
-    \ 'michaeljsmith/vim-indent-object',
     \ 'tpope/vim-fugitive',
     \ 'junegunn/fzf',
     \ 'junegunn/fzf.vim',
@@ -216,31 +214,6 @@ for _, plugin in ipairs(vim.g.basic_plugins) do
     table.insert(plugins, { plugin })
 end
 
--- Treesitter
-table.insert(plugins, {
-    "nvim-treesitter/nvim-treesitter",
-    build = ":TSUpdate",
-    config = function()
-        require("nvim-treesitter").setup({
-            ensure_installed = { "javascript", "go", "python", "lua", "bash" },
-            auto_install = true,
-        })
-    end,
-})
-
--- Treesj (split/join)
-table.insert(plugins, {
-    "Wansmer/treesj",
-    dependencies = { "nvim-treesitter/nvim-treesitter" },
-    config = function()
-        require("treesj").setup({
-            check_syntax_error = false,
-            use_default_keymaps = false,
-            notify = false,
-        })
-    end,
-})
-
 -- Colorscheme
 table.insert(plugins, {
     "Mofiqul/vscode.nvim",
@@ -272,7 +245,6 @@ table.insert(plugins, {
 -- Completion
 table.insert(plugins, {
     "saghen/blink.cmp",
-    dependencies = { "rafamadriz/friendly-snippets" },
     version = "1.*",
     opts = {
         fuzzy = { implementation = "rust" },

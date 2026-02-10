@@ -434,7 +434,7 @@ install_uv() {
 }
 
 install_config() {
-    conf_dir="$HOME/.config/nq/config"
+    conf_dir=".config/nq/config"
     link "$conf_dir/gitconfig" "$HOME/.gitconfig"
     link "$conf_dir/profile" "$HOME/.zshrc"
     link "$conf_dir/tmux.conf" "$HOME/.tmux.conf"
@@ -458,7 +458,7 @@ install_vimrc() {
     [ ! -f $plug_file ] && curl --progress-bar -fLo $plug_file --create-dirs \
         "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
 
-    conf_dir="$HOME/.config/nq/config"
+    conf_dir=".config/nq/config"
     link "$conf_dir/vimrc" "$HOME/.vimrc"
 
     [ ! -d "$HOME/.config/nvim" ] && mkdir -p "$HOME/.config/nvim"
@@ -466,7 +466,7 @@ install_vimrc() {
     nvimrc="$HOME/.config/nvim/init.vim" && rm -f $nvimrc
     echo "set runtimepath^=~/.vim" > $nvimrc
     echo "let &packpath = &runtimepath" >> $nvimrc
-    echo "source $conf_dir/vimrc" >> $nvimrc
+    echo "source $HOME/.config/nq/config/vimrc" >> $nvimrc
 
     command -v nvim >/dev/null &&\
         nvim +PlugInstall +qall ||\
