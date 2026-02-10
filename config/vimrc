@@ -49,9 +49,10 @@ cnoremap <C-e> <end>
 " Plugin Settings (Vim)
 " =============================================================================
 " Gutentags
-let g:gutentags_enabled = 0
+let g:gutentags_dont_load = 0
+let g:gutentags_enabled = 1
 let g:gutentags_project_root = ['.root', '.git']
-let g:gutentags_ctags_tagfile = '.tags'
+"let g:gutentags_ctags_tagfile = 'tags'
 let g:gutentags_modules = ['ctags']
 let g:gutentags_exclude_filetypes = ['markdown']
 let s:vim_tags = expand('~/.vim/tags')
@@ -121,11 +122,14 @@ augroup vimrc
     autocmd!
     au FileType javascript,html,vue setlocal sw=2 ts=2 sts=2
     au FileType qf,git,term,fzf setlocal nonu nornu
+    au FileType fugitive,git wincmd o
     au FileType python let b:neoformat_run_all_formatters = 1
     au FileType fzf set laststatus=0 showmode noruler
         \| au BufLeave <buffer> set laststatus=1 noshowmode ruler
     au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
         \| exe "normal! g'\"" | endif
+    au BufReadPost fugitive://* if exists('*FugitiveWorkTree') && exists('*gutentags#get_cachefile')
+        \| let &l:tags = gutentags#get_cachefile(FugitiveWorkTree(), get(g:, 'gutentags_ctags_tagfile', 'tags')) | endif
 augroup END
 
 " =============================================================================
@@ -147,6 +151,7 @@ endfunction
 " Plugin List (shared between Vim and Neovim)
 " =============================================================================
 let g:basic_plugins = [
+    \ 'ludovicchabant/vim-gutentags',
     \ '907th/vim-auto-save',
     \ 'tpope/vim-fugitive',
     \ ]
@@ -169,7 +174,6 @@ if !has('nvim')
     endif
     silent! call plug#begin('~/.vim/plugged')
     let g:vim_only_plugins = [
-        \ 'ludovicchabant/vim-gutentags',
         \ 'tpope/vim-commentary',
         \ 'tpope/vim-surround',
         \ 'jiangmiao/auto-pairs',
@@ -212,7 +216,7 @@ local plugins = {}
 
 -- Add basic plugins from vim config
 for _, plugin in ipairs(vim.g.basic_plugins) do
-    table.insert(plugins, { plugin })
+    table.insert(plugins, { plugin, lazy = false })
 end
 
 -- Colorscheme
@@ -227,10 +231,10 @@ table.insert(plugins, {
         })
         vim.cmd([[colorscheme vscode]])
         vim.cmd([[hi CursorLine guibg=#3a3a3a ctermbg=237]])
-        -- Lighter gitsigns colors for dark terminal
-        vim.cmd([[hi GitSignsAdd    guifg=#98c379 ctermfg=114]])
-        vim.cmd([[hi GitSignsChange guifg=#e5c07b ctermfg=180]])
-        vim.cmd([[hi GitSignsDelete guifg=#e06c75 ctermfg=168]])
+        -- Gitsigns: high-contrast colors for dark terminal
+        vim.cmd([[hi GitSignsAdd    guifg=#73e05a ctermfg=77]])
+        vim.cmd([[hi GitSignsChange guifg=#edc55a ctermfg=221]])
+        vim.cmd([[hi GitSignsDelete guifg=#ff5370 ctermfg=204]])
     end,
 })
 
@@ -288,25 +292,28 @@ table.insert(plugins, {
                     vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, desc = desc, noremap = true, silent = false })
                 end
 
-                -- Navigation (via fzf-lua for preview + fuzzy search)
-                map("n", "gd", "<cmd>FzfLua lsp_definitions<cr>", "Go to definition")
+                local fzf = require("fzf-lua")
+                local lsp_winopts = { winopts = { height = 1, width = 1, preview = { layout = "vertical", vertical = "up:60%" } } }
+
+                -- Navigation (via fzf-lua for preview on top)
+                map("n", "gd", function() fzf.lsp_definitions(lsp_winopts) end, "Go to definition")
                 map("n", "gD", vim.lsp.buf.declaration, "Go to declaration")
-                map("n", "gi", "<cmd>FzfLua lsp_implementations<cr>", "Go to implementation")
-                map("n", "gr", "<cmd>FzfLua lsp_references<cr>", "Go to references")
+                map("n", "gi", function() fzf.lsp_implementations(lsp_winopts) end, "Go to implementation")
+                map("n", "gr", function() fzf.lsp_references(lsp_winopts) end, "Go to references")
                 map("n", "K", vim.lsp.buf.hover, "Hover documentation")
                 map("n", "<C-k>", vim.lsp.buf.signature_help, "Signature help")
 
                 -- Code actions
                 map("n", "<leader>rn", vim.lsp.buf.rename, "Rename symbol")
-                map({ "n", "v" }, "<leader>ca", "<cmd>FzfLua lsp_code_actions<cr>", "Code action")
+                map({ "n", "v" }, "<leader>ca", function() fzf.lsp_code_actions(lsp_winopts) end, "Code action")
                 map("n", "<leader>f", function() vim.lsp.buf.format({ async = true }) end, "Format")
-                map("n", "<leader>D", "<cmd>FzfLua lsp_typedefs<cr>", "Type definition")
+                map("n", "<leader>D", function() fzf.lsp_typedefs(lsp_winopts) end, "Type definition")
 
                 -- Diagnostics (via fzf-lua for better navigation)
                 map("n", "<leader>e", vim.diagnostic.open_float, "Open diagnostic float")
                 map("n", "[d", vim.diagnostic.goto_prev, "Previous diagnostic")
                 map("n", "]d", vim.diagnostic.goto_next, "Next diagnostic")
-                map("n", "<leader>q", "<cmd>FzfLua diagnostics_document<cr>", "Diagnostics")
+                map("n", "<leader>q", function() fzf.diagnostics_document(lsp_winopts) end, "Diagnostics")
             end,
         })
     end,
@@ -318,13 +325,13 @@ table.insert(plugins, {
     version = "0.7",
     dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
-        require("fzf-lua").setup({ "ivy" })
+        require("fzf-lua").setup({ "ivy", previewers = { git_diff = { pager = false } } })
     end,
     keys = {
         -- Files
         { "<c-p>", "<cmd>FzfLua files previewer=false<cr>", desc = "Find Files" },
         { "<leader>p", "<cmd>FzfLua files previewer=false<cr>", desc = "Find Files" },
-        { "<leader>u", "<cmd>FzfLua oldfiles<cr>", desc = "Recent Files" },
+        { "<leader>u", "<cmd>FzfLua oldfiles previewer=false<cr>", desc = "Recent Files" },
         { "<leader>fb", "<cmd>FzfLua buffers<cr>", desc = "Find Buffers" },
 
         -- Search
@@ -344,8 +351,54 @@ table.insert(plugins, {
         { "<leader>h", "<cmd>FzfLua help_tags<cr>", desc = "Help Tags" },
         { "<leader>j", "<cmd>FzfLua command_history<cr>", desc = "Command History" },
         { "<leader>fk", "<cmd>FzfLua keymaps<cr>", desc = "Keymaps" },
-        { "<leader>ds", "<cmd>FzfLua lsp_document_symbols<cr>", desc = "Document Symbols" },
-        { "<leader>ws", "<cmd>FzfLua lsp_workspace_symbols<cr>", desc = "Workspace Symbols" },
+        { "<leader>ds", function() require("fzf-lua").lsp_document_symbols({ winopts = { height = 1, width = 1, preview = { layout = "vertical", vertical = "up:60%" } } }) end, desc = "Document Symbols" },
+        { "<leader>ws", function() require("fzf-lua").lsp_workspace_symbols({ winopts = { height = 1, width = 1, preview = { layout = "vertical", vertical = "up:60%" } } }) end, desc = "Workspace Symbols" },
+        { "<leader>gg", function() require("fzf-lua").git_status({ winopts = { height = 1, width = 1, preview = { layout = "vertical", vertical = "up:60%" } } }) end, desc = "Git working changes" },
+        { "<leader>gc", function()
+            local commit = vim.g._last_commit or "HEAD"
+            local info = vim.fn.system("git log -1 --format='%h %an: %s' " .. commit):gsub("\n$", "")
+            local maxlen = math.floor(vim.o.columns * 0.75) - 3
+            if #info > maxlen then info = info:sub(1, maxlen) .. "…" end
+            local fzf_winopts = { height = 1, width = 1, preview = { layout = "vertical", vertical = "up:60%" } }
+            local colorize = "sed -e 's/^M\\t/\\x1b[33mM  \\x1b[0m/' -e 's/^A\\t/\\x1b[32mA  \\x1b[0m/' -e 's/^D\\t/\\x1b[31mD  \\x1b[0m/'"
+            require("fzf-lua").fzf_exec("git diff-tree --no-commit-id --name-status -r " .. commit .. " | " .. colorize, {
+                prompt = info .. " > ",
+                preview = "git diff --color=always " .. commit .. "^.." .. commit .. " -- {2..}",
+                fzf_opts = { ["--highlight-line"] = "" },
+                winopts = fzf_winopts,
+                actions = {
+                    ["default"] = function(selected)
+                        if not selected or not selected[1] then return end
+                        local file = selected[1]:match("^%S+%s+(.+)$")
+                        if not file then return end
+                        vim.cmd("edit " .. vim.fn.fnameescape(file))
+                        vim.defer_fn(function()
+                            local gs = require("gitsigns")
+                            gs.change_base(commit .. "~1", false)
+                            vim.defer_fn(function() gs.toggle_deleted() end, 200)
+                        end, 100)
+                    end,
+                },
+            })
+        end, desc = "Browse cached commit files" },
+        { "<leader>gC", function()
+            local log_fmt = "--date=format-local:'%Y%m%d %H:%M' --format='%C(yellow)%h %C(cyan)%cd %Cblue%aN %Creset%s%C(auto)%d'"
+            require("fzf-lua").fzf_exec("git log --color=always -200 " .. log_fmt, {
+                prompt = "Commits > ",
+                preview = "git diff --color=always {1}^..{1}",
+                fzf_opts = { ["--highlight-line"] = "" },
+                winopts = { height = 1, width = 1, preview = { layout = "vertical", vertical = "up:60%" } },
+                actions = {
+                    ["default"] = function(selected)
+                        if not selected or not selected[1] then return end
+                        local hash = selected[1]:match("^(%S+)")
+                        if not hash then return end
+                        vim.g._last_commit = hash
+                        vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<leader>gc", true, false, true), "m", false)
+                    end,
+                },
+            })
+        end, desc = "Pick commit and browse files" },
     },
 })
 
@@ -355,11 +408,11 @@ table.insert(plugins, {
     event = "VeryLazy",
     opts = {
         signs = {
-            add          = { text = "+" },
-            change       = { text = "~" },
-            delete       = { text = "_" },
-            topdelete    = { text = "‾" },
-            changedelete = { text = "~" },
+            add          = { text = "▎" },
+            change       = { text = "▎" },
+            delete       = { text = "▁" },
+            topdelete    = { text = "▔" },
+            changedelete = { text = "▎" },
         },
         signs_staged_enable = false,
         on_attach = function(bufnr)
@@ -374,6 +427,7 @@ table.insert(plugins, {
             map("n", "<leader>gr", gs.reset_hunk, "Reset hunk")
             map("n", "<leader>gu", gs.undo_stage_hunk, "Undo stage hunk")
             map("n", "<leader>gb", gs.blame_line, "Blame line")
+            map("n", "<leader>gi", gs.toggle_deleted, "Toggle inline deleted lines")
         end,
     },
 })
@@ -410,7 +464,7 @@ table.insert(plugins, {
         require("nvim-treesitter").setup()
         vim.api.nvim_create_autocmd("FileType", {
             pattern = { "python", "go", "typescript", "javascript", "rust", "lua" },
-            callback = function() vim.treesitter.start() end,
+            callback = function() pcall(vim.treesitter.start) end,
         })
     end,
 })

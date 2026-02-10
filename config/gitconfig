@@ -1,14 +1,5 @@
 [core]
 	excludesfile = ~/.config/nq/config/gitignore
-	pager = delta
-
-[interactive]
-	diffFilter = delta --color-only
-
-[delta]
-	navigate = true
-	line-numbers = true
-	syntax-theme = Coldark-Dark
 
 [log]
     date = format-local:%Y%m%d %H:%M

@@ -1,16 +1,95 @@
---langdef=Solidity                                                              
---langmap=Solidity:.sol                                                         
---regex-Solidity=/^library[ \t]+([a-zA-Z0-9_]+)/\1/l,library/                 
---regex-Solidity=/^interface[ \t]+([a-zA-Z0-9_]+)/\1/i,interface/                 
---regex-Solidity=/^contract[ \t]+([a-zA-Z0-9_]+)/\1/c,contract/                 
---regex-Solidity=/^abstract contract[ \t]+([a-zA-Z0-9_]+)/\1/ac,abstract contract/                 
+--recurse=yes
+--tag-relative=yes
+
+# =============================================================================
+# Excludes
+# =============================================================================
+--exclude=.git
+--exclude=.hg
+--exclude=node_modules
+--exclude=__pycache__
+--exclude=.venv
+--exclude=venv
+--exclude=target
+--exclude=dist
+--exclude=build
+--exclude=vendor
+--exclude=.mypy_cache
+--exclude=.pytest_cache
+--exclude=.tox
+--exclude=*.min.js
+--exclude=*.bundle.js
+--exclude=*.map
+--exclude=*.pyc
+--exclude=*.pyo
+--exclude=*.o
+--exclude=*.so
+
+# Skip languages that produce noisy/useless tags
+--languages=-JSON,-HTML,-CSS,-Markdown,-XML
+
+# =============================================================================
+# Fields & Extras
+# =============================================================================
+# n: line number        i: inheritance      a: access (public/private)
+# z: scope              S: signature        K: kind (full name)
+# l: language
+--fields=+niazSKl
+
+# q: qualified tags (Class.method)
+# r: reference tags (where supported by parser)
+# f: file-scope tags
+--extras=+qrf
+
+# =============================================================================
+# Python
+# =============================================================================
+# c:class  f:function  m:member  v:variable  I:imported module
+# i:import  x:name reference
+# Exclude l(local) and z(parameter) — too noisy for project-wide tags
+--kinds-Python=+cfmvIix
+
+# =============================================================================
+# Go
+# =============================================================================
+# p:package  f:function  t:type  c:const  v:var
+# s:struct  i:interface  m:member  M:method
+# n:interface method spec  w:field  a:talias  R:receiver
+--kinds-Go=*
+
+# =============================================================================
+# Rust
+# =============================================================================
+# n:module  s:struct  i:trait  c:impl  f:function  g:enum
+# t:typedef  v:variable  M:macro  m:field  e:enumerator  P:method
+--kinds-Rust=*
+
+# =============================================================================
+# JavaScript
+# =============================================================================
+# f:function  c:class  m:method  p:property  C:constant
+# v:variable  g:generator  G:getter  S:setter
+--kinds-JavaScript=*
+
+# =============================================================================
+# TypeScript
+# =============================================================================
+# c:class  n:namespace  i:interface  e:enum  f:function  m:method
+# p:property  v:variable  C:constant  g:enumMember  a:alias  t:typeAlias
+# Exclude l(local) and z(parameter)
+--kinds-TypeScript=+cniefmpvCgats
+
+# =============================================================================
+# Solidity (custom parser)
+# =============================================================================
+--langdef=Solidity
+--langmap=Solidity:.sol
+--regex-Solidity=/^library[ \t]+([a-zA-Z0-9_]+)/\1/l,library/
+--regex-Solidity=/^interface[ \t]+([a-zA-Z0-9_]+)/\1/i,interface/
+--regex-Solidity=/^contract[ \t]+([a-zA-Z0-9_]+)/\1/c,contract/
+--regex-Solidity=/^abstract contract[ \t]+([a-zA-Z0-9_]+)/\1/ac,abstract contract/
 --regex-Solidity=/^[ \t]*function[ \t]+([a-zA-Z0-9_]+)*\(/\1/f,function/
 --regex-Solidity=/^[ \t]*event[ \t]+([a-zA-Z0-9_]+)*\(/\1/e,event/
---regex-Solidity=/^[ \t]*(struct[ \t]+[a-zA-Z0-9_]+)([ \t]*\{)/\1/v,variable/    
---regex-Solidity=/^[ \t]*(enum[ \t]+[a-zA-Z0-9_]+)([ \t]*\{)/\1/v,variable/      
+--regex-Solidity=/^[ \t]*(struct[ \t]+[a-zA-Z0-9_]+)([ \t]*\{)/\1/v,variable/
+--regex-Solidity=/^[ \t]*(enum[ \t]+[a-zA-Z0-9_]+)([ \t]*\{)/\1/v,variable/
 --regex-Solidity=/^[ \t]*mapping[ \t]+\(([a-zA-Z0-9_]+)[ \t]*=>[ \t]*([a-zA-Z0-9_]+)\)[ \t]+([a-zA-Z0-9_]+)/\3 (\1=>\2)/m,mapping/
-
---fields=+niazS
---extra=+q
---c++-kinds=+pxI
---c-kinds=+px

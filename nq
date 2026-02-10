@@ -439,7 +439,7 @@ install_config() {
     link "$conf_dir/profile" "$HOME/.zshrc"
     link "$conf_dir/tmux.conf" "$HOME/.tmux.conf"
     rm -rf "$HOME/.ctags.d" && mkdir "$HOME/.ctags.d" && \
-        link "$conf_dir/ctags" "$HOME/.ctags.d/default.ctags"
+        link "../$conf_dir/ctags" "$HOME/.ctags.d/default.ctags"
 }
 
 install_zplug() {
