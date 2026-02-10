@@ -60,8 +60,7 @@ if !isdirectory(s:vim_tags)
     silent! call mkdir(s:vim_tags, 'p')
 endif
 
-" Neoformat
-nnoremap = :Neoformat<CR>
+" Neoformat (vim-only mapping, see vim-specific block below)
 let g:neoformat_basic_format_align = 1
 let g:neoformat_basic_format_trim = 1
 let g:neoformat_python_black = {
@@ -148,15 +147,8 @@ endfunction
 " Plugin List (shared between Vim and Neovim)
 " =============================================================================
 let g:basic_plugins = [
-    \ 'ludovicchabant/vim-gutentags',
-    \ 'tpope/vim-commentary',
-    \ 'tpope/vim-surround',
-    \ 'jiangmiao/auto-pairs',
     \ '907th/vim-auto-save',
-    \ 'sbdchd/neoformat',
     \ 'tpope/vim-fugitive',
-    \ 'junegunn/fzf',
-    \ 'junegunn/fzf.vim',
     \ ]
 
 " Add ~/nq/bin to PATH if it exists
@@ -168,6 +160,7 @@ endif
 " Vim-specific Setup (non-Neovim)
 " =============================================================================
 if !has('nvim')
+    nnoremap = :Neoformat<CR>
     set rtp+=~/.vim
     if empty(glob('~/.vim/autoload/plug.vim'))
         let plug_url = 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
@@ -175,8 +168,16 @@ if !has('nvim')
         autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
     endif
     silent! call plug#begin('~/.vim/plugged')
-    let g:basic_plugins += ['junegunn/fzf', 'junegunn/fzf.vim']
-    for plugin in g:basic_plugins
+    let g:vim_only_plugins = [
+        \ 'ludovicchabant/vim-gutentags',
+        \ 'tpope/vim-commentary',
+        \ 'tpope/vim-surround',
+        \ 'jiangmiao/auto-pairs',
+        \ 'sbdchd/neoformat',
+        \ 'junegunn/fzf',
+        \ 'junegunn/fzf.vim',
+        \ ]
+    for plugin in g:basic_plugins + g:vim_only_plugins
         Plug plugin
     endfor
     silent! call plug#end()
@@ -287,25 +288,25 @@ table.insert(plugins, {
                     vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, desc = desc, noremap = true, silent = false })
                 end
 
-                -- Navigation
-                map("n", "gd", vim.lsp.buf.definition, "Go to definition")
+                -- Navigation (via fzf-lua for preview + fuzzy search)
+                map("n", "gd", "<cmd>FzfLua lsp_definitions<cr>", "Go to definition")
                 map("n", "gD", vim.lsp.buf.declaration, "Go to declaration")
-                map("n", "gi", vim.lsp.buf.implementation, "Go to implementation")
-                map("n", "gr", vim.lsp.buf.references, "Go to references")
+                map("n", "gi", "<cmd>FzfLua lsp_implementations<cr>", "Go to implementation")
+                map("n", "gr", "<cmd>FzfLua lsp_references<cr>", "Go to references")
                 map("n", "K", vim.lsp.buf.hover, "Hover documentation")
                 map("n", "<C-k>", vim.lsp.buf.signature_help, "Signature help")
 
                 -- Code actions
                 map("n", "<leader>rn", vim.lsp.buf.rename, "Rename symbol")
-                map({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, "Code action")
+                map({ "n", "v" }, "<leader>ca", "<cmd>FzfLua lsp_code_actions<cr>", "Code action")
                 map("n", "<leader>f", function() vim.lsp.buf.format({ async = true }) end, "Format")
-                map("n", "<leader>D", vim.lsp.buf.type_definition, "Type definition")
+                map("n", "<leader>D", "<cmd>FzfLua lsp_typedefs<cr>", "Type definition")
 
-                -- Diagnostics
+                -- Diagnostics (via fzf-lua for better navigation)
                 map("n", "<leader>e", vim.diagnostic.open_float, "Open diagnostic float")
                 map("n", "[d", vim.diagnostic.goto_prev, "Previous diagnostic")
                 map("n", "]d", vim.diagnostic.goto_next, "Next diagnostic")
-                map("n", "<leader>q", vim.diagnostic.setloclist, "Diagnostic loclist")
+                map("n", "<leader>q", "<cmd>FzfLua diagnostics_document<cr>", "Diagnostics")
             end,
         })
     end,
@@ -368,7 +369,7 @@ table.insert(plugins, {
             end
             map("n", "]c", function() gs.nav_hunk("next") end, "Next hunk")
             map("n", "[c", function() gs.nav_hunk("prev") end, "Prev hunk")
-            map("n", "<leader>gp", gs.preview_hunk, "Preview hunk")
+            map("n", "<leader>gp", gs.preview_hunk_inline, "Preview hunk inline")
             map("n", "<leader>gs", gs.stage_hunk, "Stage hunk")
             map("n", "<leader>gr", gs.reset_hunk, "Reset hunk")
             map("n", "<leader>gu", gs.undo_stage_hunk, "Undo stage hunk")
@@ -398,6 +399,33 @@ table.insert(plugins, {
     opts = {
         enhanced_diff_hl = true,
     },
+})
+
+-- Treesitter
+table.insert(plugins, {
+    "nvim-treesitter/nvim-treesitter",
+    build = ":TSUpdate",
+    event = "VeryLazy",
+    config = function()
+        require("nvim-treesitter").setup()
+        vim.api.nvim_create_autocmd("FileType", {
+            pattern = { "python", "go", "typescript", "javascript", "rust", "lua" },
+            callback = function() vim.treesitter.start() end,
+        })
+    end,
+})
+
+-- Mini.pairs + Mini.surround (lightweight replacements)
+table.insert(plugins, {
+    "echasnovski/mini.pairs",
+    event = "InsertEnter",
+    opts = {},
+})
+
+table.insert(plugins, {
+    "echasnovski/mini.surround",
+    event = "VeryLazy",
+    opts = {},
 })
 
 -- Initialize lazy.nvim
