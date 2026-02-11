@@ -4,6 +4,9 @@
 [log]
     date = format-local:%Y%m%d %H:%M
 
+[blame]
+    date = format-local:%Y%m%d %H:%M
+
 [format]
     pretty = format:%C(yellow)%h %C(cyan)%cd %Cblue%aN %Creset%s%C(auto)%d
 
