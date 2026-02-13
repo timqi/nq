@@ -319,10 +319,17 @@ install_gh() {
         echo "v`gh --version|head -n 1|cut -d\" \" -f3`"
     }
     gh_install() {
-        ar=`[ $ARCH = "Darwin" ] && echo "macOS_arm64" || echo "linux_amd64"`
-        url=`download_url $repo $1 "gh_$(echo $1|cut -c2-100)_$ar.tar.gz"`
-        download $url | tar -zx -C $tmp --strip-components=1
-        mv "$tmp/bin/$app" "$bin_dir"
+        ver_num=$(echo $1|cut -c2-100)
+        if [ $ARCH = "Darwin" ]; then
+            url=`download_url $repo $1 "gh_${ver_num}_macOS_arm64.zip"`
+            download $url > "$tmp/gh.zip"
+            unzip -o "$tmp/gh.zip" -d "$tmp" >/dev/null
+            mv "$tmp/gh_${ver_num}_macOS_arm64/bin/$app" "$bin_dir"
+        else
+            url=`download_url $repo $1 "gh_${ver_num}_linux_amd64.tar.gz"`
+            download $url | tar -zx -C $tmp --strip-components=1
+            mv "$tmp/bin/$app" "$bin_dir"
+        fi
     }
     github_install_logic $app ${app}_version $repo ${app}_install
 }
