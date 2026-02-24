@@ -14,7 +14,7 @@ brew_path="/opt/homebrew/bin/brew"
     nqitembin="$HOME/nq/bin" nqbin="$HOME/nq/bin" ||\
     nqitembin="$local_dir/bin" nqbin="$HOME/.config/nq/bin"
 
-subpath="$HOME/go/bin:$nqitembin:$nqitembin/node:$nqbin"
+subpath="$HOME/go/bin:$nqitembin:$nqbin"
 subpath="$subpath:$HOME/.cargo/bin"
 [ -f $brew_path ] &&\
     subpath="$subpath:/opt/homebrew/bin:/opt/homebrew/sbin"
@@ -28,6 +28,13 @@ case ":$PATH:" in
     *":$subpath:"*) ;;
     *) export PATH="$subpath:$PATH";;
 esac
+
+# uv (Python)
+export UV_PYTHON_INSTALL_DIR="$HOME/.local/share/uv/python"
+
+# volta (Node.js toolchain manager)
+export VOLTA_HOME="$HOME/.local/share/volta"
+[ -d "$VOLTA_HOME/bin" ] && export PATH="$VOLTA_HOME/bin:$PATH"
 
 uvm() {
     UVBASE=$HOME/.local/uv/envs
@@ -160,8 +167,6 @@ alias zl='zoxide query -l -s'
 alias bat='bat -p'
 alias m='bat --language=man --color=always'
 export BAT_THEME="Solarized (dark)"
-
-alias ai='aichat'
 
 
 [ -f "$HOME/.platformrc" ] && . "$HOME/.platformrc"
