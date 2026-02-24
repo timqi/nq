@@ -40,7 +40,7 @@ install_go() {
         echo "go$ver.darwin-arm64.tar.gz" ||\
         echo "go$ver.linux-amd64.tar.gz"`
     GODIR="$local_dir/go"
-    [ ! -d $GODIR ] && mkdir -p $GODIR || rm -rf "$GODIR/*"
+    [ ! -d $GODIR ] && mkdir -p $GODIR || rm -rf "$GODIR"/*
     download "https://dl.google.com/go/$filename" |\
         tar -xz --strip-components 1 -C $GODIR
     link "$GODIR/bin/go" "$bin_dir"
@@ -149,7 +149,7 @@ install_zoxide() {
     app=zoxide
     repo="ajeetdsouza/zoxide"
     zoxide_version() {
-        echo `zoxide -V|cut -d " " -f2`
+        echo "v$(zoxide -V|cut -d ' ' -f2)"
     }
     zoxide_install() {
         ar=`[ $ARCH = "Darwin" ] && echo "aarch64-apple-darwin" || echo "x86_64-unknown-linux-musl"`

@@ -184,8 +184,7 @@ def generate_project_index(keys):
         for path, v in result.items():
             arr = sshs if is_ssh else locals
 
-            # args = ["code"]
-            args = ["cursor"]
+            args = ["code"]
 
             # if v[0]:
             #     args += ["--profile", v[0]]

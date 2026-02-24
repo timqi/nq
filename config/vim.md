@@ -111,16 +111,6 @@ Python files use `isort` + `black` (120 char line length). Rust uses `cargo fmt`
 | `<Space>gu` | Undo stage hunk |
 | `<Space>gb` | Blame line |
 
-### Diffview (diff viewer)
-
-| Key | Action |
-|-----|--------|
-| `<Space>gd` | Open diff view (staged/unstaged changes) |
-| `<Space>gh` | Current file history |
-| `<Space>gl` | Full git log |
-
-In diffview: `]x`/`[x` to jump between conflicts, `q` to close.
-
 ## Text Objects (from plugins)
 
 - `i` / `a` variants for quotes, brackets, arguments

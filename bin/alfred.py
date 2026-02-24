@@ -162,7 +162,7 @@ if __name__ == "__main__":
         obj = run(args.generate)
         file = os.path.expanduser(f"~/.cache/alfred/{args.generate}.json")
         if not os.path.exists(os.path.dirname(file)):
-            shutil.mkdir(os.path.dirname(file))
+            os.makedirs(os.path.dirname(file))
         with open(file, "w") as f:
             f.write(obj)
     else:
