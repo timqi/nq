@@ -6,27 +6,31 @@ local_dir="$HOME/.local"
 
 # Homebrew
 brew_path="/opt/homebrew/bin/brew"
-[ -f $brew_path ] && [ -z $HOMEBREW_PREFIX ] &&\
+[ -f "$brew_path" ] && [ -z "$HOMEBREW_PREFIX" ] && \
     eval "$($brew_path shellenv | grep -v 'export PATH')"
 
 # Handle PATH
-[ -d "$HOME/nq/bin" ] &&\
-    nqitembin="$HOME/nq/bin" nqbin="$HOME/nq/bin" ||\
-    nqitembin="$local_dir/bin" nqbin="$HOME/.config/nq/bin"
+if [ -d "$HOME/nq/bin" ]; then
+    nqitembin="$HOME/nq/bin"
+    nqbin="$HOME/nq/bin"
+else
+    nqitembin="$local_dir/bin"
+    nqbin="$HOME/.config/nq/bin"
+fi
 
 subpath="$HOME/go/bin:$nqitembin:$nqbin"
 subpath="$subpath:$HOME/.cargo/bin"
-[ -f $brew_path ] &&\
+[ -f "$brew_path" ] && \
     subpath="$subpath:/opt/homebrew/bin:/opt/homebrew/sbin"
 
 # use uv default env as python interpreter
-uv_env_default=$HOME/.local/uv/envs/default
-[ -d "$uv_env_default" ] &&\
+uv_env_default="$HOME/.local/uv/envs/default"
+[ -d "$uv_env_default" ] && \
     subpath="$subpath:$uv_env_default/bin"
 
 case ":$PATH:" in
-    *":$subpath:"*) ;;
-    *) export PATH="$subpath:$PATH";;
+    *":$nqbin:"*) ;;
+    *) export PATH="$subpath:$PATH" ;;
 esac
 
 # uv (Python)
@@ -37,56 +41,63 @@ export VOLTA_HOME="$HOME/.local/share/volta"
 [ -d "$VOLTA_HOME/bin" ] && export PATH="$VOLTA_HOME/bin:$PATH"
 
 uvm() {
-    UVBASE=$HOME/.local/uv/envs
-    [ ! -d $UVBASE ] && mkdir -p $UVBASE
-    case $1 in
+    UVBASE="$HOME/.local/uv/envs"
+    [ ! -d "$UVBASE" ] && mkdir -p "$UVBASE"
+    case "$1" in
         create)
-            shift; env=$1; shift;
+            shift; env="$1"; shift
             [ -z "$env" ] && echo "Error: environment name required" && return 1
-            uv venv $UVBASE/$env $@
-            pipfile=$UVBASE/$env/bin/pip
-            echo "#!/bin/sh" > $pipfile
-            echo 'uv pip $@' >> $pipfile
-            chmod +x $pipfile
+            uv venv "$UVBASE/$env" "$@"
+            pipfile="$UVBASE/$env/bin/pip"
+            echo '#!/bin/sh' > "$pipfile"
+            echo 'uv pip "$@"' >> "$pipfile"
+            chmod +x "$pipfile"
             ;;
         list)
-            command -v python 2>&1 >/dev/null && ver=`python -V` || ver="no python"
-            env=`which python`
-            printf "\033[0;32mCurrent: $env [$ver]\033[0m\n";
-            for ver in `ls $UVBASE`; do
-                desc=`$UVBASE/$ver/bin/python -V`
-                echo "  - $ver [$desc]";
+            command -v python >/dev/null 2>&1 && ver=$(python -V) || ver="no python"
+            env=$(command -v python)
+            printf "\033[0;32mCurrent: $env [$ver]\033[0m\n"
+            for ver in $(ls "$UVBASE"); do
+                desc=$("$UVBASE/$ver/bin/python" -V)
+                echo "  - $ver [$desc]"
             done
             ;;
         rm)
-            shift; env=$1; shift;
+            shift; env="$1"; shift
             [ -z "$env" ] && echo "Error: environment name required" && return 1
-            rm -r $UVBASE/$env
+            rm -r "$UVBASE/$env"
             ;;
         use)
-            shift; env=$1; shift;
+            shift; env="$1"; shift
             [ -z "$env" ] && echo "Error: environment name required" && return 1
-            source $UVBASE/$env/bin/activate
+            . "$UVBASE/$env/bin/activate"
             ;;
         deactivate)
-            case "`which python`" in
-                "$UVBASE"*) deactivate;;
-                *);;
+            case "$(command -v python)" in
+                "$UVBASE"*) deactivate ;;
+                *) ;;
             esac
             ;;
-        *) echo '  uvm list'
-           echo '  uvm use [env] will use default if empty'
-           echo '  uvm create [env] options from `uv venv`'
-           echo '  uvm rm [env]'
-           echo '  uvm deactivate'
-           echo ''
-           echo '  Envs is located in $UVBASE'
-           echo '' && uvm list;;
+        *)
+            echo '  uvm list'
+            echo '  uvm use [env] will use default if empty'
+            echo '  uvm create [env] options from `uv venv`'
+            echo '  uvm rm [env]'
+            echo '  uvm deactivate'
+            echo ''
+            echo "  Envs is located in $UVBASE"
+            echo '' && uvm list
+            ;;
     esac
 }
 
 thin_update() {
-    url=https://raw.githubusercontent.com/timqi/nq/main/thin-installer; nq=/tmp/nq.thin.sh; curl -# $url -sL -o $nq || wget -O $nq $url; sh $nq 0 0; source $HOME/nq/profile; rm -f $nq
+    url="https://raw.githubusercontent.com/timqi/nq/main/thin-installer"
+    nq="/tmp/nq.thin.sh"
+    curl -# "$url" -sL -o "$nq" || wget -O "$nq" "$url"
+    sh "$nq" 0 0
+    . "$HOME/nq/profile"
+    rm -f "$nq"
 }
 
 _confirm_run() {
@@ -97,23 +108,23 @@ _confirm_run() {
 }
 
 cf() {
-    cmd=$(complete-fzf --alias="`alias`" --command="$*")
+    cmd=$(complete-fzf --alias="$(alias)" --command="$*")
     _confirm_run "$cmd"
 }
 
 cr() {
-    cmd=`history | sed 's/\s\+[0-9]\+\s\+//g' | sort -rn | awk '!x[$0]++' | fzf --layout=reverse --prompt='Cmd> '`
+    cmd=$(history | sed 's/\s\+[0-9]\+\s\+//g' | sort -rn | awk '!x[$0]++' | fzf --layout=reverse --prompt='Cmd> ')
     _confirm_run "$cmd"
 }
 
 ensure_ssh_agent() {
-    echo "Before: SSH_AUTH_SOCK=$SSH_AUTH_SOCK  [`TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M:%S' -d @$(stat -c %Z $SSH_AUTH_SOCK)`]"
-    export SSH_AUTH_SOCK=`sock_ssh.py`
-    echo "After:  SSH_AUTH_SOCK=$SSH_AUTH_SOCK  [`TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M:%S' -d @$(stat -c %Z $SSH_AUTH_SOCK)`]"
+    echo "Before: SSH_AUTH_SOCK=$SSH_AUTH_SOCK  [$(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M:%S' -d @$(stat -c %Z "$SSH_AUTH_SOCK"))]"
+    export SSH_AUTH_SOCK=$(sock_ssh.py)
+    echo "After:  SSH_AUTH_SOCK=$SSH_AUTH_SOCK  [$(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M:%S' -d @$(stat -c %Z "$SSH_AUTH_SOCK"))]"
 }
 
 add_to_path() {
-    subpath=$1
+    subpath="$1"
     if [ -z "$subpath" ]; then
         echo "Usage: add_to_path <path>"
         return 1
@@ -121,21 +132,21 @@ add_to_path() {
 
     case ":$PATH:" in
         *":$subpath:"*) ;;
-        *) export PATH="$subpath:$PATH";;
+        *) export PATH="$subpath:$PATH" ;;
     esac
 }
 
 chpwd() {
-    command -v zoxide >/dev/null 2>&1 && zoxide add `pwd`
+    command -v zoxide >/dev/null 2>&1 && zoxide add "$(pwd)"
 }
 
 ltmux() {
-    if ! echo "$TMUX"|egrep ".*alacritty.*" >/dev/null; then
+    if ! echo "$TMUX" | grep -E ".*alacritty.*" >/dev/null; then
         echo "not in a alacritty tmux session"
     fi
     tmux rename-window local
     unset TMUX
-    tmux $@
+    tmux "$@"
 }
 
 # fzf
@@ -145,9 +156,8 @@ export FZF_DEFAULT_OPTS="--ansi -m --color dark --bind=ctrl-l:toggle-all --bind=
 # Basic settings
 export EDITOR=vim
 export LANG=en_US.UTF-8
-export LC_ALL=$LANG
+export LC_ALL="$LANG"
 export TERM="xterm-256color"
-export PYTHONPATH="."
 
 alias ls='ls --color'
 alias ll='ls --color -alh'
@@ -160,7 +170,7 @@ alias d='docker'
 alias dc='docker compose'
 alias sv="sudo supervisorctl"
 
-alias zdd='zoxide add "`pwd`"'
+alias zdd='zoxide add "$(pwd)"'
 alias zclear='zoxide query -l | xargs zoxide remove'
 alias zl='zoxide query -l -s'
 
@@ -169,7 +179,6 @@ alias m='bat --language=man --color=always'
 export BAT_THEME="Solarized (dark)"
 
 
-[ -f "$HOME/.platformrc" ] && . "$HOME/.platformrc"
 [ -f "$HOME/.platformrc.sh" ] && . "$HOME/.platformrc.sh"
 
 #### Advanced shells start ####
@@ -196,13 +205,13 @@ zsh_cfg() {
     . "$local_dir/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 
     fzf-history-widget() {
-      selected=`history -n 0 |awk '!x[$0]++' |FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS -e +s +m --tac --query ${(qqq)LBUFFER} --layout=reverse" fzf --prompt="History Commands: > "`
-      BUFFER=$selected; CURSOR=$#BUFFER; zle redisplay
+        selected=$(history -n 0 | awk '!x[$0]++' | FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS -e +s +m --tac --query ${(qqq)LBUFFER} --layout=reverse" fzf --prompt="History Commands: > ")
+        BUFFER=$selected; CURSOR=$#BUFFER; zle redisplay
     }
     zle -N fzf-history-widget && bindkey '^R' fzf-history-widget
 
     fzf-complete-widget() {
-      BUFFER=$(complete-fzf --alias="`alias`" --command="$LBUFFER"); CURSOR=$#BUFFER; zle redisplay
+        BUFFER=$(complete-fzf --alias="$(alias)" --command="$LBUFFER"); CURSOR=$#BUFFER; zle redisplay
     }
     zle -N fzf-complete-widget && bindkey '^T' fzf-complete-widget
 
@@ -212,22 +221,26 @@ zsh_cfg() {
         BUFFER="$directory"; CURSOR=$#BUFFER; zle redisplay
     }
     zle -N zoxide_widget && bindkey '^G' zoxide_widget
-    
+
     printcolors() {
-        for i in {0..255} ; do
+        for i in {0..255}; do
             printf "\x1b[48;5;%sm%3d\e[0m " "$i" "$i"
             if (( i == 15 )) || (( i > 15 )) && (( (i-15) % 6 == 0 )); then
-                printf "\n";
+                printf "\n"
             fi
         done
     }
-   
+
     # PROMPT
     precmd() {
-        [ -e ".git" ] && __git_branch=`git rev-parse --abbrev-ref HEAD 2>/dev/null` &&\
-            [ -n $__git_branch ] && __git_branch=" $__git_branch" || __git_branch=""
+        __git_branch=""
+        if [ -e ".git" ]; then
+            local branch
+            branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+            [ -n "$branch" ] && __git_branch=" $branch"
+        fi
     }
-    LOCAL_MACHINE_NAME=`hostname`
+    LOCAL_MACHINE_NAME=$(hostname)
     PROMPT=$'%(?:%F{2}:%F{1})${LOCAL_MACHINE_NAME:->} %B%F{4}%c%b%F{8}${__git_branch}%f%{$reset_color%} %# '
 
     alias ls='lsd --icon=never'
@@ -236,7 +249,7 @@ zsh_cfg() {
 
 bash_cfg() {
     __zoxide_to_directory__() {
-        if [ `zoxide query -l | wc -l` -lt 1 ]; then
+        if [ "$(zoxide query -l | wc -l)" -lt 1 ]; then
             zindex.py -c /home/ops -d 5 >/dev/null
             echo "zoxide indexed: zindex.py -c /home/ops -d 5"
         fi
@@ -248,40 +261,32 @@ bash_cfg() {
     bind -x '"\C-g": __zoxide_to_directory__'
 
     __fzf_complete__() {
-      output=$(complete-fzf --alias="`alias`" --command="$READLINE_LINE")
-      READLINE_LINE="$output"
-      READLINE_POINT=0x7fffffff
+        output=$(complete-fzf --alias="$(alias)" --command="$READLINE_LINE")
+        READLINE_LINE="$output"
+        READLINE_POINT=0x7fffffff
     }
     bind -x '"\C-t": __fzf_complete__'
 
     __fzf_history__() {
-      local output opts script
-      opts="-n2..,.. --scheme=history +m --read0"
-      script='BEGIN { getc; $/ = "\n\t"; $HISTCOUNT = $ENV{last_hist} + 1 } s/^[ *]//; print $HISTCOUNT - $. . "\t$_" if !$seen{$_}++'
-      output=$(
-        builtin fc -lnr -2147483648 |
-          last_hist=$(HISTTIMEFORMAT='' builtin history 1) perl -n -l0 -e "$script" |
-          FZF_DEFAULT_OPTS="$opts" fzf --query "$READLINE_LINE" --prompt="History Commands: > "
-      ) || return
-      READLINE_LINE=${output#*$'\t'}
-      if [[ -z "$READLINE_POINT" ]]; then
-        echo "$READLINE_LINE"
-      else
-        READLINE_POINT=0x7fffffff
-      fi
+        local output opts script
+        opts="-n2..,.. --scheme=history +m --read0"
+        script='BEGIN { getc; $/ = "\n\t"; $HISTCOUNT = $ENV{last_hist} + 1 } s/^[ *]//; print $HISTCOUNT - $. . "\t$_" if !$seen{$_}++'
+        output=$(
+            builtin fc -lnr -2147483648 |
+                last_hist=$(HISTTIMEFORMAT='' builtin history 1) perl -n -l0 -e "$script" |
+                FZF_DEFAULT_OPTS="$opts" fzf --query "$READLINE_LINE" --prompt="History Commands: > "
+        ) || return
+        READLINE_LINE=${output#*$'\t'}
+        if [[ -z "$READLINE_POINT" ]]; then
+            echo "$READLINE_LINE"
+        else
+            READLINE_POINT=0x7fffffff
+        fi
     }
     bind -x '"\C-r": __fzf_history__'
 
-    # if command -v tmux &> /dev/null; then
-    #     if [[ $- =~ i ]] && [[ -z "$TMUX" ]] && [[ -n "$SSH_TTY" ]]; then
-    #         tmux a -t0 || tmux
-    #     fi
-    # fi
-    # end bash
-    #
     alias d='sudo docker'
     alias dc='sudo docker compose'
-    [ -f "$HOME/.tmux.conf" ] && tmux source-file ~/.tmux.conf
 }
 
 if command -v zle &> /dev/null; then
@@ -292,9 +297,9 @@ fi
 #### Advanced shells end ####
 
 if [ "$TERM_PROGRAM" != "vscode" ] \
-    && test -z $TMUX \
-    && test -n $SSH_TTY \
-    && tmux ls 2>&1 >/dev/null | grep "run:"
+    && test -z "$TMUX" \
+    && test -n "$SSH_TTY" \
+    && tmux ls 2>/dev/null | grep -q "run:"
 then
     tmux attach -t run
 fi
