@@ -173,6 +173,7 @@ if !has('nvim')
     endif
     silent! call plug#begin('~/.vim/plugged')
     let g:vim_only_plugins = [
+        \ 'christoomey/vim-tmux-navigator',
         \ 'tpope/vim-commentary',
         \ 'tpope/vim-surround',
         \ 'jiangmiao/auto-pairs',
@@ -514,6 +515,18 @@ table.insert(plugins, {
             callback = function() pcall(vim.treesitter.start) end,
         })
     end,
+})
+
+-- Seamless vim/tmux pane navigation
+table.insert(plugins, {
+    "christoomey/vim-tmux-navigator",
+    cmd = { "TmuxNavigateLeft", "TmuxNavigateDown", "TmuxNavigateUp", "TmuxNavigateRight" },
+    keys = {
+        { "<c-h>", "<cmd>TmuxNavigateLeft<cr>" },
+        { "<c-j>", "<cmd>TmuxNavigateDown<cr>" },
+        { "<c-k>", "<cmd>TmuxNavigateUp<cr>" },
+        { "<c-l>", "<cmd>TmuxNavigateRight<cr>" },
+    },
 })
 
 -- Mini plugins (pairs + surround)
