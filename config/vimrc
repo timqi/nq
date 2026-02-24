@@ -93,9 +93,9 @@ command! -bang -nargs=* BRg
     \   'rg --column --line-number --no-heading --color=always --smart-case --fixed-strings -g '.shellescape(expand('%')).' -- '.shellescape(<q-args>), 1,
     \   fzf#vim#with_preview(), <bang>0)
 
-nnoremap <c-p>      :<C-U>call fzf#vim#files('')<CR>
-nnoremap <leader>p  :<C-U>call fzf#vim#files('')<CR>
-nnoremap <leader>u  :<C-U>call fzf#vim#history()<CR>
+nnoremap <c-p>      :<C-U>call fzf#vim#files('', {'down': '40%', 'options': '--no-preview'})<CR>
+nnoremap <leader>p  :<C-U>call fzf#vim#files('', {'down': '40%', 'options': '--no-preview'})<CR>
+nnoremap <leader>u  :<C-U>call fzf#vim#history({'down': '40%', 'options': '--no-preview'})<CR>
 nnoremap <leader>m  :<C-U>call fzf#vim#marks()<CR>
 nnoremap <leader>c  :<C-U>Commands<CR>
 nnoremap <leader>t  :<C-U>BTags<CR>
@@ -331,9 +331,9 @@ table.insert(plugins, {
     end,
     keys = {
         -- Files
-        { "<c-p>", "<cmd>FzfLua files previewer=false<cr>", desc = "Find Files" },
-        { "<leader>p", "<cmd>FzfLua files previewer=false<cr>", desc = "Find Files" },
-        { "<leader>u", "<cmd>FzfLua oldfiles previewer=false<cr>", desc = "Recent Files" },
+        { "<c-p>", function() require("fzf-lua").files({ previewer = false, winopts = { height = 0.4, width = 1, row = 1 } }) end, desc = "Find Files" },
+        { "<leader>p", function() require("fzf-lua").files({ previewer = false, winopts = { height = 0.4, width = 1, row = 1 } }) end, desc = "Find Files" },
+        { "<leader>u", function() require("fzf-lua").oldfiles({ previewer = false, winopts = { height = 0.4, width = 1, row = 1 } }) end, desc = "Recent Files" },
         { "<leader>fb", "<cmd>FzfLua buffers<cr>", desc = "Find Buffers" },
 
         -- Search
