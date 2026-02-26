@@ -118,10 +118,19 @@ cr() {
 }
 
 ensure_ssh_agent() {
-    echo "Before: SSH_AUTH_SOCK=$SSH_AUTH_SOCK  [$(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M:%S' -d @$(stat -c %Z "$SSH_AUTH_SOCK"))]"
-    export SSH_AUTH_SOCK=$(sock_ssh.py)
-    echo "After:  SSH_AUTH_SOCK=$SSH_AUTH_SOCK  [$(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M:%S' -d @$(stat -c %Z "$SSH_AUTH_SOCK"))]"
+    case "$(uname)" in
+        Darwin)
+            export SSH_AUTH_SOCK="$HOME/.ssh/vt.sock"
+            ;;
+        Linux)
+            if [ "$SSH_AUTH_SOCK" != "$HOME/.ssh/vt.sock" ]; then
+                ln -sfv "$(sock_ssh.py)" "$HOME/.ssh/vt.sock"
+                export SSH_AUTH_SOCK="$HOME/.ssh/vt.sock"
+            fi
+            ;;
+    esac
 }
+ensure_ssh_agent
 
 add_to_path() {
     subpath="$1"
