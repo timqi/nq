@@ -410,6 +410,21 @@ install_conda() {
     sh "$tmp/conda.sh" -b -f -s -p "$local_dir/conda"
 }
 
+install_vt() {
+    app=vt
+    repo="timqi/vt"
+    vt_version() {
+        echo "v`vt --version|cut -d\" \" -f2`"
+    }
+    vt_install() {
+        ar=`[ $ARCH = "Darwin" ] && echo "darwin-arm64" || echo "linux-amd64"`
+        url=`download_url $repo $1 "vt-$ar-${1}.tar.gz"`
+        download $url | tar -zx -C $tmp
+        mv "$tmp/$app" "$bin_dir"
+    }
+    github_install_logic $app ${app}_version $repo ${app}_install
+}
+
 install_uv() {
     app=uv
     repo="astral-sh/uv"

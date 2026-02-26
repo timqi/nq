@@ -26,5 +26,5 @@
 [pull]
 	rebase = false
 
-[user]
-	name = qiqi
+[init]
+	defaultBranch = main
