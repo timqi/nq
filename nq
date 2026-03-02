@@ -441,6 +441,21 @@ install_uv() {
     github_install_logic $app ${app}_version $repo ${app}_install
 }
 
+install_just() {
+    app=just
+    repo="casey/just"
+    just_version() {
+        echo `just --version|cut -d " " -f2`
+    }
+    just_install() {
+        ar=`[ $ARCH = "Darwin" ] && echo "aarch64-apple-darwin" || echo "x86_64-unknown-linux-musl"`
+        url=`download_url $repo $1 "just-$1-$ar.tar.gz"`
+        download $url | tar -zx -C $tmp
+        mv "$tmp/$app" "$bin_dir"
+    }
+    github_install_logic $app ${app}_version $repo ${app}_install
+}
+
 install_cloudflared() {
     app=cloudflared
     repo="cloudflare/cloudflared"
