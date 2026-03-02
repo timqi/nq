@@ -441,6 +441,25 @@ install_uv() {
     github_install_logic $app ${app}_version $repo ${app}_install
 }
 
+install_cloudflared() {
+    app=cloudflared
+    repo="cloudflare/cloudflared"
+    cloudflared_version() {
+        echo `cloudflared --version|cut -d " " -f3`
+    }
+    cloudflared_install() {
+        if [ $ARCH = "Darwin" ]; then
+            url=`download_url $repo $1 "cloudflared-darwin-arm64.tgz"`
+            download $url | tar -zx -C $tmp
+        else
+            url=`download_url $repo $1 "cloudflared-linux-amd64"`
+            download $url > "$tmp/$app" && chmod +x "$tmp/$app"
+        fi
+        mv "$tmp/$app" "$bin_dir"
+    }
+    github_install_logic $app ${app}_version $repo ${app}_install
+}
+
 install_config() {
     conf_dir=".config/nq/config"
     link "$conf_dir/gitconfig" "$HOME/.gitconfig"
