@@ -80,25 +80,6 @@ install_bat() {
     github_install_logic $app ${app}_version $repo ${app}_install
 }
 
-install_onekeyd() {
-    if [ "$ARCH" != "Darwin" ]; then
-        echo "onekeyd is for macOS"
-        return 0
-    fi
-
-    log "[onekeyd] Check newest release: https://github.com/OneKeyHQ/onekey-bridge/releases"
-
-    ver="2.2.0"
-    url="https://github.com/OneKeyHQ/onekey-bridge/releases/download/v$ver/onekey-bridge-$ver.signed.pkg"
-
-    cd $tmp
-    curl -L -s $url > onekeyd.pkg
-    pkgutil --expand onekeyd.pkg onekeyd
-    cd onekeyd/so.onekey.bridge.install.pkg/
-    tar -xvf Payload
-    mv Applications/Utilities/OneKey\ Bridge/onekeyd_darwin_arm64 ~/.local/bin/onekeyd
-}
-
 install_tmux() {
     app=tmux
     repo="mjakob-gh/build-static-tmux"
@@ -242,21 +223,6 @@ install_restic() {
     github_install_logic $app ${app}_version $repo ${app}_install
 }
 
-install_alist() {
-    app=alist
-    repo="alist-org/alist"
-    alist_version() {
-        echo `alist version|grep -e '^Version: '|cut -d " " -f2`
-    }
-    alist_install() {
-        ar=`[ $ARCH = "Darwin" ] && echo "darwin-arm64" || echo "linux-amd64"`
-        url=`download_url $repo $1 "alist-$ar.tar.gz"`
-        download $url | tar -zx -C $tmp
-        mv "$tmp/$app" "$bin_dir"
-    }
-    github_install_logic $app ${app}_version $repo ${app}_install
-}
-
 install_mihomo() {
     app=mihomo
     repo="MetaCubeX/mihomo"
@@ -332,16 +298,16 @@ install_dust() {
     github_install_logic $app ${app}_version $repo ${app}_install
 }
 
-install_aichat() {
-    app=aichat
-    repo=sigoden/aichat
-    aichat_version() {
-        echo "v`aichat -V|cut -d" " -f2`"
+install_diffnav() {
+    app=diffnav
+    repo="dlvhdr/diffnav"
+    diffnav_version() {
+        echo "v`diffnav --version|cut -d" " -f2`"
     }
-    aichat_install() {
-        ar=`[ $ARCH = "Darwin" ] && echo "aarch64-apple-darwin" || echo "x86_64-unknown-linux-musl"`
-        url=`download_url $repo $1 "aichat-${1}-$ar.tar.gz"`
-        download $url | tar -zx -C $tmp #--strip-components=1
+    diffnav_install() {
+        ar=`[ $ARCH = "Darwin" ] && echo "Darwin_arm64" || echo "Linux_x86_64"`
+        url=`download_url $repo $1 "diffnav_${ar}.tar.gz"`
+        download $url | tar -zx -C $tmp
         mv "$tmp/$app" "$bin_dir"
     }
     github_install_logic $app ${app}_version $repo ${app}_install
@@ -414,17 +380,6 @@ install_nvim() {
         link "../nvim/bin/nvim" "$bin_dir/nv"
     }
     github_install_logic $app ${app}_version $repo ${app}_install
-}
-
-install_conda() {
-    command -v conda >/dev/null && log "[conda] exist, return" && return
-    base_url="https://github.com/conda-forge/miniforge/releases/latest/download"
-    
-    filename=`[ $ARCH = "Darwin" ] &&\
-        echo "Miniforge3-MacOSX-arm64.sh" ||\
-        echo "Miniforge3-Linux-x86_64.sh"`
-    download "$base_url/$filename" > "$tmp/conda.sh"
-    sh "$tmp/conda.sh" -b -f -s -p "$local_dir/conda"
 }
 
 install_vt() {
@@ -567,11 +522,6 @@ install_ctags() {
     make install >/dev/null
     cp $tmp/bin/* "$bin_dir"
     cd -
-}
-
-install_chtsh() {
-    download https://cht.sh/:cht.sh > "$bin_dir/chtsh"
-    chmod +x "$bin_dir/chtsh"
 }
 
 install_brew() {
