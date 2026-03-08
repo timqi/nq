@@ -298,21 +298,6 @@ install_dust() {
     github_install_logic $app ${app}_version $repo ${app}_install
 }
 
-install_diffnav() {
-    app=diffnav
-    repo="dlvhdr/diffnav"
-    diffnav_version() {
-        echo "v`diffnav --version|cut -d" " -f2`"
-    }
-    diffnav_install() {
-        ar=`[ $ARCH = "Darwin" ] && echo "Darwin_arm64" || echo "Linux_x86_64"`
-        url=`download_url $repo $1 "diffnav_${ar}.tar.gz"`
-        download $url | tar -zx -C $tmp
-        mv "$tmp/$app" "$bin_dir"
-    }
-    github_install_logic $app ${app}_version $repo ${app}_install
-}
-
 install_gh() {
     app=gh
     repo=cli/cli
@@ -331,36 +316,6 @@ install_gh() {
             download $url | tar -zx -C $tmp --strip-components=1
             mv "$tmp/bin/$app" "$bin_dir"
         fi
-    }
-    github_install_logic $app ${app}_version $repo ${app}_install
-}
-
-install_delta() {
-    app=delta
-    repo="dandavison/delta"
-    delta_version() {
-        echo `delta -V|cut -d " " -f2`
-    }
-    delta_install() {
-        ar=`[ $ARCH = "Darwin" ] && echo "aarch64-apple-darwin" || echo "x86_64-unknown-linux-musl"`
-        url=`download_url $repo $1 "delta-$1-$ar.tar.gz"`
-        download $url | tar -zx -C $tmp --strip-components=1
-        mv "$tmp/$app" "$bin_dir"
-    }
-    github_install_logic $app ${app}_version $repo ${app}_install
-}
-
-install_grpcurl() {
-    app=grpcurl
-    repo=fullstorydev/grpcurl
-    grpcurl_version() {
-        echo "`grpcurl -version 2>&1|cut -d" " -f2`"
-    }
-    grpcurl_install() {
-        ar=`[ $ARCH = "Darwin" ] && echo "osx_arm64" || echo "linux_x86_64"`
-        url=`download_url $repo $1 "grpcurl_$(echo $1|cut -c2-100)_$ar.tar.gz"`
-        download $url | tar -zx -C $tmp
-        mv "$tmp/$app" "$bin_dir"
     }
     github_install_logic $app ${app}_version $repo ${app}_install
 }
