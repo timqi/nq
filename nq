@@ -106,7 +106,7 @@ install_tmux() {
         echo "v$($app -V|cut -d' ' -f2)"
     }
     tmux_install() {
-        ar=`[ $ARCH = "Darwin" ] && echo "" || echo "$(uname -m)"`
+        ar=`[ $ARCH = "Darwin" ] && echo "" || echo "amd64"`
         [ -z "$ar" ] && log "[tmux] only linux supported" && return
         url=`download_url $repo $1 "$app.linux-$ar.stripped.gz"`
         download $url | gzip -d > "$tmp/$app"
