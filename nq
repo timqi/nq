@@ -530,16 +530,16 @@ install_vimrc() {
     conf_dir=".config/nq/config"
     link "$conf_dir/vimrc" "$HOME/.vimrc"
 
-    [ ! -d "$HOME/.config/nvim" ] && mkdir -p "$HOME/.config/nvim"
-
-    nvimrc="$HOME/.config/nvim/init.vim" && rm -f $nvimrc
-    echo "set runtimepath^=~/.vim" > $nvimrc
-    echo "let &packpath = &runtimepath" >> $nvimrc
-    echo "source $HOME/.config/nq/config/vimrc" >> $nvimrc
-
-    command -v nvim >/dev/null &&\
-        nvim +PlugInstall +qall ||\
+    if command -v nvim >/dev/null; then
+        [ ! -d "$HOME/.config/nvim" ] && mkdir -p "$HOME/.config/nvim"
+        nvimrc="$HOME/.config/nvim/init.vim" && rm -f $nvimrc
+        echo "set runtimepath^=~/.vim" > $nvimrc
+        echo "let &packpath = &runtimepath" >> $nvimrc
+        echo "source $HOME/.config/nq/config/vimrc" >> $nvimrc
+        nvim +PlugInstall +qall
+    else
         vim +PlugInstall +qall
+    fi
 }
 
 install_ctags() {
