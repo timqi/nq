@@ -482,6 +482,16 @@ install_config() {
     link "$conf_dir/tmux.conf" "$HOME/.tmux.conf"
     rm -rf "$HOME/.ctags.d" && mkdir "$HOME/.ctags.d" && \
         link "../$conf_dir/ctags" "$HOME/.ctags.d/default.ctags"
+    link "../../.config/nq/nq" "$bin_dir/nq"
+}
+
+install_cask() {
+    conf_dir=".config/nq/config"
+    # claude code config
+    [ ! -d "$HOME/.claude" ] && mkdir -p "$HOME/.claude"
+    link "../$conf_dir/claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
+    rm -rf "$HOME/.claude/agents"
+    link "../$conf_dir/claude/agents" "$HOME/.claude/agents"
 }
 
 install_zplug() {
