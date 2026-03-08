@@ -40,4 +40,4 @@ echo "$remote_sha" > "$VERSION_FILE"
 # Install configs via nq
 sh "$NQ_DIR/nq" config
 
-echo "Done (${remote_sha%${remote_sha#???????}}). Run: source ~/.zshrc"
+echo "Done (${remote_sha%${remote_sha#???????}}). Run: source ~/.config/nq/config/profile"
