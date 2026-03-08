@@ -75,9 +75,11 @@ def get_url(path, remotes):
         elif "github" in base_url:
             print(f"  - overview:\t{base_url}")
 
-    if which("open"):
-        url = urls["fish"] if "fish" in urls else urls["origin"]
-        _run(f"open {url}")
+    opener = which("open") or which("xdg-open")
+    if opener:
+        url = urls.get("fish") or urls.get("origin")
+        if url:
+            subprocess.Popen([opener, url], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
 if __name__ == "__main__":

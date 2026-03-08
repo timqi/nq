@@ -91,15 +91,7 @@ uvm() {
     esac
 }
 
-nq_update() {
-    if [ -d "$HOME/.config/nq/.git" ]; then
-        git -C "$HOME/.config/nq" pull --ff-only
-        . "$HOME/.zshrc"
-    else
-        curl -fsSL https://raw.githubusercontent.com/timqi/nq/main/bin/thin-installer | sh
-        . "$HOME/.config/nq/config/profile"
-    fi
-}
+
 
 _confirm_run() {
     read -p "$1[confirm]:" -n 1 key
