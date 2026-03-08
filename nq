@@ -99,6 +99,23 @@ install_onekeyd() {
     mv Applications/Utilities/OneKey\ Bridge/onekeyd_darwin_arm64 ~/.local/bin/onekeyd
 }
 
+install_tmux() {
+    app=tmux
+    repo="mjakob-gh/build-static-tmux"
+    tmux_version() {
+        echo "v$($app -V|cut -d' ' -f2)"
+    }
+    tmux_install() {
+        ar=`[ $ARCH = "Darwin" ] && echo "" || echo "$(uname -m)"`
+        [ -z "$ar" ] && log "[tmux] only linux supported" && return
+        url=`download_url $repo $1 "$app.linux-$ar.stripped.gz"`
+        download $url | gzip -d > "$tmp/$app"
+        chmod +x "$tmp/$app"
+        mv "$tmp/$app" "$bin_dir"
+    }
+    github_install_logic $app ${app}_version $repo ${app}_install
+}
+
 install_websocat() {
     app=websocat
     repo="vi/$app"

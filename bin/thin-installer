@@ -1,0 +1,43 @@
+#!/bin/sh
+#
+# curl -fsSL https://raw.githubusercontent.com/timqi/nq/main/bin/thin-installer | sh
+#
+
+set -e
+
+NQ_DIR="$HOME/.config/nq"
+TARBALL="https://github.com/timqi/nq/archive/main.tar.gz"
+VERSION_FILE="$NQ_DIR/.version"
+REPO_API="https://api.github.com/repos/timqi/nq/commits/main"
+
+# Remove legacy installation
+if [ -d "$HOME/nq" ]; then
+    echo "Removing legacy $HOME/nq ..."
+    [ "$(readlink "$HOME/.tmux.conf" 2>/dev/null)" = "$HOME/nq/tmux.conf" ] && rm -f "$HOME/.tmux.conf"
+    [ "$(readlink "$HOME/.vim" 2>/dev/null)" = "$HOME/nq/vim" ] && rm -f "$HOME/.vim"
+    sed -i'' "s|source $HOME/nq/profile||g" "$HOME/.profile" 2>/dev/null || true
+    sed -i'' "s|source $HOME/nq/shprofile||g" "$HOME/.profile" 2>/dev/null || true
+    rm -rf "$HOME/nq"
+fi
+
+# Check if update needed
+remote_sha=$(curl -fsSL "$REPO_API" | sed -n 's/.*"sha": *"\([a-f0-9]*\)".*/\1/p' | head -1)
+local_sha=""
+[ -f "$VERSION_FILE" ] && local_sha=$(cat "$VERSION_FILE")
+
+if [ "$remote_sha" = "$local_sha" ]; then
+    echo "Already up to date: ${remote_sha%${remote_sha#???????}}"
+    exit 0
+fi
+
+# Download and extract
+echo "Installing to $NQ_DIR ..."
+rm -rf "$NQ_DIR"
+mkdir -p "$NQ_DIR"
+curl -fsSL "$TARBALL" | tar -zx -C "$NQ_DIR" --strip-components=1
+echo "$remote_sha" > "$VERSION_FILE"
+
+# Install configs via nq
+sh "$NQ_DIR/nq" config
+
+echo "Done (${remote_sha%${remote_sha#???????}}). Run: source ~/.zshrc"
