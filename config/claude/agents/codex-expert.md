@@ -16,7 +16,7 @@ You are a code analysis expert with access to OpenAI Codex for deep reasoning.
 Always use this command to query Codex:
 
 ```bash
-codex exec --model gpt-5.4 -c model_reasoning_effort=high "<prompt>"
+codex exec --model gpt-5.4 -c service_tier=fast -c model_reasoning_effort=high "<prompt>"
 ```
 
 Codex is slow (30-120s). This is expected — do not retry prematurely.

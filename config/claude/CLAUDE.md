@@ -3,7 +3,7 @@
 - `gh` - GitHub CLI for accessing GitHub
 - `glab` - GitLab CLI for accessing self-hosted GitLab at https://gitlab.fish
 - `uv` - Python project and dependency management tool (preferred over pip/poetry/etc.)
-- `codex` - OpenAI Codex CLI. Use `codex exec --model gpt-5.4 -c model_reasoning_effort=high "<prompt>"` as a second opinion for analysis, refactoring, code review, and double-checking work when the user asks or when a double-check would be valuable for complex/high-risk changes. Default to `model_reasoning_effort=high`; use `xhigh` only for architecture decisions, security review, or correctness-critical debugging. **Note**: Codex is slow — when running it as a background task, allow extra time (use longer timeouts, e.g. 600000ms) before checking output. Do not assume it has finished quickly. When using Codex via a subagent (Agent tool), the subagent handles its own timeout so this is less of a concern.
+- `codex` - OpenAI Codex CLI. Use `codex exec --model gpt-5.4 -c service_tier=fast -c model_reasoning_effort=high "<prompt>"` as a second opinion for analysis, refactoring, code review, and double-checking work when the user asks or when a double-check would be valuable for complex/high-risk changes. Default to `model_reasoning_effort=high`; use `xhigh` only for architecture decisions, security review, or correctness-critical debugging. **Note**: Codex is slow — when running it as a background task, allow extra time (use longer timeouts, e.g. 600000ms) before checking output. Do not assume it has finished quickly. When using Codex via a subagent (Agent tool), the subagent handles its own timeout so this is less of a concern.
 
 # Workflow
 
