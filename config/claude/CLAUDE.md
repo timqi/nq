@@ -11,6 +11,8 @@
 
 - To read code from GitHub: for a quick look at one or two files, use WebFetch with raw.githubusercontent.com; for deep analysis, clone the repo to ~/go/src/research/claude/ (a scratch space managed by Claude) and read from the filesystem to save tokens.
 
+- **Git commits**: Do not add Anthropic-related information (e.g. `Co-Authored-By: Claude ...`) to commit messages.
+
 # Code Quality
 
 - After writing code, list what could break and suggest tests to cover it.
