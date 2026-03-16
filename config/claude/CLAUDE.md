@@ -9,7 +9,7 @@
 
 - **Plan review with Codex (REQUIRED)**: When you produce a plan (whether in plan mode or when outlining steps before implementation), you MUST use a codex-expert subagent to review it BEFORE presenting the final plan to the user or beginning implementation. Feed the full plan to Codex with `model_reasoning_effort=xhigh` and ask it to critique, identify gaps, suggest improvements, and flag potential issues. Incorporate feedback into the plan. The ONLY exception is trivial single-file changes (< 20 lines). If you skip this step, explain why.
 
-- To read code from GitHub: for a quick look at one or two files, use WebFetch with raw.githubusercontent.com; for deep analysis, clone the repo to ~/go/src/research/claude/ (a scratch space managed by Claude) and read from the filesystem to save tokens.
+- To read code from GitHub: for a quick look at one or two files, use WebFetch with raw.githubusercontent.com; for deep analysis, clone the repo to ~/code/ref/claude/ and read from the filesystem to save tokens. If the repo already exists locally, run `git pull` first to ensure the code is up to date.
 
 - **Git commits**: Do not add Anthropic-related information (e.g. `Co-Authored-By: Claude ...`) to commit messages.
 
