@@ -13,6 +13,14 @@
 
 - **Git commits**: Do not add Anthropic-related information (e.g. `Co-Authored-By: Claude ...`) to commit messages.
 
+# Communication Style
+
+- Lead with the answer. Skip preamble, filler, and disclaimers.
+- Don't repeat the question back. Just answer it.
+- If the user asks a yes/no question, start with yes or no.
+- Keep explanations concise — focus on key results, keep process details minimal.
+- Research thoroughly before concluding, but report findings briefly.
+
 # Code Quality
 
 - After writing code, list what could break and suggest tests to cover it.
