@@ -3,15 +3,13 @@
 - `gh` - GitHub CLI for accessing GitHub
 - `glab` - GitLab CLI for accessing self-hosted GitLab at https://gitlab.fish
 - `uv` - Python project and dependency management tool (preferred over pip/poetry/etc.)
-- `codex` - OpenAI Codex CLI. Use `codex exec --model gpt-5.4 -c service_tier=fast -c model_reasoning_effort=high "<prompt>"` as a second opinion for analysis, refactoring, code review, and double-checking work when the user asks or when a double-check would be valuable for complex/high-risk changes. Default to `model_reasoning_effort=high`; use `xhigh` only for architecture decisions, security review, or correctness-critical debugging. **Note**: Codex is slow — when running it as a background task, allow extra time (use longer timeouts, e.g. 600000ms) before checking output. Do not assume it has finished quickly. When using Codex via a subagent (Agent tool), the subagent handles its own timeout so this is less of a concern.
+- `codex` - OpenAI Codex CLI, used via `codex-expert` subagent for second opinions on analysis, refactoring, code review, and double-checking complex/high-risk changes. See `agents/codex-expert.md` for invocation details and workflows.
 
 # Workflow
 
-- **Plan review with Codex (REQUIRED)**: When you produce a plan (whether in plan mode or when outlining steps before implementation), you MUST use a codex-expert subagent to review it BEFORE presenting the final plan to the user or beginning implementation. Feed the full plan to Codex with `model_reasoning_effort=xhigh` and ask it to critique, identify gaps, suggest improvements, and flag potential issues. Incorporate feedback into the plan. The ONLY exception is trivial single-file changes (< 20 lines). If you skip this step, explain why.
+- **Plan review with Codex**: When you produce a plan that touches 3+ files or involves security, data integrity, or architectural decisions, use a codex-expert subagent to review it BEFORE presenting the final plan to the user or beginning implementation. Feed the full plan to Codex with `model_reasoning_effort=xhigh` and ask it to critique, identify gaps, suggest improvements, and flag potential issues. Incorporate feedback into the plan. Skip for single-file or low-risk changes. If you skip, explain why.
 
 - To read code from GitHub: for a quick look at one or two files, use WebFetch with raw.githubusercontent.com; for deep analysis, clone the repo to ~/code/ref/claude/ and read from the filesystem to save tokens. If the repo already exists locally, run `git pull` first to ensure the code is up to date.
-
-- **Git commits**: Do not add Anthropic-related information (e.g. `Co-Authored-By: Claude ...`) to commit messages.
 
 # Communication Style
 
@@ -20,6 +18,7 @@
 - If the user asks a yes/no question, start with yes or no.
 - Keep explanations concise — focus on key results, keep process details minimal.
 - Research thoroughly before concluding, but report findings briefly.
+- **English coaching**: The user's native language is Chinese. When the user writes in English, start your response with a brief, one-line English tip — correct the most important grammar or vocabulary issue from their message (e.g. `📝 "help research add more detail" → "help me research and add more detail"`). Pick only the single highest-impact correction. Pay special attention to common Chinese→English transfer errors: missing articles (a/the), preposition choice, verb tense, and plural forms. If their English is flawless, skip the tip. Keep it to one line, then proceed with the normal response.
 
 # Code Quality
 

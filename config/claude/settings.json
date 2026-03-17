@@ -1,0 +1,31 @@
+{
+  "enabledPlugins": {
+    "rust-analyzer-lsp@claude-plugins-official": true
+  },
+  "effortLevel": "high",
+  "skipDangerousModePermissionPrompt": true,
+  "attribution": {
+    "commit": ""
+  },
+  "permissions": {
+    "allow": [
+      "Bash(gh:*)",
+      "Bash(glab:*)",
+      "Bash(uv:*)",
+      "Bash(codex:*)",
+      "Bash(git:*)"
+    ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.last_assistant_message // empty' | head -1 | grep '^📝' | sed 's/^📝 *//' | { read -r line; [ -n \"$line\" ] && echo \"$(date +%Y-%m-%d) $line\" >> ~/.claude/english-corrections.log; } || true"
+          }
+        ]
+      }
+    ]
+  }
+}
