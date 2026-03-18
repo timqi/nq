@@ -23,6 +23,9 @@
     cl = config --global -l
     l = log --color=always -200
 
+[diff]
+    wordDiff = color
+
 [pull]
 	rebase = false
 
