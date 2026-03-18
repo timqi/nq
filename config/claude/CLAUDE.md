@@ -28,3 +28,6 @@
 - **Propose before modifying — never edit code without explicit approval.** When diagnosing issues or proposing changes, always present the solution in text first and wait for the user to approve before making any edits. This approval gate applies every time the direction changes:
   1. If the user's approval message contains a new idea, alternative approach, or revised direction, treat it as a NEW proposal — do NOT carry over the previous approval. Stop, analyze the new approach (pros/cons, affected files, scope of changes), present your analysis, and wait for a second explicit "go ahead" before editing.
   2. Only a clear, unambiguous approval with no new requirements (e.g. "do it", "looks good, apply it") counts as permission to proceed with edits.
+
+# Superpowers Overrides
+- Do NOT invoke the superpowers:using-git-worktrees skill.
