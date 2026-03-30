@@ -30,4 +30,4 @@
   2. Only a clear, unambiguous approval with no new requirements (e.g. "do it", "looks good, apply it") counts as permission to proceed with edits.
 
 # Superpowers Overrides
-- Do NOT invoke the superpowers:using-git-worktrees skill.
+- Only invoke the superpowers:using-git-worktrees skill when the user explicitly requests "use worktree" in their message. Never trigger it automatically.
