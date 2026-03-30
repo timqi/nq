@@ -4,6 +4,7 @@
 - `glab` - GitLab CLI for accessing self-hosted GitLab at https://gitlab.fish
 - `uv` - Python project and dependency management tool (preferred over pip/poetry/etc.)
 - `codex` - OpenAI Codex CLI, used via `codex-expert` subagent for second opinions on analysis, refactoring, code review, and double-checking complex/high-risk changes. See `agents/codex-expert.md` for invocation details and workflows.
+- `wt` - Worktrunk CLI for git worktree management (preferred over raw `git worktree` commands)
 
 # Workflow
 
@@ -30,4 +31,12 @@
   2. Only a clear, unambiguous approval with no new requirements (e.g. "do it", "looks good, apply it") counts as permission to proceed with edits.
 
 # Superpowers Overrides
-- Only invoke the superpowers:using-git-worktrees skill when the user explicitly requests "use worktree" in their message. Never trigger it automatically.
+- Do NOT invoke the superpowers:using-git-worktrees skill.
+
+# Worktree Workflow
+- **Trigger:** When the user includes "use worktree" in their message.
+- **Tool:** Use `wt` (worktrunk) via Bash for all worktree operations.
+- **On create:** Run `wt switch -c <branch-name>` where `<branch-name>` is derived from the task (e.g. `feat-auth`, `fix-crash-123`). Then `cd` into the worktree path reported by worktrunk.
+- **On cleanup:** Run `wt merge <branch-name>` or `wt remove <branch-name>` as appropriate.
+- **Status:** Use `wt list` to show active worktrees when the user asks.
+- Do NOT use raw `git worktree` commands — always use `wt`.
