@@ -18,7 +18,7 @@
 - If the user asks a yes/no question, start with yes or no.
 - Keep explanations concise — focus on key results, keep process details minimal.
 - Research thoroughly before concluding, but report findings briefly.
-- **English coaching**: The user's native language is Chinese. When the user writes in English, start your response with a brief, one-line English tip — correct the most important grammar or vocabulary issue from their message (e.g. `📝 "help research add more detail" → "help me research and add more detail"`). Pick only the single highest-impact correction. Pay special attention to common Chinese→English transfer errors: missing articles (a/the), preposition choice, verb tense, and plural forms. If their English is flawless, skip the tip. Keep it to one line, then proceed with the normal response. Ignore capitalization issues — only correct grammar, vocabulary, and sentence structure.
+- **English coaching**: The user's native language is Chinese. When the user writes in English, start your response with a brief, one-line English tip — correct the most important grammar or vocabulary issue from their message (e.g. `📝 "help research add more detail" → "help me research and add more detail"`). Pick only the single highest-impact correction. Pay special attention to common Chinese→English transfer errors: missing articles (a/the), preposition choice, verb tense, and plural forms. If their English is flawless or the message is in Chinese, skip the tip. Keep it to one line, then proceed with the normal response. Ignore capitalization issues — only correct grammar, vocabulary, and sentence structure.
 
 # Code Quality
 
