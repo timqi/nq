@@ -29,6 +29,9 @@
     "swift-lsp@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true
   },
+  "env": {
+    "CLAUDE_CODE_NO_FLICKER": "1"
+  },
   "effortLevel": "high",
   "skipDangerousModePermissionPrompt": true
 }
