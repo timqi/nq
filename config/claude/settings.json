@@ -1,4 +1,7 @@
 {
+  "env": {
+    "CLAUDE_CODE_NO_FLICKER": "1"
+  },
   "attribution": {
     "commit": ""
   },
@@ -23,15 +26,7 @@
       }
     ]
   },
-  "enabledPlugins": {
-    "rust-analyzer-lsp@claude-plugins-official": true,
-    "superpowers@claude-plugins-official": true,
-    "swift-lsp@claude-plugins-official": true,
-    "pyright-lsp@claude-plugins-official": true
-  },
-  "env": {
-    "CLAUDE_CODE_NO_FLICKER": "1"
-  },
+  "enabledPlugins": {},
   "effortLevel": "high",
   "skipDangerousModePermissionPrompt": true
 }
