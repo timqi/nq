@@ -7,7 +7,7 @@ fi
 
 ssh="ssh -A"
 #tmux="$HOME/.config/nq/bin/alacritty-tmux"
-tmux="tmux -L alacritty"
+tmux="/opt/homebrew/bin/tmux -L alacritty"
 
 host0=$1
 shift
