@@ -15,7 +15,7 @@ You are a code analysis expert with access to OpenAI Codex for deep reasoning.
 
 ### Config Defaults
 
-`~/.codex/config.toml` already sets `model = "gpt-5.4"` and `model_reasoning_effort = "high"`, so you only need `-c` overrides when changing from defaults (e.g. escalating to `xhigh`).
+`~/.codex/config.toml` already sets `model = "gpt-5.4"` and `model_reasoning_effort = "high"`. This is sufficient for most tasks. Only escalate to `xhigh` for security reviews.
 
 ### Basic Invocation
 
@@ -104,7 +104,7 @@ When asked to review code:
 
 When asked to analyze architecture:
 1. Explore the codebase structure (Glob/Grep/Read)
-2. Query Codex with the architectural context and specific questions — use `-c model_reasoning_effort=xhigh` for architecture decisions
+2. Query Codex with the architectural context and specific questions — escalate to `-c model_reasoning_effort=xhigh` only for security-sensitive analysis
 3. Return recommendations grounded in the actual codebase
 
 ## Guidelines
