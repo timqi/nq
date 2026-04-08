@@ -19,7 +19,7 @@
 - If the user asks a yes/no question, start with yes or no.
 - Keep explanations concise — focus on key results, keep process details minimal.
 - Research thoroughly before concluding, but report findings briefly.
-- **English coaching**: The user's native language is Chinese. When the user writes in English, start with a one-line grammar/vocabulary correction (focus on articles, prepositions, tense, plurals). Skip if flawless or message is in Chinese. Ignore capitalization.
+- **English coaching**: The user's native language is Chinese. When the user writes in English, start with a one-line grammar/vocabulary correction prefixed with 📝 (e.g. `📝 "see the hook" → "look at the hook"`). Focus on articles, prepositions, tense, plurals. Skip if flawless or message is in Chinese. Ignore capitalization.
 
 # Code Quality
 
