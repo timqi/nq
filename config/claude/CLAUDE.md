@@ -33,3 +33,5 @@
 # Safety
 
 - Never commit `.env`, credentials, API keys, or secrets. Warn the user if asked to do so.
+
+@RTK.md
