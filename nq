@@ -57,7 +57,7 @@ github_install_logic() {
     curr=`command -v $1 >/dev/null && echo $($2) || echo 'unknown'`
     url="https://api.github.com/repos/$3/releases"
     ver=`download ${url} |\
-        grep 'tag_name' | grep -v "nightly" | grep -v -i alpha | grep -v "stable" |\
+        grep 'tag_name' | grep -v "nightly" | grep -v -i alpha | grep -v "stable" | grep -v "dev" |\
         head -n 1 | cut -d\" -f4`
     [ -z "$ver" ] && log "[$1] failed to fetch version (API rate limited?), abort" && return 1
     [ "$curr" = "$ver" ] && log "[$1] $ver is the latest, return" && return
@@ -398,6 +398,21 @@ install_cloudflared() {
             url=`download_url $repo $1 "cloudflared-linux-amd64"`
             download $url > "$tmp/$app" && chmod +x "$tmp/$app"
         fi
+        mv "$tmp/$app" "$bin_dir"
+    }
+    github_install_logic $app ${app}_version $repo ${app}_install
+}
+
+install_rtk() {
+    app=rtk
+    repo="rtk-ai/rtk"
+    rtk_version() {
+        echo "v`rtk --version|cut -d' ' -f2`"
+    }
+    rtk_install() {
+        ar=`[ $ARCH = "Darwin" ] && echo "aarch64-apple-darwin" || echo "x86_64-unknown-linux-musl"`
+        url=`download_url $repo $1 "rtk-$ar.tar.gz"`
+        download $url | tar -zx -C $tmp
         mv "$tmp/$app" "$bin_dir"
     }
     github_install_logic $app ${app}_version $repo ${app}_install
