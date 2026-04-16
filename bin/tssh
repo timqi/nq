@@ -25,9 +25,9 @@ if [ $# -eq 0 ]; then
         title=$host0
     fi
 
-    if [ "$host0" = "g1" ]; then
-        ssh="mosh --ssh='ssh -A'"
-    fi
+    #if [ "$host0" = "g1" ]; then
+    #    ssh="mosh --ssh='ssh -A'"
+    #fi
 
     if [ "$TERM_MODE" = "ghostty" ]; then
         osascript <<EOF
