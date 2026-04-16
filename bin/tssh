@@ -41,6 +41,7 @@ tell application "Ghostty"
         set t to (new tab in front window with configuration cfg)
         perform action "set_tab_title:$title" on focused terminal of t
     end if
+    activate
 end tell
 EOF
     else
