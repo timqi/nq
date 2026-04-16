@@ -94,7 +94,12 @@ uvm() {
 
 
 _confirm_run() {
-    read -p "$1[confirm]:" -n 1 key
+    if [ -n "$ZSH_VERSION" ]; then
+        read -k 1 "key?$1[confirm]:"
+    else
+        read -p "$1[confirm]:" -n 1 key
+    fi
+    echo
     if [ "$key" = "" ]; then
         eval "$1"
     fi
@@ -106,7 +111,7 @@ cf() {
 }
 
 cr() {
-    cmd=$(history | sed 's/\s\+[0-9]\+\s\+//g' | sort -rn | awk '!x[$0]++' | fzf --layout=reverse --prompt='Cmd> ')
+    cmd=$(history | sed 's/^[[:space:]]*[0-9]*[[:space:]]*//' | awk '!x[$0]++' | fzf --layout=reverse --prompt='Cmd> ')
     _confirm_run "$cmd"
 }
 
@@ -142,15 +147,6 @@ chpwd() {
     command -v zoxide >/dev/null 2>&1 && zoxide add "$(pwd)"
 }
 
-ltmux() {
-    if ! echo "$TMUX" | grep -E ".*alacritty.*" >/dev/null; then
-        echo "not in a alacritty tmux session"
-    fi
-    tmux rename-window local
-    unset TMUX
-    tmux "$@"
-}
-
 # fzf
 export FZF_DEFAULT_COMMAND="fd --type file --follow --color=never --hidden --exclude '.git'"
 export FZF_DEFAULT_OPTS="--ansi -m --color dark --bind=ctrl-l:toggle-all --bind=ctrl-d:preview-half-page-down --bind=ctrl-u:preview-half-page-up --bind=ctrl-/:toggle-preview --inline-info --preview-window wrap --height=10"
@@ -159,8 +155,6 @@ export FZF_DEFAULT_OPTS="--ansi -m --color dark --bind=ctrl-l:toggle-all --bind=
 export EDITOR=vim
 export LANG=en_US.UTF-8
 export LC_ALL="$LANG"
-export TERM="xterm-256color"
-
 alias ls='ls --color'
 alias ll='ls --color -alh'
 
@@ -235,15 +229,21 @@ zsh_cfg() {
 
     # PROMPT
     precmd() {
-        __git_branch=""
-        if [ -e ".git" ]; then
-            local branch
-            branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
-            [ -n "$branch" ] && __git_branch=" $branch"
-        fi
+        local branch
+        branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+        __git_branch="${branch:+ $branch}"
     }
     LOCAL_MACHINE_NAME=$(hostname)
     PROMPT=$'%(?:%F{2}:%F{1})${LOCAL_MACHINE_NAME:->} %B%F{4}%c%b%F{8}${__git_branch}%f%{$reset_color%} %# '
+
+    # OSC 133 prompt marks (tmux semantic prompt navigation)
+    if [ -n "$TMUX" ]; then
+        _osc133_precmd() { print -Pn "\e]133;D\e\\"; }
+        _osc133_preexec() { print -Pn "\e]133;C\e\\"; }
+        precmd_functions+=(_osc133_precmd)
+        preexec_functions+=(_osc133_preexec)
+        PROMPT=$'%{\e]133;A\e\\%}'"$PROMPT"$'%{\e]133;B\e\\%}'
+    fi
 
     alias ls='lsd --icon=never'
     alias ll='lsd --icon=never -alh'
@@ -286,6 +286,14 @@ bash_cfg() {
         fi
     }
     bind -x '"\C-r": __fzf_history__'
+
+    # OSC 133 prompt marks (tmux semantic prompt navigation)
+    if [ -n "$TMUX" ]; then
+        PS0=$'\e]133;C\e\\'
+        _osc133_prompt() { printf '\e]133;D\e\\'; }
+        PROMPT_COMMAND="_osc133_prompt${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
+        PS1=$'\e]133;A\e\\'"${PS1}"$'\e]133;B\e\\'
+    fi
 
     alias d='sudo docker'
     alias dc='sudo docker compose'
